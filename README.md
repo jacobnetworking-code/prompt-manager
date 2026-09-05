@@ -113,3 +113,11 @@ Platform filtering, local [VARIABLE] personalization, usage tracking, and v3 bac
 - Adds a compact gold `Alpha` badge.
 - Removes the repeated `PROMPT MANAGER` label above the Home headline.
 - No functional or storage changes.
+
+
+## M1.5.8
+- X in Fast Capture discards unsaved form values.
+- `Use with` copies the ready prompt, records use, then opens the selected AI service via its HTTPS entry point. On iOS, supported universal-link handling may open an installed app; otherwise the web service opens.
+- Optional 1–5 star rating for every prompt in Library, regardless of acquisition source. Tap the current rating again to clear it.
+- Manual prompts explicitly store `acquisitionType: "manual"` and `rating: null`.
+- DB v2 / Backup v4 unchanged.

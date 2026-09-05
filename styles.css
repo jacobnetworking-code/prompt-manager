@@ -95,3 +95,7 @@ input,textarea,select{font-size:16px}
 .brand-title-row h1{font-size:24px!important;line-height:1!important;letter-spacing:-.65px;white-space:nowrap;margin:0}
 .alpha-badge{display:inline-flex;align-items:center;justify-content:center;height:22px;padding:0 8px;border:1px solid var(--gold);border-radius:999px;color:var(--gold);background:rgba(200,164,93,.08);font-size:10px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;line-height:1}
 @media(max-width:360px){.brand-title-row{gap:6px}.brand-title-row h1{font-size:21px!important}.alpha-badge{height:20px;padding:0 6px;font-size:9px}}
+
+/* M1.5.8 */
+.rating-block{margin:14px 0 12px}.rating-block>small{display:block;color:var(--muted);font-size:10px;font-weight:800;letter-spacing:1.1px;margin-bottom:7px}
+.rating-stars{display:flex;gap:7px}.rating-stars button{border:0;background:transparent;color:var(--muted);font-size:27px;line-height:1;padding:2px}.rating-stars button.on{color:var(--gold)}
