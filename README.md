@@ -121,3 +121,10 @@ Platform filtering, local [VARIABLE] personalization, usage tracking, and v3 bac
 - Optional 1–5 star rating for every prompt in Library, regardless of acquisition source. Tap the current rating again to clear it.
 - Manual prompts explicitly store `acquisitionType: "manual"` and `rating: null`.
 - DB v2 / Backup v4 unchanged.
+
+
+## M1.5.8.1 — ChatGPT native-app launch
+- `Use with ChatGPT` still copies the ready prompt first.
+- It now launches the installed ChatGPT iOS app through the `chatgpt://` custom URL scheme instead of navigating to chatgpt.com.
+- This is intentionally limited to ChatGPT in this hotfix; other AI launchers are unchanged until their native routes are separately validated.
+- DB v2 / Backup v4 unchanged.
