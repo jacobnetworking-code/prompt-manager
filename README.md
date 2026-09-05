@@ -105,3 +105,11 @@ Platform filtering, local [VARIABLE] personalization, usage tracking, and v3 bac
 - Settings contains local display name, Backup & Restore, and Storage Diagnostics.
 - No account/auth and no What's New.
 - DB v2 / Backup v4 / Explore catalog unchanged.
+
+
+## M1.5.7 — brand polish
+- Removes `PERSONAL ALPHA` from the header.
+- Enlarges `Prompt Manager` beside the logo.
+- Adds a compact gold `Alpha` badge.
+- Removes the repeated `PROMPT MANAGER` label above the Home headline.
+- No functional or storage changes.

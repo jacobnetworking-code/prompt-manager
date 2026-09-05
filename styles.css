@@ -89,3 +89,9 @@ input,textarea,select{font-size:16px}
 .appearance-segment button{border:0;border-radius:10px;background:transparent;color:var(--muted);padding:10px 6px;font-weight:700}.appearance-segment button.active{background:var(--button);color:var(--buttonText)}
 .settings-row{width:100%;display:flex;align-items:center;justify-content:space-between;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:13px;padding:13px 14px;margin-top:7px;text-align:left;font-weight:700}
 .name-edit-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;margin-top:7px}.name-edit-row input{min-width:0;border:1px solid var(--border);background:var(--surface2);color:var(--text);border-radius:12px;padding:11px 12px;font:inherit}.name-edit-row button{border:0;background:var(--button);color:var(--buttonText);border-radius:12px;padding:0 14px;font-weight:800}
+
+/* M1.5.7 — simplified brand lockup */
+.brand-title-row{display:flex;align-items:center;gap:9px;min-width:0}
+.brand-title-row h1{font-size:24px!important;line-height:1!important;letter-spacing:-.65px;white-space:nowrap;margin:0}
+.alpha-badge{display:inline-flex;align-items:center;justify-content:center;height:22px;padding:0 8px;border:1px solid var(--gold);border-radius:999px;color:var(--gold);background:rgba(200,164,93,.08);font-size:10px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;line-height:1}
+@media(max-width:360px){.brand-title-row{gap:6px}.brand-title-row h1{font-size:21px!important}.alpha-badge{height:20px;padding:0 6px;font-size:9px}}
