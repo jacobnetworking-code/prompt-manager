@@ -1,1 +1,1 @@
-{"name":"Prompt Manager","short_name":"PM","description":"Personal Prompt Manager Alpha","start_url":"./","scope":"./","display":"standalone","background_color":"#111111","theme_color":"#111111","icons":[]}
+{"name":"Prompt Manager","short_name":"Prompt Manager","start_url":"./","scope":"./","display":"standalone","background_color":"#0d0d0d","theme_color":"#0d0d0d","description":"A local-first personal prompt library.","icons":[]}

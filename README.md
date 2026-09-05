@@ -1,7 +1,14 @@
-# Prompt Manager — M1.1 Personal Alpha
+# Prompt Manager — Personal Alpha
 
-Static local-first PWA.
+## M1.2
+Local-first static PWA for iPhone.
 
-Includes prompt import, IndexedDB persistence, search, copy/source/delete, System/Light/Dark themes and offline app-shell caching.
+- IndexedDB prompt library (preserves M1.1 data)
+- Offline app shell
+- Search and copy
+- JSON backup + merge restore with duplicate protection
+- Compact Light / Dark / System appearance control
+- Mobile-first UI
+- No backend and no API secrets
 
-No Python runtime server, backend or API keys. Deploy these files together to an HTTPS static origin such as GitHub Pages.
+Data remains local to the browser profile. Export backups regularly.
