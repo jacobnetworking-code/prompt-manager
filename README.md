@@ -58,3 +58,11 @@ Platform filtering, local [VARIABLE] personalization, usage tracking, and v3 bac
 - Welcome Tour v1 is shown once per local installation and can be replayed from Settings.
 - Home vertical start aligned with Explore/Library.
 - IndexedDB schema remains v2; no authentication/backend added.
+
+
+## M1.5.1
+- Removes runtime dependency on prompts.chat API. Explore reads a PM-owned static `catalog.json`.
+- Visual 3-column purpose categories + search; no extra filter layer.
+- Contextual 3-step Welcome Tour highlights the real Add, Explore and Library UI.
+- Catalog is cached by the service worker for offline use after first update load.
+- No DB migration. Backup remains v4.
