@@ -66,3 +66,11 @@ Platform filtering, local [VARIABLE] personalization, usage tracking, and v3 bac
 - Contextual 3-step Welcome Tour highlights the real Add, Explore and Library UI.
 - Catalog is cached by the service worker for offline use after first update load.
 - No DB migration. Backup remains v4.
+
+
+## M1.5.2 — UX polish
+- Welcome Tour uses Visual Viewport-aware placement and four blur shade panels, leaving the highlighted target crisp.
+- Gold spotlight uses the same brand gold and bubble placement chooses above/below based on measured free space.
+- Explore category grid is fully hidden while viewing a category; `← Categories` restores it.
+- Library header adds a discreet gold `+` capture action.
+- DB v2 and Backup v4 unchanged.

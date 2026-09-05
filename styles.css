@@ -40,3 +40,14 @@ input,textarea,select{font-size:16px}
 .tour-bubble>div{display:flex;justify-content:space-between;gap:8px}.tour-bubble button{border:1px solid var(--border);background:var(--surface2);color:var(--text);border-radius:11px;padding:9px 12px;font-weight:700}.tour-bubble #tourNext{background:var(--button);color:var(--buttonText);border-color:transparent}
 .tour-target{position:relative;z-index:101!important}
 @media(max-width:360px){.explore-categories{gap:7px}.explore-category{border-radius:15px}.explore-category .cat-icon{font-size:26px}}
+
+/* M1.5.2 — iPhone tour positioning, focused Explore, Library add */
+.explore-categories[hidden]{display:none!important}
+.library-head-actions{display:flex;flex-direction:column;align-items:center;gap:6px}
+.library-head-actions>#count{background:var(--surface2);color:var(--muted);min-width:28px;height:28px;display:grid;place-items:center;border-radius:999px;font-size:12px}
+.library-add{width:28px;height:28px;border:1px solid rgba(200,164,93,.38);background:transparent;color:var(--gold);border-radius:10px;padding:0;display:grid;place-items:center;font-size:19px;line-height:1;font-weight:600}
+.tour-overlay:before{display:none!important}
+.tour-shade{position:fixed;z-index:100;background:rgba(0,0,0,.68);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);pointer-events:auto}
+.tour-spotlight{z-index:102;border:2px solid var(--gold)!important;box-shadow:0 0 0 3px rgba(200,164,93,.18),0 0 24px rgba(200,164,93,.22)!important;background:transparent;pointer-events:none}
+.tour-bubble{z-index:104;max-height:calc(100dvh - 24px);overflow:auto}
+.tour-target{z-index:auto!important}
