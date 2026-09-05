@@ -46,3 +46,15 @@ Platform filtering, local [VARIABLE] personalization, usage tracking, and v3 bac
 - Added 192×192 and 512×512 PWA icons.
 - Updated manifest icon declarations.
 - Service Worker cache bumped to `pm-m1.4.1-brand-v3`.
+
+
+## M1.5 — Explore v1
+- Explore uses the public prompts.chat REST search/list API; no API key.
+- Catalog prompts stay external until the user explicitly saves one.
+- Library distinguishes All / Added / Saved without asking the user for metadata.
+- Legacy/manual prompts are treated as Added.
+- Saved Explore prompts store provenance (`acquisitionType`, `sourceName`, `externalId`).
+- Backup format v4 preserves provenance; v1-v3 restore remains supported.
+- Welcome Tour v1 is shown once per local installation and can be replayed from Settings.
+- Home vertical start aligned with Explore/Library.
+- IndexedDB schema remains v2; no authentication/backend added.
