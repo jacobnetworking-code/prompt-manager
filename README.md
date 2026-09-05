@@ -14,3 +14,10 @@
 - No backend, login, cloud sync, AI API, or client-side secrets
 
 Before deployment, export and keep a verified M1.2 backup. After deployment validate migration, capture, v2 backup/restore, duplicate protection, persistence and offline launch.
+
+
+## M1.3.1
+- iOS PWA viewport hardening: disables page zoom and horizontal page scrolling.
+- Inputs use 16px text to prevent Safari focus auto-zoom.
+- IndexedDB schema remains version 2; no data model or business-logic changes.
+- Service worker cache bumped to pm-m1.3.1-v1.
