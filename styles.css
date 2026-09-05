@@ -69,3 +69,14 @@ input,textarea,select{font-size:16px}
 .library-title-grid .library-add{justify-self:center;width:34px;height:34px}
 .tour-bubble{position:fixed!important;left:16px!important;right:16px!important;bottom:calc(92px + env(safe-area-inset-bottom))!important;top:auto!important;transform:none!important;width:auto!important;max-width:none!important;max-height:none!important;overflow:visible!important}
 .tour-spotlight{border-radius:16px!important}
+
+/* M1.5.5 — clean reset for header + tour */
+.brand .mark{width:38px!important;height:38px!important;padding:0!important;display:grid!important;place-items:center!important;overflow:hidden!important}
+.brand .mark svg{display:block!important;width:29px!important;height:29px!important}
+.brand .mark svg text{fill:var(--gold)!important;font-family:ui-monospace,SFMono-Regular,Menlo,monospace!important;font-size:18px!important;font-weight:800!important;letter-spacing:-2px!important}
+#settings{width:39px!important;height:39px!important;padding:0!important;display:grid!important;place-items:center!important}
+#settings .settings-svg{display:block!important;width:20px!important;height:20px!important;color:var(--text)!important}
+.tour-overlay{position:fixed!important;inset:0!important;z-index:1000!important;pointer-events:auto!important}
+.tour-overlay[hidden]{display:none!important}
+.tour-mask-svg{position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;z-index:1000!important}
+.tour-bubble{position:fixed!important;z-index:1002!important;left:16px!important;right:16px!important;bottom:calc(92px + env(safe-area-inset-bottom))!important;top:auto!important;transform:none!important;width:auto!important;max-width:420px!important;margin:0 auto!important;max-height:none!important;overflow:visible!important}

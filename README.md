@@ -89,3 +89,10 @@ Platform filtering, local [VARIABLE] personalization, usage tracking, and v3 bac
 - Library title/count and subtitle/add button use a two-row grid for exact alignment.
 - Brand mark and Settings glyph use explicit grid centering.
 - DB v2 / Backup v4 / catalog unchanged.
+
+
+## M1.5.5 — component reset
+- Brand and Settings icons rebuilt with controlled SVG geometry.
+- Welcome Tour rebuilt with a full-screen SVG cutout mask and gold target outline.
+- Fixed safe-area coach card; no target-dependent bubble positioning.
+- DB v2 / Backup v4 / catalog unchanged.
