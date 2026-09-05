@@ -21,3 +21,7 @@ Before deployment, export and keep a verified M1.2 backup. After deployment vali
 - Inputs use 16px text to prevent Safari focus auto-zoom.
 - IndexedDB schema remains version 2; no data model or business-logic changes.
 - Service worker cache bumped to pm-m1.3.1-v1.
+
+
+## M1.3.2 — Storage Diagnostics
+Adds a read-only diagnostics panel for origin/display mode, IndexedDB name/version/stores/counts, persistence status, storage estimate, service worker state and cache keys. No database schema or prompt write logic changes.

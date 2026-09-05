@@ -6,3 +6,6 @@ body{touch-action:pan-y}
 input,textarea,select{font-size:16px}
 .cardtop>div,.categoryrow>select,.searchwrap input{min-width:0}
 .card h4,.preview,.meta{overflow-wrap:anywhere;word-break:break-word}
+
+/* M1.3.2 — read-only storage diagnostics */
+.diagnostics{margin:14px 0;padding:12px;border:1px solid var(--line);border-radius:14px;max-height:45vh;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;font:12px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace}
