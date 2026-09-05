@@ -1,14 +1,16 @@
 # Prompt Manager — Personal Alpha
 
-## M1.2
-Local-first static PWA for iPhone.
+## M1.3 — Fast Capture + Categories
 
-- IndexedDB prompt library (preserves M1.1 data)
-- Offline app shell
-- Search and copy
-- JSON backup + merge restore with duplicate protection
-- Compact Light / Dark / System appearance control
-- Mobile-first UI
-- No backend and no API secrets
+- One-tap clipboard Paste with iOS fallback
+- Prompt text or source URL capture
+- Required editable short title with local provisional suggestion
+- Default + custom categories
+- Remembers last-used category and filters Library
+- IndexedDB migration v1 → v2 preserving prompts
+- Backup v2 includes categories
+- Restore supports M1.2 backup v1 and M1.3 backup v2
+- Offline PWA
+- No backend, login, cloud sync, AI API, or client-side secrets
 
-Data remains local to the browser profile. Export backups regularly.
+Before deployment, export and keep a verified M1.2 backup. After deployment validate migration, capture, v2 backup/restore, duplicate protection, persistence and offline launch.
