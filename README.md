@@ -128,3 +128,12 @@ Platform filtering, local [VARIABLE] personalization, usage tracking, and v3 bac
 - It now launches the installed ChatGPT iOS app through the `chatgpt://` custom URL scheme instead of navigating to chatgpt.com.
 - This is intentionally limited to ChatGPT in this hotfix; other AI launchers are unchanged until their native routes are separately validated.
 - DB v2 / Backup v4 unchanged.
+
+## M1.6.1 — Cloud Identity Foundation
+- Adds Supabase Auth using the project's publishable key.
+- Google OAuth primary sign-in.
+- Email passwordless magic-link fallback.
+- Adds sign-out.
+- Existing IndexedDB prompts remain local and untouched.
+- No cloud prompt sync yet.
+- DB v2 / Backup v4 unchanged.
