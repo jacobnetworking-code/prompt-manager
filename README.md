@@ -29,3 +29,13 @@ Adds a read-only diagnostics panel for origin/display mode, IndexedDB name/versi
 
 ## M1.4 — Use Loop + Platform
 Platform filtering, local [VARIABLE] personalization, usage tracking, and v3 backups. IndexedDB remains v2.
+
+
+## M1.4.1 — App Shell + Brand + Settings
+- New `{ }` gold-on-charcoal brand mark.
+- Home / Explore / Library bottom navigation.
+- Settings consolidates Appearance, Backup & Restore, and Storage Diagnostics.
+- Library search and platform selector share one row.
+- Platform label `General` becomes `Multiplatform` while retaining the internal `general` ID for backward compatibility.
+- Explore is intentionally a placeholder until M1.5.
+- IndexedDB remains v2 and backup format remains v3.
