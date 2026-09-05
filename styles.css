@@ -51,3 +51,8 @@ input,textarea,select{font-size:16px}
 .tour-spotlight{z-index:102;border:2px solid var(--gold)!important;box-shadow:0 0 0 3px rgba(200,164,93,.18),0 0 24px rgba(200,164,93,.22)!important;background:transparent;pointer-events:none}
 .tour-bubble{z-index:104;max-height:calc(100dvh - 24px);overflow:auto}
 .tour-target{z-index:auto!important}
+
+/* M1.5.3 */
+.bottom-nav button>span{font-size:26px;line-height:1}
+.bottom-nav button small{font-size:10px}
+.tour-bubble{left:50%!important;width:min(320px,calc(100vw - 32px))!important;transform:translateX(-50%);max-height:42dvh}

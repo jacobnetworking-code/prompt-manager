@@ -74,3 +74,11 @@ Platform filtering, local [VARIABLE] personalization, usage tracking, and v3 bac
 - Explore category grid is fully hidden while viewing a category; `← Categories` restores it.
 - Library header adds a discreet gold `+` capture action.
 - DB v2 and Backup v4 unchanged.
+
+
+## M1.5.3
+- Welcome Tour bubble uses deterministic viewport-safe centered positioning; target remains gold-highlighted and unblurred.
+- Explore back-to-categories header is explicitly absent until a category is open.
+- Bottom navigation icons increased while labels remain.
+- Static seed catalog expanded from 30 to 84 prompts.
+- DB v2 / Backup v4 unchanged.
