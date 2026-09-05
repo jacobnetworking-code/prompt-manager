@@ -1,24 +1,82 @@
 
 const SUPABASE_URL="https://jqrqsztmcfqfnnzyfjge.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_NbuavLbNAb36kmfuWR_YjQ_zHr6U1Cc";
-const supabaseClient=window.supabase?.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+const supabaseClient=window.supabase?.createClient(
+  SUPABASE_URL,
+  SUPABASE_PUBLISHABLE_KEY,
+  {auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}}
+);
 let authUser=null;
+
 function authRedirectURL(){return "https://jacobnetworking-code.github.io/prompt-manager/"}
-async function recoverOAuthSessionFromURL(){
-  if(!supabaseClient)return;
-  const hash=new URLSearchParams(location.hash.startsWith("#")?location.hash.slice(1):location.hash);
-  const access_token=hash.get("access_token");
-  const refresh_token=hash.get("refresh_token");
-  if(access_token&&refresh_token){
-    const {error}=await supabaseClient.auth.setSession({access_token,refresh_token});
-    if(error)throw error;
-    history.replaceState({},document.title,location.pathname+location.search);
+
+function applyAuthSession(session){
+  authUser=session?.user||null;
+  const gate=document.getElementById("authGate");
+  const status=document.getElementById("authStatus");
+  if(gate)gate.hidden=!!authUser;
+  if(status&&authUser)status.textContent="";
+  const profileName=document.getElementById("profileMenuName");
+  if(authUser&&profileName&&!localStorage.getItem("pm-display-name")){
+    profileName.textContent=authUser.user_metadata?.full_name||authUser.email||"User";
   }
 }
-async function renderAuthState(){const gate=document.getElementById("authGate");const status=document.getElementById("authStatus");if(!supabaseClient){if(gate)gate.hidden=false;if(status)status.textContent="Authentication could not load. Check your connection and refresh.";return;}try{await recoverOAuthSessionFromURL()}catch(err){if(gate)gate.hidden=false;if(status)status.textContent=err?.message||"Could not complete sign in.";return;}const {data:{session},error}=await supabaseClient.auth.getSession();if(error){if(gate)gate.hidden=false;if(status)status.textContent=error.message;return;}authUser=session?.user||null;if(gate)gate.hidden=!!authUser;const profileName=document.getElementById("profileMenuName");if(authUser&&profileName&&!localStorage.getItem("pm-display-name")){profileName.textContent=authUser.user_metadata?.full_name||authUser.email||"User"}}
-async function signInGoogle(){const status=document.getElementById("authStatus");if(status)status.textContent="Opening Google…";const {error}=await supabaseClient.auth.signInWithOAuth({provider:"google",options:{redirectTo:authRedirectURL()}});if(error&&status)status.textContent=error.message}
-async function signInEmail(){const input=document.getElementById("authEmail"),status=document.getElementById("authStatus");const email=(input?.value||"").trim();if(!email){if(status)status.textContent="Enter your email.";return}if(status)status.textContent="Sending magic link…";const {error}=await supabaseClient.auth.signInWithOtp({email,options:{emailRedirectTo:authRedirectURL()}});if(status)status.textContent=error?error.message:"Check your email for the sign-in link."}
-async function signOutPM(){await supabaseClient.auth.signOut();authUser=null;await renderAuthState()}
+
+async function initializeAuth(){
+  const gate=document.getElementById("authGate");
+  const status=document.getElementById("authStatus");
+  if(!supabaseClient){
+    if(gate)gate.hidden=false;
+    if(status)status.textContent="Authentication could not load. Check your connection and refresh.";
+    return;
+  }
+
+  // supabase-js handles the OAuth callback itself because detectSessionInUrl=true.
+  // We only read the resulting session once; no manual setSession race.
+  const {data:{session},error}=await supabaseClient.auth.getSession();
+  if(error){
+    if(gate)gate.hidden=false;
+    if(status)status.textContent=error.message;
+    return;
+  }
+  applyAuthSession(session);
+
+  supabaseClient.auth.onAuthStateChange((_event,newSession)=>{
+    applyAuthSession(newSession);
+  });
+}
+
+async function signInGoogle(){
+  const status=document.getElementById("authStatus");
+  if(status)status.textContent="Opening Google…";
+  const {error}=await supabaseClient.auth.signInWithOAuth({
+    provider:"google",
+    options:{redirectTo:authRedirectURL()}
+  });
+  if(error&&status)status.textContent=error.message;
+}
+
+async function signInEmail(){
+  const input=document.getElementById("authEmail"),status=document.getElementById("authStatus");
+  const email=(input?.value||"").trim();
+  if(!email){if(status)status.textContent="Enter your email.";return}
+  if(status)status.textContent="Sending magic link…";
+  const {error}=await supabaseClient.auth.signInWithOtp({
+    email,
+    options:{emailRedirectTo:authRedirectURL()}
+  });
+  if(status)status.textContent=error?error.message:"Check your email for the sign-in link.";
+}
+
+async function signOutPM(){
+  const {error}=await supabaseClient.auth.signOut();
+  if(error){
+    const status=document.getElementById("authStatus");
+    if(status)status.textContent=error.message;
+    return;
+  }
+  applyAuthSession(null);
+}
 
 const $=id=>document.getElementById(id);let db,prompts=[],categories=[],activeCategory="all",activePlatform="any",activeOrigin="all",currentPrompt=null,explorePrompts=[];const DB_VERSION=2,BACKUP_VERSION=4,PLATFORMS={general:"Multiplatform",chatgpt:"ChatGPT",claude:"Claude",gemini:"Gemini",grok:"Grok",midjourney:"Midjourney",other:"Other"},PLATFORM_URLS={chatgpt:"chatgpt://",claude:"https://claude.ai/new",gemini:"https://gemini.google.com/app",grok:"https://grok.com/"},DEFAULT_CATEGORIES=["General","Coding","Marketing","Writing","Image","Video","Research","Productivity"];
 function req(r){return new Promise((ok,no)=>{r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)})}function openDB(){return new Promise((ok,no)=>{const r=indexedDB.open("prompt-manager",DB_VERSION);r.onupgradeneeded=()=>{const d=r.result;if(!d.objectStoreNames.contains("prompts"))d.createObjectStore("prompts",{keyPath:"id",autoIncrement:true});if(!d.objectStoreNames.contains("categories"))d.createObjectStore("categories",{keyPath:"id"})};r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)})}
@@ -80,11 +138,8 @@ $("exploreSearch").oninput=()=>{exploreCategory=null;renderExplore()};$("explore
 $("exploreList").onclick=async e=>{let save=e.target.closest("[data-explore-save]"),open=e.target.closest("[data-explore-open]");if(save){await saveCatalog(catalogItem(save.dataset.exploreSave));return}if(open){let x=catalogItem(open.dataset.exploreOpen);if(!x)return;let temp={title:x.title||x.act||"Prompt",content:x.content||x.prompt||x.description||"",categoryId:"general",platforms:["general"],useCount:0,source:""};openUse(temp)}};
 
 function showView(v){activeView=v;["home","explore","library"].forEach(x=>{let el=$(x+"View");if(el)el.hidden=x!==v});document.querySelectorAll("[data-nav]").forEach(b=>b.classList.toggle("selected",b.dataset.nav===v));if(v==="library")render();if(v==="explore"&&!catalog.length)loadExplore()}document.querySelector(".bottom-nav").onclick=e=>{let b=e.target.closest("[data-nav]");if(b)showView(b.dataset.nav)};document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>showView(b.dataset.go));$("homeAdd").onclick=()=>{$("dialog").showModal();renderCategorySelect();$("platform").value="general"};$("libraryAdd").onclick=()=>{$("dialog").showModal();renderCategorySelect();$("platform").value="general"};$("search").oninput=render;$("categoryFilters").onclick=e=>{let b=e.target.closest("[data-filter]");if(!b)return;activeCategory=b.dataset.filter;render()};let openImport=()=>{$("dialog").showModal();renderCategorySelect();$("platform").value="general"};$("platformFilterButton").onclick=()=>{$("platformOptions").innerHTML=[["any","Any"],...Object.entries(PLATFORMS)].map(([id,name])=>`<button data-platform-filter="${id}"><span>${esc(name)}</span><b>${activePlatform===id?"✓":""}</b></button>`).join("");$("platformDialog").showModal()};$("platformClose").onclick=()=>$("platformDialog").close();$("platformOptions").onclick=e=>{let b=e.target.closest("[data-platform-filter]");if(!b)return;activePlatform=b.dataset.platformFilter;$("platformDialog").close();render()};$("useClose").onclick=()=>$("useDialog").close();$("useCopy").onclick=copyUse;$("useWith").onclick=useWith;$("ratingStars").onclick=e=>{let b=e.target.closest("[data-rating]");if(b)setRating(b.dataset.rating)};let legacyOpen=$("open");if(legacyOpen)legacyOpen.onclick=openImport;$("fab").onclick=openImport;$("close").onclick=()=>{let f=$("form");f.reset();$("source").value="";$("title").value="";$("prompt").value="";renderCategorySelect();$("platform").value="general";$("dialog").close()};$("paste").onclick=pasteClipboard;$("newCategory").onclick=()=>$("categoryDialog").showModal();$("categoryClose").onclick=()=>$("categoryDialog").close();$("categorySave").onclick=createCategory;$("categoryName").onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();createCategory()}};$("category").onchange=e=>localStorage.setItem("pm-last-category",e.target.value);$("profileBtn").onclick=()=>{renderProfileUI();$("profileMenu").showModal()};$("closeProfile").onclick=()=>$("profileMenu").close();$("openSettingsFromProfile").onclick=()=>{$("profileMenu").close();renderProfileUI();$("settingsDialog").showModal()};$("closeSettings").onclick=()=>$("settingsDialog").close();$("saveDisplayName").onclick=saveDisplayName;$("displayName").onkeydown=e=>{if(e.key==="Enter")saveDisplayName()};document.querySelectorAll("[data-quick-theme]").forEach(b=>b.onclick=()=>{applyTheme(b.dataset.quickTheme);renderProfileUI()});$("openBackup").onclick=()=>{$("settingsDialog").close();$("backupDialog").showModal()};$("openDiagnostics").onclick=()=>{$("settingsDialog").close();showDiagnostics()};$("diagnosticsClose").onclick=()=>$("diagnosticsDialog").close();$("diagnosticsRefresh").onclick=showDiagnostics;$("diagnosticsCopy").onclick=async()=>{let t=$("diagnosticsBody").dataset.raw||$("diagnosticsBody").textContent;try{await navigator.clipboard.writeText(t);toast("Diagnostics copied")}catch{toast("Copy unavailable")}};$("backupClose").onclick=()=>$("backupDialog").close();$("themeClose").onclick=()=>$("themeDialog").close();document.querySelector(".theme-options").onclick=e=>{let b=e.target.closest("[data-theme]");if(!b)return;applyTheme(b.dataset.theme);$("themeDialog").close();toast(`${b.dataset.theme[0].toUpperCase()+b.dataset.theme.slice(1)} appearance`)};$("export").onclick=exportBackup;$("importFile").onchange=async e=>{let f=e.target.files[0];if(!f)return;try{let r=await restore(f);$("backupDialog").close();toast(`${r.added} restored · ${r.skipped} skipped`)}catch(err){alert(err.message)}finally{e.target.value=""}};$("form").onsubmit=async e=>{e.preventDefault();let content=$("prompt").value.trim(),title=$("title").value.trim(),categoryId=$("category").value||"general";if(!content||!title)return;await add("prompts",{title,content,source:$("source").value.trim(),categoryId,platforms:[$("platform").value||"general"],useCount:0,lastUsedAt:null,rating:null,acquisitionType:"manual",createdAt:Date.now()});localStorage.setItem("pm-last-category",categoryId);e.target.reset();$("dialog").close();await refresh();toast("Prompt saved")};$("list").onclick=async e=>{let m=e.target.closest("[data-menu]");if(m){e.stopPropagation();let el=$(`menu-${m.dataset.menu}`);el.hidden=!el.hidden;return}let a=e.target.closest("[data-copy],[data-source],[data-delete]");if(a){e.stopPropagation();let id=Number(a.dataset.copy||a.dataset.source||a.dataset.delete),p=prompts.find(x=>x.id===id);if(a.dataset.copy){await navigator.clipboard.writeText(p.content);await markUsed(p);toast("Copied to clipboard")}else if(a.dataset.source)window.open(p.source,"_blank","noopener");else if(a.dataset.delete&&confirm("Delete this prompt?")){await del("prompts",id);await refresh();toast("Prompt deleted")}return}let card=e.target.closest("[data-use]");if(card){let p=prompts.find(x=>x.id===Number(card.dataset.use));if(p)openUse(p)}};
-if(supabaseClient){
-  document.getElementById("googleSignIn")?.addEventListener("click",signInGoogle);
-  document.getElementById("emailSignIn")?.addEventListener("click",signInEmail);
-  document.getElementById("logoutBtn")?.addEventListener("click",signOutPM);
-  supabaseClient.auth.onAuthStateChange(async(_event,session)=>{authUser=session?.user||null;await renderAuthState()});
-  await renderAuthState();
-}
+document.getElementById("googleSignIn")?.addEventListener("click",signInGoogle);
+document.getElementById("emailSignIn")?.addEventListener("click",signInEmail);
+document.getElementById("logoutBtn")?.addEventListener("click",signOutPM);
+await initializeAuth();
 if("serviceWorker"in navigator)navigator.serviceWorker.register("./sw.js").catch(console.error);if(navigator.storage?.persist)navigator.storage.persist().catch(()=>{})}init().catch(e=>{console.error(e);alert("Prompt Manager could not start.")});

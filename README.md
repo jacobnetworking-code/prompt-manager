@@ -152,3 +152,11 @@ Platform filtering, local [VARIABLE] personalization, usage tracking, and v3 bac
 - Persists `access_token` + `refresh_token` with `setSession()` before checking auth state.
 - Cleans auth tokens out of the browser URL after successful recovery.
 - Fixes the Safari login loop where a successful Google sign-in returned to the login screen.
+
+
+## M1.6.1.3 — OAuth session race fix
+- Removes manual OAuth token recovery and `setSession()` from the callback path.
+- Lets supabase-js handle the OAuth callback natively via `detectSessionInUrl`.
+- Removes the re-entrant `onAuthStateChange -> getSession -> onAuthStateChange` pattern.
+- Auth UI now reacts directly to the session supplied by Supabase.
+- Intended to fix the observed behavior where the app appeared briefly and then returned to login.
