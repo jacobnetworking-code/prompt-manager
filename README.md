@@ -39,3 +39,10 @@ Platform filtering, local [VARIABLE] personalization, usage tracking, and v3 bac
 - Platform label `General` becomes `Multiplatform` while retaining the internal `general` ID for backward compatibility.
 - Explore is intentionally a placeholder until M1.5.
 - IndexedDB remains v2 and backup format remains v3.
+
+
+### M1.4.1 brand icon hotfix
+- Added explicit 180×180 `apple-touch-icon.png` for iOS Home Screen.
+- Added 192×192 and 512×512 PWA icons.
+- Updated manifest icon declarations.
+- Service Worker cache bumped to `pm-m1.4.1-brand-v3`.
