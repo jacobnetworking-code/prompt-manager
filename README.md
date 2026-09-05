@@ -137,3 +137,11 @@ Platform filtering, local [VARIABLE] personalization, usage tracking, and v3 bac
 - Existing IndexedDB prompts remain local and untouched.
 - No cloud prompt sync yet.
 - DB v2 / Backup v4 unchanged.
+
+
+## M1.6.1.1 — Auth loading hotfix
+- Fixes missing Supabase JS SDK load before `app.js`.
+- Login screen is now visible by default and only hides after a valid session is confirmed.
+- Adds visible authentication-load error instead of silently bypassing the login screen.
+- Adds `Sign out` to the top-right profile menu.
+- Existing IndexedDB library remains untouched.
