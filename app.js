@@ -31,19 +31,36 @@ async function initializeAuth(){
     return;
   }
 
-  // supabase-js handles the OAuth callback itself because detectSessionInUrl=true.
-  // We only read the resulting session once; no manual setSession race.
+  // Keep a valid session until Supabase explicitly signs the user out.
+  // Some browsers can emit a transient null INITIAL_SESSION while finishing
+  // an OAuth callback; that must not overwrite a session we already verified.
+  supabaseClient.auth.onAuthStateChange((event,newSession)=>{
+    if(newSession){
+      applyAuthSession(newSession);
+      return;
+    }
+    if(event==="SIGNED_OUT"){
+      applyAuthSession(null);
+    }
+  });
+
   const {data:{session},error}=await supabaseClient.auth.getSession();
   if(error){
     if(gate)gate.hidden=false;
     if(status)status.textContent=error.message;
     return;
   }
-  applyAuthSession(session);
 
-  supabaseClient.auth.onAuthStateChange((_event,newSession)=>{
-    applyAuthSession(newSession);
-  });
+  if(session){
+    // Server-check the user before opening the app.
+    const {data:{user},error:userError}=await supabaseClient.auth.getUser();
+    if(!userError && user){
+      applyAuthSession(session);
+      return;
+    }
+  }
+
+  applyAuthSession(null);
 }
 
 async function signInGoogle(){

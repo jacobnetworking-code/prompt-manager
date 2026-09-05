@@ -160,3 +160,12 @@ Platform filtering, local [VARIABLE] personalization, usage tracking, and v3 bac
 - Removes the re-entrant `onAuthStateChange -> getSession -> onAuthStateChange` pattern.
 - Auth UI now reacts directly to the session supplied by Supabase.
 - Intended to fix the observed behavior where the app appeared briefly and then returned to login.
+
+
+## M1.6.1.4 — Auth bootstrap ordering + session stability
+- Auth gate now exists in the DOM before application JavaScript runs.
+- Supabase/app scripts use `defer`, removing the startup flash caused by parser ordering.
+- A valid session is server-verified with `getUser()` before the app is opened.
+- Transient null auth events no longer overwrite an already-valid session.
+- Only an explicit `SIGNED_OUT` event closes an authenticated session.
+- IndexedDB schema/data remain unchanged.

@@ -39,8 +39,9 @@
 <dialog id="categoryDialog"><section class="sheet"><div class="sheethead"><div><small>ORGANIZE</small><h3>New category</h3></div><button type="button" id="categoryClose" class="round">×</button></div><label>Name<input id="categoryName" maxlength="40" placeholder="e.g. Prompt Manager"></label><button id="categorySave" class="full primary">Create category</button></section></dialog>
 <dialog id="backupDialog"><section class="sheet"><div class="sheethead"><div><small>DATA</small><h3>Backup & Restore</h3></div><button type="button" id="backupClose" class="round">×</button></div><p class="sheetcopy">Your prompts and categories live on this device. Export a backup regularly.</p><button id="export" class="full primary">Export backup</button><label class="restore">Restore from backup<input id="importFile" type="file" accept="application/json,.json"></label><p class="hint">M1.2 and M1.3 backups remain supported. Restore merges data and skips duplicates.</p></section></dialog>
 <dialog id="diagnosticsDialog"><section class="sheet"><div class="sheethead"><div><small>STORAGE</small><h3>Diagnostics</h3></div><button type="button" id="diagnosticsClose" class="round">×</button></div><div id="diagnosticsBody" class="diagnostics"></div><button id="diagnosticsRefresh" class="full">Refresh diagnostics</button><button id="diagnosticsCopy" class="full">Copy diagnostics</button><p class="hint">Diagnostic data only. This does not modify or clear your library.</p></section></dialog><dialog id="themeDialog"><section class="sheet"><div class="sheethead"><h3>Appearance</h3><button type="button" id="themeClose" class="round">×</button></div><div class="theme-options"><button data-theme="system">◐ <span>System</span><b></b></button><button data-theme="light">☀ <span>Light</span><b></b></button><button data-theme="dark">☾ <span>Dark</span><b></b></button></div></section></dialog><div id="toast"></div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="./app.js"></script>
+
+
+
 <div id="authGate" class="auth-gate">
   <div class="auth-card">
     <div class="auth-brand"><span class="auth-mark">{ }</span><div><strong>Prompt Manager</strong><span>Sign in to continue</span></div></div>
@@ -53,5 +54,6 @@
     <p id="authStatus" class="hint"></p>
   </div>
 </div>
-
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+<script src="./app.js" defer></script>
 </body></html>
