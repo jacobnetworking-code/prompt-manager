@@ -96,3 +96,12 @@ Platform filtering, local [VARIABLE] personalization, usage tracking, and v3 bac
 - Welcome Tour rebuilt with a full-screen SVG cutout mask and gold target outline.
 - Fixed safe-area coach card; no target-dependent bubble positioning.
 - DB v2 / Backup v4 / catalog unchanged.
+
+
+## M1.5.6
+- Welcome Tour removed completely.
+- Header opens Profile.
+- Profile exposes System / Light / Dark immediately.
+- Settings contains local display name, Backup & Restore, and Storage Diagnostics.
+- No account/auth and no What's New.
+- DB v2 / Backup v4 / Explore catalog unchanged.
