@@ -25,3 +25,5 @@ Before deployment, export and keep a verified M1.2 backup. After deployment vali
 
 ## M1.3.2 — Storage Diagnostics
 Adds a read-only diagnostics panel for origin/display mode, IndexedDB name/version/stores/counts, persistence status, storage estimate, service worker state and cache keys. No database schema or prompt write logic changes.
+
+Persistence deployment test — 2026-09-05
