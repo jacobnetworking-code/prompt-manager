@@ -82,3 +82,10 @@ Platform filtering, local [VARIABLE] personalization, usage tracking, and v3 bac
 - Bottom navigation icons increased while labels remain.
 - Static seed catalog expanded from 30 to 84 prompts.
 - DB v2 / Backup v4 unchanged.
+
+
+## M1.5.4
+- Rebuilt Welcome Tour coach card as a fixed safe-area bottom card; only spotlight geometry follows targets.
+- Library title/count and subtitle/add button use a two-row grid for exact alignment.
+- Brand mark and Settings glyph use explicit grid centering.
+- DB v2 / Backup v4 / catalog unchanged.

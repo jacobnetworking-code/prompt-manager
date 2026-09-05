@@ -56,3 +56,16 @@ input,textarea,select{font-size:16px}
 .bottom-nav button>span{font-size:26px;line-height:1}
 .bottom-nav button small{font-size:10px}
 .tour-bubble{left:50%!important;width:min(320px,calc(100vw - 32px))!important;transform:translateX(-50%);max-height:42dvh}
+
+/* M1.5.4 — header geometry, Library alignment, tour rebuild */
+.brand .mark{display:grid!important;place-items:center!important;padding:0!important;line-height:1!important}
+.brand .mark span{display:block;line-height:1;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;transform:translateY(-1px)}
+#settingsBtn{display:grid!important;place-items:center!important;padding:0!important;line-height:1!important}
+#settingsBtn>*{margin:0!important;line-height:1!important}
+.library-title-grid{display:grid;grid-template-columns:minmax(0,1fr) 34px;grid-template-rows:auto auto;column-gap:12px;row-gap:14px;align-items:center;margin-top:4px}
+.library-title-grid h2{font-size:38px;letter-spacing:-1.8px;line-height:1}
+.library-title-grid p{color:var(--muted);font-size:14px;line-height:1.4}
+.library-title-grid>#count{justify-self:center;background:var(--surface2);color:var(--muted);width:34px;height:34px;display:grid;place-items:center;border-radius:999px;font-size:12px}
+.library-title-grid .library-add{justify-self:center;width:34px;height:34px}
+.tour-bubble{position:fixed!important;left:16px!important;right:16px!important;bottom:calc(92px + env(safe-area-inset-bottom))!important;top:auto!important;transform:none!important;width:auto!important;max-width:none!important;max-height:none!important;overflow:visible!important}
+.tour-spotlight{border-radius:16px!important}
