@@ -145,3 +145,10 @@ Platform filtering, local [VARIABLE] personalization, usage tracking, and v3 bac
 - Adds visible authentication-load error instead of silently bypassing the login screen.
 - Adds `Sign out` to the top-right profile menu.
 - Existing IndexedDB library remains untouched.
+
+
+## M1.6.1.2 — OAuth callback recovery
+- Explicitly recovers the Supabase session from the OAuth callback URL fragment.
+- Persists `access_token` + `refresh_token` with `setSession()` before checking auth state.
+- Cleans auth tokens out of the browser URL after successful recovery.
+- Fixes the Safari login loop where a successful Google sign-in returned to the login screen.

@@ -4,7 +4,18 @@ const SUPABASE_PUBLISHABLE_KEY="sb_publishable_NbuavLbNAb36kmfuWR_YjQ_zHr6U1Cc";
 const supabaseClient=window.supabase?.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
 let authUser=null;
 function authRedirectURL(){return "https://jacobnetworking-code.github.io/prompt-manager/"}
-async function renderAuthState(){const gate=document.getElementById("authGate");const status=document.getElementById("authStatus");if(!supabaseClient){if(gate)gate.hidden=false;if(status)status.textContent="Authentication could not load. Check your connection and refresh.";return;}const {data:{session},error}=await supabaseClient.auth.getSession();if(error){if(gate)gate.hidden=false;if(status)status.textContent=error.message;return;}authUser=session?.user||null;if(gate)gate.hidden=!!authUser;const profileName=document.getElementById("profileMenuName");if(authUser&&profileName&&!localStorage.getItem("pm-display-name")){profileName.textContent=authUser.user_metadata?.full_name||authUser.email||"User"}}
+async function recoverOAuthSessionFromURL(){
+  if(!supabaseClient)return;
+  const hash=new URLSearchParams(location.hash.startsWith("#")?location.hash.slice(1):location.hash);
+  const access_token=hash.get("access_token");
+  const refresh_token=hash.get("refresh_token");
+  if(access_token&&refresh_token){
+    const {error}=await supabaseClient.auth.setSession({access_token,refresh_token});
+    if(error)throw error;
+    history.replaceState({},document.title,location.pathname+location.search);
+  }
+}
+async function renderAuthState(){const gate=document.getElementById("authGate");const status=document.getElementById("authStatus");if(!supabaseClient){if(gate)gate.hidden=false;if(status)status.textContent="Authentication could not load. Check your connection and refresh.";return;}try{await recoverOAuthSessionFromURL()}catch(err){if(gate)gate.hidden=false;if(status)status.textContent=err?.message||"Could not complete sign in.";return;}const {data:{session},error}=await supabaseClient.auth.getSession();if(error){if(gate)gate.hidden=false;if(status)status.textContent=error.message;return;}authUser=session?.user||null;if(gate)gate.hidden=!!authUser;const profileName=document.getElementById("profileMenuName");if(authUser&&profileName&&!localStorage.getItem("pm-display-name")){profileName.textContent=authUser.user_metadata?.full_name||authUser.email||"User"}}
 async function signInGoogle(){const status=document.getElementById("authStatus");if(status)status.textContent="Opening Google…";const {error}=await supabaseClient.auth.signInWithOAuth({provider:"google",options:{redirectTo:authRedirectURL()}});if(error&&status)status.textContent=error.message}
 async function signInEmail(){const input=document.getElementById("authEmail"),status=document.getElementById("authStatus");const email=(input?.value||"").trim();if(!email){if(status)status.textContent="Enter your email.";return}if(status)status.textContent="Sending magic link…";const {error}=await supabaseClient.auth.signInWithOtp({email,options:{emailRedirectTo:authRedirectURL()}});if(status)status.textContent=error?error.message:"Check your email for the sign-in link."}
 async function signOutPM(){await supabaseClient.auth.signOut();authUser=null;await renderAuthState()}
