@@ -207,3 +207,20 @@ Scope deliberately excluded:
 - Failed cloud writes are queued and surface `Saved locally · cloud sync pending`.
 - Cloud refresh will not replace the local prompt cache while pending mutations exist.
 - DB v3 and Backup v4 remain unchanged.
+
+
+## M1.6.2.2 — New prompt save fix
+Root cause fixed:
+- `rating: null` was serialized as `0` by `Number(null)`, violating the Supabase
+  `rating between 1 and 5` constraint on every newly-created prompt.
+- Existing migrated prompts did not necessarily hit this path because older records
+  could omit the rating property entirely.
+
+Save flow hardening:
+- `null` ratings now remain SQL `NULL`.
+- After Add, Prompt Manager verifies the new IndexedDB row exists before closing the dialog.
+- The UI moves to Library / All after a successful Add so the newly-created prompt is visible.
+- The toast now distinguishes `Prompt saved · synced` from
+  `Prompt saved locally · sync pending`.
+- A real local save failure leaves the dialog open and shows the error.
+- DB v3 and Backup v4 are unchanged.
