@@ -1,0 +1,4 @@
+project_id = "prompt-manager"
+
+[functions.mcp]
+verify_jwt = false
