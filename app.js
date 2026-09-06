@@ -200,6 +200,9 @@ async function add(n,x){
   const record={...x};
   const localId=await localAdd("prompts",record);
   record.id=localId;
+
+  // Local-first: the prompt is immediately durable in IndexedDB.
+  // Cloud sync is attempted afterwards; a failure must never make the prompt disappear.
   if(!cloudReady()){
     await enqueuePromptMutation("insert",record);
     return localId;
@@ -210,8 +213,10 @@ async function add(n,x){
     record.updatedAt=msFromIso(row.updated_at)||Date.now();
     await localPut("prompts",record);
   }catch(err){
-    console.warn("Cloud insert queued",err);
+    console.error("Cloud insert failed; keeping local prompt and queueing retry",err);
+    await removeQueuedForLocal(localId);
     await enqueuePromptMutation("insert",record);
+    toast("Saved locally · cloud sync pending");
   }
   return localId;
 }
@@ -332,7 +337,10 @@ async function syncCloudLibrary({silent=false}={}){
       localStorage.setItem(migrationKey,"1");
     }
   }else{
-    await replaceLocalFromCloud(cloudRows||[]);
+    const pending=await localAll("syncQueue");
+    if(!pending.length){
+      await replaceLocalFromCloud(cloudRows||[]);
+    }
   }
 
   await refresh();

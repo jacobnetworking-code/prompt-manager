@@ -199,3 +199,11 @@ Scope deliberately excluded:
 - No realtime subscriptions yet.
 - No multi-device conflict UI yet.
 - No community/public prompt tables.
+
+
+## M1.6.2.1 — Local-first write durability hotfix
+- New prompts are durable in IndexedDB immediately before cloud reconciliation.
+- A failed Supabase insert can no longer make a newly-created prompt disappear.
+- Failed cloud writes are queued and surface `Saved locally · cloud sync pending`.
+- Cloud refresh will not replace the local prompt cache while pending mutations exist.
+- DB v3 and Backup v4 remain unchanged.
