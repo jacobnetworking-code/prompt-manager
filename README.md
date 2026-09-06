@@ -169,3 +169,33 @@ Platform filtering, local [VARIABLE] personalization, usage tracking, and v3 bac
 - Transient null auth events no longer overwrite an already-valid session.
 - Only an explicit `SIGNED_OUT` event closes an authenticated session.
 - IndexedDB schema/data remain unchanged.
+
+
+## M1.6.2 — Local → Cloud migration + sync
+
+Architecture:
+- Supabase is the source of truth for personal prompts.
+- IndexedDB remains the local cache/offline working store.
+- IndexedDB upgraded from DB v2 to DB v3 only to add `syncQueue`; the existing
+  `prompts` and `categories` stores are preserved in place.
+- Backup format remains v4.
+
+First authenticated migration:
+- If the authenticated user's Supabase library is empty, existing local prompts
+  are uploaded once and linked to their generated cloud UUIDs.
+- If the user's cloud library already contains prompts, cloud data replaces the
+  local prompt cache. This prevents one account's stale device cache from being
+  silently uploaded into another account.
+- Migration state is namespaced per Supabase user.
+
+Ongoing behavior:
+- Online creates/updates/deletes write to Supabase and update IndexedDB.
+- Offline mutations are written locally and queued in IndexedDB.
+- The queue retries when connectivity returns.
+- Successful sync refreshes the local cache from Supabase.
+- RLS remains the security boundary: every cloud query runs as the authenticated user.
+
+Scope deliberately excluded:
+- No realtime subscriptions yet.
+- No multi-device conflict UI yet.
+- No community/public prompt tables.

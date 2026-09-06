@@ -21,6 +21,20 @@ function applyAuthSession(session){
     profileName.textContent=authUser.user_metadata?.full_name||authUser.email||"User";
   }
 }
+async function activateAuthSession(session){
+  authUser=session?.user||null;
+  if(!authUser){applyAuthSession(null);return}
+  const status=document.getElementById("authStatus");
+  if(status)status.textContent="Syncing your library…";
+  try{
+    if(navigator.onLine)await syncCloudLibrary();
+  }catch(err){
+    console.error("Cloud sync failed",err);
+    if(status)status.textContent="Signed in, but cloud sync failed. Refresh to retry.";
+    return;
+  }
+  applyAuthSession(session);
+}
 
 async function initializeAuth(){
   const gate=document.getElementById("authGate");
@@ -31,16 +45,13 @@ async function initializeAuth(){
     return;
   }
 
-  // Keep a valid session until Supabase explicitly signs the user out.
-  // Some browsers can emit a transient null INITIAL_SESSION while finishing
-  // an OAuth callback; that must not overwrite a session we already verified.
   supabaseClient.auth.onAuthStateChange((event,newSession)=>{
-    if(newSession){
-      applyAuthSession(newSession);
-      return;
-    }
     if(event==="SIGNED_OUT"){
       applyAuthSession(null);
+      return;
+    }
+    if(newSession&&newSession.user?.id!==authUser?.id){
+      void activateAuthSession(newSession);
     }
   });
 
@@ -52,17 +63,20 @@ async function initializeAuth(){
   }
 
   if(session){
-    // Server-check the user before opening the app.
-    const {data:{user},error:userError}=await supabaseClient.auth.getUser();
-    if(!userError && user){
-      applyAuthSession(session);
-      return;
+    if(navigator.onLine){
+      const {data:{user},error:userError}=await supabaseClient.auth.getUser();
+      if(userError||!user){
+        applyAuthSession(null);
+        if(status)status.textContent=userError?.message||"Could not verify your session.";
+        return;
+      }
     }
+    await activateAuthSession(session);
+    return;
   }
 
   applyAuthSession(null);
 }
-
 async function signInGoogle(){
   const status=document.getElementById("authStatus");
   if(status)status.textContent="Opening Google…";
@@ -95,9 +109,236 @@ async function signOutPM(){
   applyAuthSession(null);
 }
 
-const $=id=>document.getElementById(id);let db,prompts=[],categories=[],activeCategory="all",activePlatform="any",activeOrigin="all",currentPrompt=null,explorePrompts=[];const DB_VERSION=2,BACKUP_VERSION=4,PLATFORMS={general:"Multiplatform",chatgpt:"ChatGPT",claude:"Claude",gemini:"Gemini",grok:"Grok",midjourney:"Midjourney",other:"Other"},PLATFORM_URLS={chatgpt:"chatgpt://",claude:"https://claude.ai/new",gemini:"https://gemini.google.com/app",grok:"https://grok.com/"},DEFAULT_CATEGORIES=["General","Coding","Marketing","Writing","Image","Video","Research","Productivity"];
-function req(r){return new Promise((ok,no)=>{r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)})}function openDB(){return new Promise((ok,no)=>{const r=indexedDB.open("prompt-manager",DB_VERSION);r.onupgradeneeded=()=>{const d=r.result;if(!d.objectStoreNames.contains("prompts"))d.createObjectStore("prompts",{keyPath:"id",autoIncrement:true});if(!d.objectStoreNames.contains("categories"))d.createObjectStore("categories",{keyPath:"id"})};r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)})}
-function os(n,m="readonly"){return db.transaction(n,m).objectStore(n)}function all(n){return req(os(n).getAll())}function add(n,x){return req(os(n,"readwrite").add(x))}function put(n,x){return req(os(n,"readwrite").put(x))}function del(n,id){return req(os(n,"readwrite").delete(id))}function slug(s){return s.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,50)}
+const $=id=>document.getElementById(id);let db,prompts=[],categories=[],activeCategory="all",activePlatform="any",activeOrigin="all",currentPrompt=null,explorePrompts=[];const DB_VERSION=3,BACKUP_VERSION=4,PLATFORMS={general:"Multiplatform",chatgpt:"ChatGPT",claude:"Claude",gemini:"Gemini",grok:"Grok",midjourney:"Midjourney",other:"Other"},PLATFORM_URLS={chatgpt:"chatgpt://",claude:"https://claude.ai/new",gemini:"https://gemini.google.com/app",grok:"https://grok.com/"},DEFAULT_CATEGORIES=["General","Coding","Marketing","Writing","Image","Video","Research","Productivity"];
+function req(r){return new Promise((ok,no)=>{r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)})}function openDB(){return new Promise((ok,no)=>{const r=indexedDB.open("prompt-manager",DB_VERSION);r.onupgradeneeded=()=>{const d=r.result;if(!d.objectStoreNames.contains("prompts"))d.createObjectStore("prompts",{keyPath:"id",autoIncrement:true});if(!d.objectStoreNames.contains("categories"))d.createObjectStore("categories",{keyPath:"id"});if(!d.objectStoreNames.contains("syncQueue"))d.createObjectStore("syncQueue",{keyPath:"qid",autoIncrement:true})};r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)})}
+function os(n,m="readonly"){return db.transaction(n,m).objectStore(n)}
+function localAll(n){return req(os(n).getAll())}
+function localGet(n,id){return req(os(n).get(id))}
+function localAdd(n,x){return req(os(n,"readwrite").add(x))}
+function localPut(n,x){return req(os(n,"readwrite").put(x))}
+function localDel(n,id){return req(os(n,"readwrite").delete(id))}
+function localClear(n){return req(os(n,"readwrite").clear())}
+function all(n){return localAll(n)}
+function isoFromMs(value){
+  if(!value)return null;
+  const d=new Date(value);
+  return Number.isNaN(d.getTime())?null:d.toISOString();
+}
+function msFromIso(value){
+  if(!value)return null;
+  const n=Date.parse(value);
+  return Number.isFinite(n)?n:null;
+}
+function toCloudPrompt(p){
+  return {
+    user_id:authUser.id,
+    title:(p.title||"Untitled").slice(0,200),
+    content:p.content||"",
+    source:p.source||"",
+    category_id:p.categoryId||"general",
+    platforms:Array.isArray(p.platforms)&&p.platforms.length?p.platforms:["general"],
+    use_count:Number.isFinite(p.useCount)?Math.max(0,p.useCount):0,
+    last_used_at:isoFromMs(p.lastUsedAt),
+    rating:Number.isFinite(Number(p.rating))?Number(p.rating):null,
+    acquisition_type:p.acquisitionType==="catalog"?"catalog":"manual",
+    source_name:p.sourceName||null,
+    external_id:p.externalId||null,
+    created_at:isoFromMs(p.createdAt)||new Date().toISOString()
+  };
+}
+function fromCloudPrompt(r){
+  return {
+    title:r.title||"Untitled",
+    content:r.content||"",
+    source:r.source||"",
+    categoryId:r.category_id||"general",
+    platforms:Array.isArray(r.platforms)&&r.platforms.length?r.platforms:["general"],
+    useCount:Number.isFinite(r.use_count)?r.use_count:0,
+    lastUsedAt:msFromIso(r.last_used_at),
+    rating:r.rating==null?null:Number(r.rating),
+    acquisitionType:r.acquisition_type==="catalog"?"catalog":"manual",
+    sourceName:r.source_name||"",
+    externalId:r.external_id||"",
+    createdAt:msFromIso(r.created_at)||Date.now(),
+    updatedAt:msFromIso(r.updated_at)||Date.now(),
+    cloudId:r.id
+  };
+}
+function cloudReady(){return !!(supabaseClient&&authUser&&navigator.onLine)}
+async function enqueuePromptMutation(op,record,cloudId=null){
+  await localAdd("syncQueue",{
+    op,
+    localId:record?.id??null,
+    cloudId:cloudId||record?.cloudId||null,
+    record:record?structuredClone(record):null,
+    createdAt:Date.now()
+  });
+}
+async function removeQueuedForLocal(localId){
+  if(localId==null)return;
+  const qs=await localAll("syncQueue");
+  for(const q of qs)if(q.localId===localId)await localDel("syncQueue",q.qid);
+}
+async function cloudInsertPrompt(record){
+  const {data,error}=await supabaseClient.from("prompts").insert(toCloudPrompt(record)).select().single();
+  if(error)throw error;
+  return data;
+}
+async function cloudUpdatePrompt(record){
+  if(!record.cloudId)return cloudInsertPrompt(record);
+  const {data,error}=await supabaseClient.from("prompts").update(toCloudPrompt(record)).eq("id",record.cloudId).select().single();
+  if(error)throw error;
+  return data;
+}
+async function cloudDeletePrompt(cloudId){
+  if(!cloudId)return;
+  const {error}=await supabaseClient.from("prompts").delete().eq("id",cloudId);
+  if(error)throw error;
+}
+async function add(n,x){
+  if(n!=="prompts")return localAdd(n,x);
+  const record={...x};
+  const localId=await localAdd("prompts",record);
+  record.id=localId;
+  if(!cloudReady()){
+    await enqueuePromptMutation("insert",record);
+    return localId;
+  }
+  try{
+    const row=await cloudInsertPrompt(record);
+    record.cloudId=row.id;
+    record.updatedAt=msFromIso(row.updated_at)||Date.now();
+    await localPut("prompts",record);
+  }catch(err){
+    console.warn("Cloud insert queued",err);
+    await enqueuePromptMutation("insert",record);
+  }
+  return localId;
+}
+async function put(n,x){
+  if(n!=="prompts")return localPut(n,x);
+  const record={...x};
+  if(!record.id)return add("prompts",record);
+  if(!cloudReady()){
+    await localPut("prompts",record);
+    await enqueuePromptMutation(record.cloudId?"update":"insert",record);
+    return record.id;
+  }
+  try{
+    const row=await cloudUpdatePrompt(record);
+    record.cloudId=row.id;
+    record.updatedAt=msFromIso(row.updated_at)||Date.now();
+    await localPut("prompts",record);
+  }catch(err){
+    console.warn("Cloud update queued",err);
+    await localPut("prompts",record);
+    await enqueuePromptMutation(record.cloudId?"update":"insert",record);
+  }
+  return record.id;
+}
+async function del(n,id){
+  if(n!=="prompts")return localDel(n,id);
+  const record=await localGet("prompts",id);
+  if(!record)return;
+  if(!record.cloudId){
+    await removeQueuedForLocal(id);
+    await localDel("prompts",id);
+    return;
+  }
+  if(!cloudReady()){
+    await localDel("prompts",id);
+    await removeQueuedForLocal(id);
+    await enqueuePromptMutation("delete",{id},record.cloudId);
+    return;
+  }
+  try{
+    await cloudDeletePrompt(record.cloudId);
+    await removeQueuedForLocal(id);
+    await localDel("prompts",id);
+  }catch(err){
+    console.warn("Cloud delete queued",err);
+    await localDel("prompts",id);
+    await removeQueuedForLocal(id);
+    await enqueuePromptMutation("delete",{id},record.cloudId);
+  }
+}
+async function flushSyncQueue(){
+  if(!cloudReady())return;
+  const queue=(await localAll("syncQueue")).sort((a,b)=>(a.qid||0)-(b.qid||0));
+  for(const q of queue){
+    try{
+      if(q.op==="delete"){
+        if(q.cloudId)await cloudDeletePrompt(q.cloudId);
+        await localDel("syncQueue",q.qid);
+        continue;
+      }
+      let current=q.localId!=null?await localGet("prompts",q.localId):null;
+      if(!current){
+        await localDel("syncQueue",q.qid);
+        continue;
+      }
+      if(q.op==="insert"&&!current.cloudId){
+        const row=await cloudInsertPrompt(current);
+        current.cloudId=row.id;
+        current.updatedAt=msFromIso(row.updated_at)||Date.now();
+        await localPut("prompts",current);
+      }else{
+        const row=await cloudUpdatePrompt(current);
+        current.cloudId=row.id;
+        current.updatedAt=msFromIso(row.updated_at)||Date.now();
+        await localPut("prompts",current);
+      }
+      await localDel("syncQueue",q.qid);
+    }catch(err){
+      console.warn("Sync queue paused",err);
+      break;
+    }
+  }
+}
+async function replaceLocalFromCloud(rows){
+  await localClear("prompts");
+  for(const row of rows)await localAdd("prompts",fromCloudPrompt(row));
+}
+async function migrateLocalLibraryToCloud(localPrompts){
+  for(const p of localPrompts){
+    if(p.cloudId)continue;
+    const row=await cloudInsertPrompt(p);
+    p.cloudId=row.id;
+    p.updatedAt=msFromIso(row.updated_at)||Date.now();
+    await localPut("prompts",p);
+  }
+}
+async function syncCloudLibrary({silent=false}={}){
+  if(!cloudReady())return false;
+  await flushSyncQueue();
+
+  const {data:cloudRows,error}=await supabaseClient
+    .from("prompts")
+    .select("*")
+    .order("created_at",{ascending:true});
+  if(error)throw error;
+
+  const localPrompts=await localAll("prompts");
+  const migrationKey=`pm-cloud-migrated-${authUser.id}`;
+  const migrated=localStorage.getItem(migrationKey)==="1";
+
+  if(!migrated){
+    if((cloudRows||[]).length===0&&localPrompts.length){
+      await migrateLocalLibraryToCloud(localPrompts);
+      localStorage.setItem(migrationKey,"1");
+      if(!silent)toast(`${localPrompts.length} prompt${localPrompts.length===1?"":"s"} moved to cloud`);
+    }else{
+      await replaceLocalFromCloud(cloudRows||[]);
+      localStorage.setItem(migrationKey,"1");
+    }
+  }else{
+    await replaceLocalFromCloud(cloudRows||[]);
+  }
+
+  await refresh();
+  return true;
+}
+function slug(s){return s.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,50)}
 function esc(s=""){return String(s).replace(/[&<>\"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]))}function toast(s){$("toast").textContent=s;$("toast").classList.add("show");clearTimeout(toast.t);toast.t=setTimeout(()=>$("toast").classList.remove("show"),1800)}function isURL(s){try{let u=new URL(s.trim());return u.protocol==="http:"||u.protocol==="https:"}catch{return false}}function catName(id){return categories.find(c=>c.id===id)?.name||"General"}function categoryId(p){return p.categoryId||"general"}function platformsOf(p){let x=Array.isArray(p.platforms)?p.platforms.filter(v=>PLATFORMS[v]):[];return x.length?[...new Set(x)]:["general"]}function platformName(id){return PLATFORMS[id]||"Other"}
 async function seedCategories(){let xs=await all("categories");for(const name of DEFAULT_CATEGORIES){let id=slug(name);if(!xs.some(c=>c.id===id))await put("categories",{id,name,createdAt:Date.now(),system:true})}}
 function applyTheme(v){v==="system"?document.documentElement.removeAttribute("data-theme"):document.documentElement.setAttribute("data-theme",v);localStorage.setItem("pm-theme",v);document.querySelectorAll("[data-theme]").forEach(x=>x.classList.toggle("selected",x.dataset.theme===v))}
@@ -159,4 +400,5 @@ document.getElementById("googleSignIn")?.addEventListener("click",signInGoogle);
 document.getElementById("emailSignIn")?.addEventListener("click",signInEmail);
 document.getElementById("logoutBtn")?.addEventListener("click",signOutPM);
 await initializeAuth();
+window.addEventListener("online",()=>{if(authUser)syncCloudLibrary({silent:true}).catch(err=>console.warn("Background sync failed",err))});
 if("serviceWorker"in navigator)navigator.serviceWorker.register("./sw.js").catch(console.error);if(navigator.storage?.persist)navigator.storage.persist().catch(()=>{})}init().catch(e=>{console.error(e);alert("Prompt Manager could not start.")});
