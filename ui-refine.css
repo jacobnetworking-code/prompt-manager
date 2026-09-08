@@ -1,0 +1,75 @@
+/* Prompt Manager — M1.6.4 UI refinement
+   Additive only: no IndexedDB/Supabase schema changes. */
+
+:root{--pm-success:#2e9b62;--pm-destructive:#d84a3f}
+
+button{
+  -webkit-tap-highlight-color:transparent;
+  transition:transform .09s ease,opacity .09s ease,background-color .16s ease,border-color .16s ease;
+}
+button:active{transform:scale(.96);opacity:.78}
+button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+
+.pm-icon-btn{
+  width:36px;height:36px;border:1px solid var(--border);border-radius:11px;
+  display:inline-grid;place-items:center;background:var(--surface2);color:var(--text);padding:0;
+}
+.pm-icon-btn svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.pm-icon-btn.pm-danger{color:var(--danger)}
+.pm-icon-btn.pm-success{color:var(--pm-success)}
+.pm-card-actions{display:flex;gap:7px;align-items:center;margin-top:14px}
+.pm-card-actions .pm-spacer{flex:1}
+.pm-action-label{font-size:11px;font-weight:720;color:var(--muted);min-width:62px}
+
+.card{cursor:pointer}
+.card.pm-selected{outline:2px solid var(--gold);outline-offset:1px}
+.pm-select-dot{
+  position:absolute;left:12px;top:12px;width:23px;height:23px;border-radius:999px;
+  border:1px solid var(--border);background:var(--surface);display:grid;place-items:center;
+  font-size:13px;font-weight:800;z-index:2
+}
+.card.pm-select-mode{padding-left:46px}
+
+.pm-library-tools{
+  display:flex;align-items:center;gap:8px;margin:0 0 12px;
+}
+.pm-library-tools button{
+  border:1px solid var(--border);background:var(--surface);color:var(--text);
+  height:38px;padding:0 12px;border-radius:12px;font-size:12px;font-weight:700;
+}
+.pm-library-tools .pm-selection-summary{flex:1;color:var(--muted);font-size:12px}
+.pm-library-tools .pm-delete-selected{color:var(--danger)}
+
+.pm-confirm-copy{color:var(--muted);font-size:14px;line-height:1.45;margin:14px 0 18px}
+.pm-confirm-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.pm-confirm-actions button{height:46px;border-radius:14px;border:1px solid var(--border);font-weight:720}
+.pm-confirm-actions .pm-confirm-delete{background:var(--pm-destructive);border-color:transparent;color:white}
+
+.pm-edit-grid{margin-top:14px}
+.pm-edit-grid textarea{min-height:180px}
+
+#saveDisplayName{height:46px;min-width:86px}
+#saveDisplayName.pm-done{background:var(--pm-success);color:white;border-color:transparent}
+
+.pm-whats-new{
+  margin-top:14px;border:1px solid var(--border);background:var(--surface);
+  border-radius:18px;padding:17px;
+}
+.pm-whats-new-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.pm-whats-new h3{font-size:16px;margin-top:5px}
+.pm-whats-new p{color:var(--muted);font-size:13px;line-height:1.45;margin-top:8px}
+.pm-whats-new .pm-version{font-size:10px;color:var(--gold);font-weight:800;letter-spacing:.8px}
+
+.pm-featured{
+  margin:0 0 14px;border:1px solid var(--border);border-radius:18px;background:var(--surface);padding:16px;
+}
+.pm-featured small{color:var(--gold)}
+.pm-featured h3{font-size:17px;margin-top:6px}
+.pm-featured p{font-size:12px;color:var(--muted);line-height:1.45;margin-top:6px}
+
+.pm-preview-media{
+  display:block;width:100%;aspect-ratio:16/10;object-fit:cover;border-radius:14px;
+  margin:12px 0 4px;background:var(--surface2);border:1px solid var(--border)
+}
+
+.pm-inline-feedback{color:var(--pm-success)!important}
