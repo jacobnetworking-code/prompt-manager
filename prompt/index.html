@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#090909"><title>Shared Prompt — Prompt Manager</title>
+<link rel="stylesheet" href="../styles.css"><link rel="stylesheet" href="../ui-refine.css"><link rel="stylesheet" href="./share.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="pm-share-page">
+<main class="pm-share-shell">
+<header class="pm-share-brand"><div class="mark">{ }</div><strong>Prompt Manager</strong><span class="alpha-badge">ALPHA</span></header>
+<section id="shareLoading" class="pm-share-state">Loading prompt…</section>
+<section id="shareError" class="pm-share-state" hidden>This shared prompt is unavailable.</section>
+<article id="shareCard" class="pm-public-card" hidden>
+<div class="badges" id="shareBadges"></div><h1 id="shareTitle"></h1>
+<div class="pm-public-prompt">
+<div class="pm-public-label">Prompt Preview</div>
+<pre id="shareTeaser"></pre>
+<div id="shareLocked" class="pm-share-lock"><div class="pm-blur-lines"></div><div class="pm-lock-copy"><span>🔒</span><strong>Sign in to see the full prompt</strong><small>Open the complete prompt and make it yours.</small><button id="shareGoogle">Continue with Google</button><button id="shareEmail">Continue with email</button></div></div>
+<pre id="shareFull" hidden></pre>
+</div>
+<div id="shareActions" class="pm-share-actions" hidden><button id="shareCopy">Copy Prompt</button><button id="shareSave">Save to My Library</button></div>
+<div class="pm-shared-via">{ } Shared via Prompt Manager</div>
+</article>
+</main>
+<script src="./share.js"></script>
+</body></html>

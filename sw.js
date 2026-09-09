@@ -1,7 +1,7 @@
-const CACHE="pm-m1.6.4.15-v1";
+const CACHE="pm-m1.6.5-v1";
 const CORE=[
   "./","./index.html","./styles.css","./ui-refine.css","./app.js","./ui-refine.js",
-  "./manifest.webmanifest","./apple-touch-icon.png","./icon-192.png","./icon-512.png","./catalog.json"
+  "./manifest.webmanifest","./apple-touch-icon.png","./icon-192.png","./icon-512.png","./catalog.json","./prompt/","./prompt/share.css","./prompt/share.js"
 ];
 
 self.addEventListener("install",event=>{

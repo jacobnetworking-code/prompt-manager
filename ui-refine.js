@@ -62,8 +62,8 @@ function flashButton(btn,label,ms=1500){if(!btn)return;if(!btn.dataset.pmOrigina
 function ensureLanguageSettings(){if(byId("pmLanguageSection"))return;const profileSection=byId("displayName")?.closest(".settings-section");if(!profileSection)return;const section=document.createElement("div");section.className="settings-section";section.id="pmLanguageSection";section.innerHTML=`<span class="settings-label" id="pmLanguageLabel"></span><div class="pm-language-options"><button type="button" class="pm-language-option" data-pm-language="en">${FLAG_EN}<span>English</span><b></b></button><button type="button" class="pm-language-option" data-pm-language="es">${FLAG_ES}<span>Español</span><b></b></button><button type="button" class="pm-language-option" data-pm-language="sr">${FLAG_RS}<span>Srpski</span><b></b></button></div>`;profileSection.insertAdjacentElement("afterend",section);section.addEventListener("click",e=>{const b=e.target.closest("[data-pm-language]");if(!b)return;currentLang=b.dataset.pmLanguage;localStorage.setItem(LANG_KEY,currentLang);applyLanguage()})}
 
 const PM_RELEASE={
-  version:"1.6.4.15",
-  highlights:["Cloud Sync","ChatGPT MCP","Featured Media","Responsive Desktop","Library Actions","Compact Navigation","Streamlined Headers"]
+  version:"1.6.5",
+  highlights:["Cloud Sync","ChatGPT MCP","Featured Media","Responsive Desktop","Library Actions","Compact Navigation","Streamlined Headers","Public Prompt Sharing"]
 };
 function ensureWhatsNew(){const homeActions=document.querySelector("#homeView .home-actions");if(!homeActions)return;document.querySelector(".pm-whats-new")?.remove();const n=document.createElement("section");n.className="pm-whats-new";n.innerHTML=`<div class="pm-whats-new-kicker"><span data-pm-whats-kicker></span><span>·</span><span class="pm-version">V${PM_RELEASE.version}</span></div><h3 data-pm-whats-title></h3><p data-pm-whats-copy></p><ul>${PM_RELEASE.highlights.map(x=>`<li>${x}</li>`).join("")}</ul>`;homeActions.insertAdjacentElement("afterend",n)}
 
@@ -177,7 +177,50 @@ async function saveEdit(){if(!editingPrompt)return;const b=byId("pmEditSave"),ti
 render=function(){const xs=filtered(),has=prompts.length>0,q=byId("search").value.trim();byId("count").textContent=prompts.length;byId("empty").hidden=has;byId("noresults").hidden=!(has&&(q||activeCategory!=="all"||activeOrigin!=="all"||activePlatform!=="any")&&!xs.length);renderFilters();renderPlatformButton();byId("list").innerHTML=xs.map(p=>`<article class="card ${selectMode?"pm-select-mode":""} ${selectedIds.has(p.id)?"pm-selected":""}" data-use="${p.id}">${selectMode?`<span class="pm-select-dot">${selectedIds.has(p.id)?"✓":""}</span>`:""}<div class="pm-card-head"><div><div class="badges"><span class="categorybadge">${esc(displayCategory(catName(categoryId(p))))}</span>${platformsOf(p).map(x=>`<span class="platformbadge">${esc(displayPlatform(x))}</span>`).join("")}</div><h4>${esc(p.title||"Untitled")}</h4></div><div class="pm-card-manage"><button class="pm-icon-btn" data-pm-edit="${p.id}" aria-label="${t("edit")}" title="${t("edit")}">${ICONS.edit}</button><button class="pm-icon-btn pm-danger" data-pm-delete="${p.id}" aria-label="${t("delete")}" title="${t("delete")}">${ICONS.trash}</button></div></div><div class="preview">${esc((p.content||"").length>320?p.content.slice(0,320)+"…":p.content||"")}</div><div class="meta"><span>${new Date(p.createdAt||Date.now()).toLocaleDateString(currentLang==="es"?"es-ES":currentLang==="sr"?"sr-Latn-RS":"en-US")}</span>${p.source?`<span>${t("sourceSaved")}</span>`:""}${p.acquisitionType==="catalog"?`<span>${currentLang==="es"?"Guardado desde":currentLang==="sr"?"Sačuvano iz":"Saved from"} ${esc(p.sourceName||"Explore")}</span>`:""}${(p.useCount||0)?`<span>${t("used")} ${p.useCount}×</span>`:""}</div><div class="pm-card-footer-actions"><button class="pm-card-action pm-copy" data-pm-copy="${p.id}">${ICONS.copy}<span>${t("copy")}</span></button><button class="pm-card-action pm-share" data-pm-share="${p.id}">${ICONS.share}<span>${t("share")}</span></button></div></article>`).join("");translateDefaultCategoryUI();updateSelectionUI()};
 function promptById(id){return prompts.find(p=>String(p.id)===String(id))}
 async function copyPromptFromCard(p,btn){try{await navigator.clipboard.writeText(p.content||"");flashButton(btn,t("copied"));toast(t("copied"))}catch{toast(t("copyUnavailable"))}}
-async function sharePrompt(p,btn){const text=`${p.title||"Prompt"}\n\n${p.content||""}`;try{if(navigator.share){await navigator.share({title:p.title||"Prompt",text});flashButton(btn,t("shared"));toast(t("shared"))}else{await navigator.clipboard.writeText(text);flashButton(btn,t("copied"));toast(t("copied"))}}catch(err){if(err?.name!=="AbortError")toast(t("shareUnavailable"))}}
+async function ensurePublicShare(p){
+  if(!window.supabaseClient)throw new Error("Cloud unavailable");
+  const {data:{user}}=await window.supabaseClient.auth.getUser();
+  if(!user)throw new Error("Sign in required");
+  const teaser=(p.content||"").trim().slice(0,Math.min(360,(p.content||"").length));
+  const payload={
+    owner_user_id:user.id,
+    source_prompt_id:p.cloudId||null,
+    title:p.title||"Prompt",
+    teaser,
+    category_id:categoryId(p),
+    platforms:platformsOf(p),
+    source_name:p.sourceName||null
+  };
+  const {data:share,error}=await window.supabaseClient
+    .from("prompt_shares")
+    .upsert(payload,{onConflict:"owner_user_id,source_prompt_id"})
+    .select("slug")
+    .single();
+  if(error)throw error;
+  const {error:contentError}=await window.supabaseClient
+    .from("prompt_share_contents")
+    .upsert({share_slug:share.slug,owner_user_id:user.id,content:p.content||""},{onConflict:"share_slug"});
+  if(contentError)throw contentError;
+  return `${location.origin}${location.pathname.replace(/[^/]*$/,"")}prompt/?s=${encodeURIComponent(share.slug)}`;
+}
+async function sharePrompt(p,btn){
+  try{
+    const url=await ensurePublicShare(p);
+    const shareData={title:p.title||"Prompt",text:`${p.title||"Prompt"} — shared via Prompt Manager`,url};
+    if(navigator.share){
+      await navigator.share(shareData);
+      flashButton(btn,t("shared"));toast(t("shared"));
+    }else{
+      await navigator.clipboard.writeText(url);
+      flashButton(btn,t("copied"));toast(t("copied"));
+    }
+  }catch(err){
+    if(err?.name!=="AbortError"){
+      console.error("Prompt share failed",err);
+      toast(err?.message==="Sign in required"?"Sign in to share this prompt":t("shareUnavailable"));
+    }
+  }
+}
 async function deleteOne(p){const ok=await confirmDelete({title:t("deletePrompt"),copy:`“${p.title||"Prompt"}” — ${t("cantUndo")}`,button:t("delete")});if(!ok)return;prompts=prompts.filter(x=>x.id!==p.id);render();await del("prompts",p.id);await refresh();toast(t("deleted"))}
 async function deleteSelected(){const ids=[...selectedIds];if(!ids.length)return;const ok=await confirmDelete({title:`${t("delete")} ${ids.length} prompt${ids.length===1?"":"s"}?`,copy:t("deleteSelected"),button:`${t("delete")} ${ids.length}`});if(!ok)return;prompts=prompts.filter(p=>!selectedIds.has(p.id));render();for(const id of ids)await del("prompts",id);selectedIds.clear();selectMode=false;await refresh();toast(`✓ ${t("delete")} ${ids.length}`);updateSelectionUI()}
 byId("list")?.addEventListener("click",async e=>{const card=e.target.closest(".card");if(!card)return;const p=promptById(card.dataset.use);if(!p)return;if(selectMode){e.preventDefault();e.stopImmediatePropagation();selectedIds.has(p.id)?selectedIds.delete(p.id):selectedIds.add(p.id);render();return}const copy=e.target.closest("[data-pm-copy]"),share=e.target.closest("[data-pm-share]"),edit=e.target.closest("[data-pm-edit]"),trash=e.target.closest("[data-pm-delete]");if(copy||share||edit||trash){e.preventDefault();e.stopImmediatePropagation();if(copy)return copyPromptFromCard(p,copy);if(share)return sharePrompt(p,share);if(edit)return openEdit(p);if(trash)return deleteOne(p)}e.preventDefault();e.stopImmediatePropagation();openUse(p)},true);
