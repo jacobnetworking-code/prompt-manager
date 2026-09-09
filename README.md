@@ -1,24 +1,23 @@
-# Prompt Manager — M1.6.4.10
-
-## Bug fixed
-Featured images were not rendering because:
-1. `Image Prompt Builder` referenced `image-builder-example.jpg`, while the actual GitHub file is `image-builder-example.PNG`.
-2. The service worker precached every old/new media asset with one `cache.addAll(...)`. Any missing historical asset made the entire service-worker install fail, leaving stale cache behavior active.
+# Prompt Manager — M1.6.4.11
 
 ## Changes
-- Corrects the Image Prompt Builder filename/case.
-- Adds cache-busting query strings to all Featured media.
-- Replaces brittle media precaching with core-only precaching.
-- Media is cached at runtime only after a successful HTTP response.
-- A missing optional asset can no longer block a service-worker update.
-- Keeps Celebrity Video Prompt second in Featured.
-- Keeps the real Seedance video, autoplay/muted/loop/no-controls.
+- Bottom navigation is ~18% more compact on mobile.
+- Icons/labels are vertically centered lower inside the compact nav while touch targets remain >=48px.
+- Home is vertically tightened to fit a normal iPhone viewport without scrolling when content fits.
+- Scroll remains available on small screens, long translations, and accessibility layouts.
+- Adds a responsive desktop layout in the same PWA/codebase.
+- Desktop uses a compact left navigation rail and a two-column Home dashboard.
+- Explore/Library expand to wider desktop layouts.
 - No IndexedDB or Supabase schema changes.
 
+## Architecture
+Desktop is responsive web layout, not a separate desktop application. This keeps one product, one deployment, one auth/sync layer, and one UI codebase.
+
 ## Commit title
-M1.6.4.10 — Fix Featured Image Loading & PWA Cache
+M1.6.4.11 — Compact Navigation & Responsive Desktop
 
 ## Replace
+- ui-refine.css
 - ui-refine.js
 - sw.js
 - README.md
@@ -27,4 +26,4 @@ M1.6.4.10 — Fix Featured Image Loading & PWA Cache
 - none
 
 ## Delete
-- none required
+- none
