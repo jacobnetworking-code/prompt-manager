@@ -1,24 +1,21 @@
-# Prompt Manager — M1.6.4.11
+# Prompt Manager — M1.6.4.12
+
+## Fix
+The first compact-nav pass was technically applied, but the visual reduction on iPhone was too subtle because the iOS safe-area still dominated the total bar height.
 
 ## Changes
-- Bottom navigation is ~18% more compact on mobile.
-- Icons/labels are vertically centered lower inside the compact nav while touch targets remain >=48px.
-- Home is vertically tightened to fit a normal iPhone viewport without scrolling when content fits.
-- Scroll remains available on small screens, long translations, and accessibility layouts.
-- Adds a responsive desktop layout in the same PWA/codebase.
-- Desktop uses a compact left navigation rail and a two-column Home dashboard.
-- Explore/Library expand to wider desktop layouts.
+- Mobile nav chrome reduced more aggressively: 50px content height + iOS safe area.
+- Buttons remain 44px high for usable touch targets.
+- Icons/labels sit slightly lower and are vertically centered within the compact bar.
+- Home spacing is tightened further so normal iPhones fit the full Home screen without scrolling when possible.
+- Desktop layout is unchanged.
 - No IndexedDB or Supabase schema changes.
 
-## Architecture
-Desktop is responsive web layout, not a separate desktop application. This keeps one product, one deployment, one auth/sync layer, and one UI codebase.
-
 ## Commit title
-M1.6.4.11 — Compact Navigation & Responsive Desktop
+M1.6.4.12 — Stronger Compact Mobile Navigation
 
 ## Replace
 - ui-refine.css
-- ui-refine.js
 - sw.js
 - README.md
 

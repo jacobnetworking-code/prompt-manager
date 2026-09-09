@@ -334,3 +334,53 @@ header::after{
   /* Desktop dialogs */
   dialog.sheet,.sheet{max-width:560px}
 }
+
+
+/* M1.6.4.12 — stronger compact mobile bottom navigation */
+@media (max-width:899px){
+  :root{--navH:50px}
+
+  .bottom-nav{
+    height:calc(50px + env(safe-area-inset-bottom))!important;
+    padding:0 20px env(safe-area-inset-bottom)!important;
+    align-items:start!important;
+  }
+
+  .bottom-nav button{
+    min-height:44px!important;
+    height:44px!important;
+    padding:5px 0 0!important;
+    gap:1px!important;
+    justify-content:flex-start!important;
+    transform:translateY(2px)!important;
+  }
+
+  .bottom-nav button>span{
+    font-size:17px!important;
+    line-height:18px!important;
+  }
+
+  .bottom-nav button small{
+    font-size:9px!important;
+    line-height:10px!important;
+    margin-top:1px!important;
+  }
+
+  .app{
+    padding-bottom:calc(64px + env(safe-area-inset-bottom))!important;
+  }
+
+  .pm-selection-bar{
+    bottom:max(60px,calc(env(safe-area-inset-bottom) + 50px))!important;
+  }
+}
+
+/* Home viewport fit: preserve scroll only when genuinely needed */
+@media (max-width:899px){
+  #homeView .hero{padding-top:24px!important;padding-bottom:16px!important}
+  #homeView .hero p{margin-top:10px!important}
+  #homeView .hero .primary{margin-top:14px!important}
+  #homeView .home-actions{gap:8px!important}
+  #homeView .home-actions button{padding:13px 16px!important}
+  #homeView .pm-whats-new{margin-top:16px!important}
+}
