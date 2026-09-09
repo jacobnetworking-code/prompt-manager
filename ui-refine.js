@@ -62,8 +62,8 @@ function flashButton(btn,label,ms=1500){if(!btn)return;if(!btn.dataset.pmOrigina
 function ensureLanguageSettings(){if(byId("pmLanguageSection"))return;const profileSection=byId("displayName")?.closest(".settings-section");if(!profileSection)return;const section=document.createElement("div");section.className="settings-section";section.id="pmLanguageSection";section.innerHTML=`<span class="settings-label" id="pmLanguageLabel"></span><div class="pm-language-options"><button type="button" class="pm-language-option" data-pm-language="en">${FLAG_EN}<span>English</span><b></b></button><button type="button" class="pm-language-option" data-pm-language="es">${FLAG_ES}<span>Español</span><b></b></button><button type="button" class="pm-language-option" data-pm-language="sr">${FLAG_RS}<span>Srpski</span><b></b></button></div>`;profileSection.insertAdjacentElement("afterend",section);section.addEventListener("click",e=>{const b=e.target.closest("[data-pm-language]");if(!b)return;currentLang=b.dataset.pmLanguage;localStorage.setItem(LANG_KEY,currentLang);applyLanguage()})}
 
 const PM_RELEASE={
-  version:"1.6.4.14",
-  highlights:["Cloud Sync","ChatGPT MCP","Featured Media","Responsive Desktop","Library Actions","Compact Navigation"]
+  version:"1.6.4.15",
+  highlights:["Cloud Sync","ChatGPT MCP","Featured Media","Responsive Desktop","Library Actions","Compact Navigation","Streamlined Headers"]
 };
 function ensureWhatsNew(){const homeActions=document.querySelector("#homeView .home-actions");if(!homeActions)return;document.querySelector(".pm-whats-new")?.remove();const n=document.createElement("section");n.className="pm-whats-new";n.innerHTML=`<div class="pm-whats-new-kicker"><span data-pm-whats-kicker></span><span>·</span><span class="pm-version">V${PM_RELEASE.version}</span></div><h3 data-pm-whats-title></h3><p data-pm-whats-copy></p><ul>${PM_RELEASE.highlights.map(x=>`<li>${x}</li>`).join("")}</ul>`;homeActions.insertAdjacentElement("afterend",n)}
 

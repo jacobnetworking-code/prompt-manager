@@ -545,3 +545,43 @@ dialog[open] form{
     margin:0!important;
   }
 }
+
+
+/* M1.6.4.15 — streamlined page headers */
+@media (max-width:899px){
+
+  /* Remove redundant page-name eyebrows */
+  #exploreView .pagehead > .eyebrow,
+  #libraryView .pagehead > .eyebrow{
+    display:none!important;
+  }
+
+  /* Put the real page title where the eyebrow used to start */
+  #exploreView .pagehead,
+  #libraryView .pagehead{
+    padding-top:42px!important;
+  }
+
+  #exploreView .pagehead h2,
+  #libraryView .pagehead h2{
+    margin-top:0!important;
+  }
+
+  /* Home title starts at the same vertical position */
+  #homeView .hero{
+    padding-top:42px!important;
+  }
+
+  /* Pull the rest of each page upward with the title */
+  #exploreView .pagehead{
+    padding-bottom:20px!important;
+  }
+
+  #libraryView .pagehead.library-head{
+    padding-bottom:16px!important;
+  }
+
+  #homeView .hero{
+    padding-bottom:26px!important;
+  }
+}
