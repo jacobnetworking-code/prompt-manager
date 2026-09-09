@@ -80,14 +80,14 @@ const FEATURED_IDS=["pc-017","pc-021","pc-019","pm-056","pm-059","pm-055"];
 const baseRenderExplore=renderExplore;
 
 const PM_FEATURED_PREVIEWS={
-  "pc-017":"./featured/image-builder-example.jpg",
-  "pc-019":"./featured/portrait-example-real.jpg",
-  "pm-056":"./featured/architecture-example-real.jpg",
-  "pm-059":"./featured/fashion-editorial-example.jpg",
-  "pm-055":"./featured/logo-concept-real.jpg"
+  "pc-017":"./featured/image-builder-example.PNG?v=16410",
+  "pc-019":"./featured/portrait-example-real.jpg?v=16410",
+  "pm-056":"./featured/architecture-example-real.jpg?v=16410",
+  "pm-059":"./featured/fashion-editorial-example.jpg?v=16410",
+  "pm-055":"./featured/logo-concept-real.jpg?v=16410"
 };
 const PM_FEATURED_VIDEOS={
-  "pc-021":"./featured/seedance-arrival-example.mp4"
+  "pc-021":"./featured/seedance-arrival-example.mp4?v=16410"
 };
 function attachFeaturedPreview(p){
   if(!p||p.previewImage||p.previewVideo)return p;

@@ -1,45 +1,30 @@
-# Prompt Manager — M1.6.4.9
+# Prompt Manager — M1.6.4.10
+
+## Bug fixed
+Featured images were not rendering because:
+1. `Image Prompt Builder` referenced `image-builder-example.jpg`, while the actual GitHub file is `image-builder-example.PNG`.
+2. The service worker precached every old/new media asset with one `cache.addAll(...)`. Any missing historical asset made the entire service-worker install fail, leaving stale cache behavior active.
 
 ## Changes
-- Adds five independent 16:9 Featured example images as local GitHub assets.
-- Celebrity Video Prompt is now the second Featured card.
-- Celebrity Video Prompt uses the real Seedance 2.0 MP4 and has no fallback image.
-- Renames `Video Concept` to `Celebrity Video Prompt`.
-- Updates the Celebrity Video Prompt content to the exact prompt used for the real video example.
+- Corrects the Image Prompt Builder filename/case.
+- Adds cache-busting query strings to all Featured media.
+- Replaces brittle media precaching with core-only precaching.
+- Media is cached at runtime only after a successful HTTP response.
+- A missing optional asset can no longer block a service-worker update.
+- Keeps Celebrity Video Prompt second in Featured.
+- Keeps the real Seedance video, autoplay/muted/loop/no-controls.
 - No IndexedDB or Supabase schema changes.
 
-## Featured order
-1. Image Prompt Builder
-2. Celebrity Video Prompt
-3. Portrait Prompt
-4. Architecture Visual
-5. Fashion Editorial
-6. Logo Concept
-
 ## Commit title
-M1.6.4.9 — Independent Featured Examples & Celebrity Video
+M1.6.4.10 — Fix Featured Image Loading & PWA Cache
 
 ## Replace
 - ui-refine.js
 - sw.js
-- catalog.json
 - README.md
 
 ## Add
-- featured/image-builder-example.jpg
-- featured/portrait-example-real.jpg
-- featured/architecture-example-real.jpg
-- featured/fashion-editorial-example.jpg
-- featured/logo-concept-real.jpg
+- none
 
 ## Delete
 - none required
-
-## Optional cleanup after validation
-- featured/image-prompt-builder.svg
-- featured/portrait-prompt.svg
-- featured/architecture-visual.svg
-- featured/portrait-example.png
-- featured/fashion-editorial-example.png
-- featured/architecture-example.png
-- featured/cinematic-video.svg
