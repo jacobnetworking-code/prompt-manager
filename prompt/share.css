@@ -14,3 +14,9 @@
 .pm-blur-lines{inset:0;background:linear-gradient(to bottom,rgba(21,21,21,.15),rgba(9,9,9,.96) 82%),repeating-linear-gradient(to bottom,#bdbbb5 0 3px,transparent 3px 19px);filter:blur(6px);opacity:.32;-webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 68%,transparent 100%);mask-image:linear-gradient(to bottom,#000 0%,#000 68%,transparent 100%)}
 .pm-lock-copy{min-height:360px;padding-top:118px;background:linear-gradient(transparent 0%,rgba(9,9,9,.72) 34%,rgba(9,9,9,.98) 72%)}
 .pm-public-prompt>pre#shareTeaser{max-height:230px;overflow:hidden}
+
+/* M1.6.5.3 — authenticated unlock */
+.pm-public-card{position:relative}.pm-share-close{position:absolute;top:22px;right:0;width:46px;height:46px;border-radius:50%;border:1px solid #3a3a3a;background:#171717;color:#f5f4f0;font-size:30px;line-height:1;z-index:4}
+.pm-share-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}.pm-share-actions button{max-width:none;margin:0}.pm-share-actions button+button{background:#151515;color:#f5f4f0}
+.pm-share-authenticated .pm-public-prompt>pre#shareFull{padding:24px;font-size:16px;line-height:1.6}
+@media(max-width:520px){.pm-share-actions{grid-template-columns:1fr}.pm-share-close{top:28px}}
