@@ -76,15 +76,15 @@ const captureDefault=()=>{localStorage.setItem("pm-last-category","general");con
 const baseRenderCategorySelect=renderCategorySelect;renderCategorySelect=function(){baseRenderCategorySelect();translateDefaultCategoryUI()};
 
 /* Explore */
-const FEATURED_IDS=["pc-017","pc-019","pm-055","pm-056","pm-059","pc-021"];
+const FEATURED_IDS=["pc-017","pc-021","pc-019","pm-056","pm-059","pm-055"];
 const baseRenderExplore=renderExplore;
 
 const PM_FEATURED_PREVIEWS={
-  "pc-017":"./featured/portrait-example.png",
-  "pc-019":"./featured/portrait-example.png",
-  "pm-055":"./featured/logo-concept.svg",
-  "pm-056":"./featured/architecture-example.png",
-  "pm-059":"./featured/fashion-editorial-example.png"
+  "pc-017":"./featured/image-builder-example.jpg",
+  "pc-019":"./featured/portrait-example-real.jpg",
+  "pm-056":"./featured/architecture-example-real.jpg",
+  "pm-059":"./featured/fashion-editorial-example.jpg",
+  "pm-055":"./featured/logo-concept-real.jpg"
 };
 const PM_FEATURED_VIDEOS={
   "pc-021":"./featured/seedance-arrival-example.mp4"

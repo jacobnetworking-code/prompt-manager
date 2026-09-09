@@ -1,26 +1,45 @@
-# Prompt Manager — M1.6.4.8
+# Prompt Manager — M1.6.4.9
 
 ## Changes
-- Added one real Seedance 2.0 video example to Featured.
-- The video is linked to the single `Cinematic Video Prompt` Featured card (`pc-021`).
-- Video autoplays only while visible, muted, looped, inline, and with no player controls.
-- The GitHub asset is a web-optimized H.264 MP4 with the audio track removed.
-- Removed the other placeholder video cards from Featured for now.
+- Adds five independent 16:9 Featured example images as local GitHub assets.
+- Celebrity Video Prompt is now the second Featured card.
+- Celebrity Video Prompt uses the real Seedance 2.0 MP4 and has no fallback image.
+- Renames `Video Concept` to `Celebrity Video Prompt`.
+- Updates the Celebrity Video Prompt content to the exact prompt used for the real video example.
 - No IndexedDB or Supabase schema changes.
 
+## Featured order
+1. Image Prompt Builder
+2. Celebrity Video Prompt
+3. Portrait Prompt
+4. Architecture Visual
+5. Fashion Editorial
+6. Logo Concept
+
 ## Commit title
-M1.6.4.8 — Real Seedance Featured Video
+M1.6.4.9 — Independent Featured Examples & Celebrity Video
 
 ## Replace
 - ui-refine.js
 - sw.js
+- catalog.json
 - README.md
 
 ## Add
-- featured/seedance-arrival-example.mp4
+- featured/image-builder-example.jpg
+- featured/portrait-example-real.jpg
+- featured/architecture-example-real.jpg
+- featured/fashion-editorial-example.jpg
+- featured/logo-concept-real.jpg
 
 ## Delete
 - none required
 
-## Optional cleanup
-`featured/cinematic-video.svg` is no longer used by Featured and can be deleted.
+## Optional cleanup after validation
+- featured/image-prompt-builder.svg
+- featured/portrait-prompt.svg
+- featured/architecture-visual.svg
+- featured/portrait-example.png
+- featured/fashion-editorial-example.png
+- featured/architecture-example.png
+- featured/cinematic-video.svg
