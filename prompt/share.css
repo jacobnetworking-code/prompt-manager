@@ -20,3 +20,48 @@
 .pm-share-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}.pm-share-actions button{max-width:none;margin:0}.pm-share-actions button+button{background:#151515;color:#f5f4f0}
 .pm-share-authenticated .pm-public-prompt>pre#shareFull{padding:24px;font-size:16px;line-height:1.6}
 @media(max-width:520px){.pm-share-actions{grid-template-columns:1fr}.pm-share-close{top:28px}}
+
+/* M1.6.5.5 — compact locked share preview + denser text blur */
+.pm-share-lock{
+  min-height:0!important;
+  margin-top:-2px!important;
+  padding-top:0!important;
+}
+.pm-blur-lines{
+  position:relative!important;
+  inset:auto!important;
+  height:150px!important;
+  margin:0 24px!important;
+  background:
+    linear-gradient(to bottom,rgba(21,21,21,0) 0%,rgba(21,21,21,.12) 14%,rgba(9,9,9,.88) 100%),
+    repeating-linear-gradient(
+      to bottom,
+      rgba(235,235,230,.55) 0 7px,
+      transparent 7px 18px
+    )!important;
+  filter:blur(7px)!important;
+  opacity:.58!important;
+  -webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 78%,transparent 100%)!important;
+  mask-image:linear-gradient(to bottom,#000 0%,#000 78%,transparent 100%)!important;
+  border-radius:10px;
+}
+.pm-lock-copy{
+  min-height:0!important;
+  padding:24px 24px 28px!important;
+  margin-top:-6px!important;
+  background:linear-gradient(to bottom,rgba(9,9,9,.15),rgba(9,9,9,.96) 26%,rgba(9,9,9,1) 100%)!important;
+}
+.pm-lock-copy>span{
+  margin-bottom:7px;
+  font-size:22px;
+}
+.pm-lock-copy strong{
+  margin:4px 0 7px!important;
+}
+.pm-lock-copy small{
+  margin-bottom:14px!important;
+}
+.pm-public-prompt>pre#shareTeaser{
+  max-height:none!important;
+  padding-bottom:14px!important;
+}
