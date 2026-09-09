@@ -1,4 +1,4 @@
-const CACHE="pm-m1.6.5.3-v1";
+const CACHE="pm-m1.6.5.5-v1";
 const CORE=[
   "./","./index.html","./styles.css","./ui-refine.css","./app.js","./ui-refine.js",
   "./manifest.webmanifest","./apple-touch-icon.png","./icon-192.png","./icon-512.png","./catalog.json","./prompt/","./prompt/share.css","./prompt/share.js"
