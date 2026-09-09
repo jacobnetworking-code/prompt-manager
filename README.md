@@ -1,17 +1,14 @@
-# Prompt Manager — M1.6.4.2
+# Prompt Manager — M1.6.4.3
 
 Complete replacement upload package.
 
 ## Changes
-- Added Serbian (`Srpski`) to Settings → Language with a Serbia flag.
-- Serbian UI translation uses Latin script.
-- Restored/enlarged the Library `+` button while keeping `Select` beside it.
-- Featured now becomes a focused Explore view: the Explore heading, search, category grid, and Featured entry disappear while viewing Featured prompts.
-- Back from Featured restores the normal Explore root.
+- Platform selector button now expands to show the complete selected platform name without truncation.
+- `Select` and `+` controls in Library are exactly the same height.
+- Header divider has more breathing room below the Prompt Manager brand while preserving Featured content position.
+- Featured cards now place any real `previewImage` / `previewVideo` media in the full top media zone, with the category/Featured badge overlaid on the preview.
+- No fake visual outputs were added: previews render only when an actual media asset is attached to the prompt.
 - No IndexedDB or Supabase schema changes.
 
 ## Deploy
 Upload all files in this ZIP to the repository root and replace existing files.
-
-## QA
-Static JS syntax and service-worker wiring validated before packaging.

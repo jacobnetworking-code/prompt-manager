@@ -27,3 +27,65 @@ button:active{transform:scale(.96);opacity:.78}button:focus-visible{outline:2px 
 
 /* M1.6.4.2 Featured focus */
 #exploreView .pagehead[hidden],.explore-search[hidden],.pm-featured[hidden]{display:none!important}
+
+/* M1.6.4.3 — platform selector, aligned controls, header spacing */
+.search-filter-row{grid-template-columns:minmax(0,1fr) auto}
+#platformFilterButton{
+  min-width:max-content;
+  width:auto;
+  max-width:none;
+  white-space:nowrap;
+  overflow:visible;
+  text-overflow:clip;
+  padding-left:14px;
+  padding-right:14px;
+}
+.pm-select-toggle,
+.pm-library-head-actions .library-add{
+  height:44px!important;
+}
+.pm-select-toggle{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:0 14px;
+}
+
+/* Give the brand divider more breathing room without moving Featured content */
+header{
+  padding-bottom:14px;
+  margin-bottom:-8px;
+}
+header::after{
+  transform:translateY(8px);
+}
+
+.pm-featured-card .pm-preview-wrap{
+  position:relative;
+  width:100%;
+  aspect-ratio:16/9;
+  overflow:hidden;
+  border-radius:18px 18px 0 0;
+  background:var(--surface2);
+}
+.pm-featured-card .pm-preview-media{
+  width:100%;
+  height:100%;
+  margin:0;
+  border:0;
+  border-radius:0;
+  object-fit:cover;
+  display:block;
+}
+.pm-featured-card .pm-featured-badge{
+  position:absolute;
+  left:14px;
+  bottom:12px;
+  z-index:2;
+  margin:0;
+  padding:6px 9px;
+  border-radius:999px;
+  background:rgba(10,10,10,.72);
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+}
