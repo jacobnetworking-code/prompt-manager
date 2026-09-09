@@ -95,12 +95,41 @@ function attachFeaturedPreview(p){
   return previewImage?{...p,previewImage}:p;
 }
 function featuredItems(){const picks=FEATURED_IDS.map(catalogItem).filter(Boolean);return picks.length?picks:catalog.slice(0,8)}
+
+function bindFeaturedVideoPlayback(){
+  const videos=[...document.querySelectorAll(".pm-featured-video")];
+  if(!videos.length)return;
+  const io=new IntersectionObserver(entries=>{
+    for(const entry of entries){
+      const v=entry.target;
+      v.muted=true;
+      v.loop=true;
+      v.controls=false;
+      v.removeAttribute("controls");
+      if(entry.isIntersecting && entry.intersectionRatio>=0.35){
+        const p=v.play();
+        if(p?.catch)p.catch(()=>{});
+      }else{
+        v.pause();
+      }
+    }
+  },{threshold:[0,.35,.75]});
+  videos.forEach(v=>{
+    v.muted=true;
+    v.loop=true;
+    v.controls=false;
+    v.removeAttribute("controls");
+    v.setAttribute("playsinline","");
+    io.observe(v);
+  });
+}
+
 function renderFeatured(){renderExploreCategories();const pagehead=document.querySelector("#exploreView .pagehead");const search=document.querySelector(".explore-search");const featured=document.querySelector(".pm-featured");if(pagehead)pagehead.hidden=true;if(search)search.hidden=true;if(featured)featured.hidden=true;byId("exploreCategories").hidden=true;byId("exploreResultsHead").hidden=false;byId("exploreResultsHead").style.display="flex";byId("exploreResultsTitle").textContent=t("featuredBack");const xs=featuredItems().map(attachFeaturedPreview);byId("exploreStatus").textContent=`${xs.length} prompt${xs.length===1?"":"s"}`;byId("exploreList").innerHTML=`<div class="pm-featured-grid">${xs.map(x=>{const saved=catalogSaved(x);const media=x.previewVideo
-?`<div class="pm-featured-cover pm-featured-cover-media"><video class="pm-featured-media" src="${esc(x.previewVideo)}" muted playsinline controls preload="metadata"></video><span>${esc(displayCategory(x.category))} · ${t("featured")}</span></div>`
+?`<div class="pm-featured-cover pm-featured-cover-media"><video class="pm-featured-media pm-featured-video" src="${esc(x.previewVideo)}" autoplay muted loop playsinline preload="metadata" aria-hidden="true" tabindex="-1"></video><span>${esc(displayCategory(x.category))} · ${t("featured")}</span></div>`
 :x.previewImage
 ?`<div class="pm-featured-cover pm-featured-cover-media"><img class="pm-featured-media" src="${esc(x.previewImage)}" alt="${esc(x.title||"Prompt example")}"><span>${esc(displayCategory(x.category))} · ${t("featured")}</span></div>`
 :`<div class="pm-featured-cover"><span>${esc(displayCategory(x.category))} · ${t("featured")}</span></div>`;
-return `<article class="pm-featured-card">${media}<div class="pm-featured-body"><h4>${esc(x.title)}</h4><p>${esc(x.prompt||"")}</p><div class="pm-featured-actions"><button data-explore-open="${x.id}">${t("viewPrompt")}</button>${saved?`<button disabled>${t("savedLabel")}</button>`:`<button class="save" data-explore-save="${x.id}">${t("saveLibrary")}</button>`}</div></div></article>`}).join("")}</div>`}
+return `<article class="pm-featured-card">${media}<div class="pm-featured-body"><h4>${esc(x.title)}</h4><p>${esc(x.prompt||"")}</p><div class="pm-featured-actions"><button data-explore-open="${x.id}">${t("viewPrompt")}</button>${saved?`<button disabled>${t("savedLabel")}</button>`:`<button class="save" data-explore-save="${x.id}">${t("saveLibrary")}</button>`}</div></div></article>`}).join("")}</div>`;bindFeaturedVideoPlayback()}
 renderExplore=function(){if(featuredMode){renderFeatured();return}const pagehead=document.querySelector("#exploreView .pagehead");const search=document.querySelector(".explore-search");const featured=document.querySelector(".pm-featured");if(pagehead)pagehead.hidden=false;if(search)search.hidden=false;if(featured)featured.hidden=false;baseRenderExplore();document.querySelectorAll("#exploreList .explore-card").forEach(card=>{const source=card.querySelector(".sourcebadge");if(source)source.textContent="PROMPT MANAGER";const cat=card.querySelector(".platformbadge");if(cat)cat.textContent=displayCategory(cat.textContent);const open=card.querySelector("[data-explore-open]");if(open)open.textContent=t("viewPrompt");const save=card.querySelector("[data-explore-save]");if(save)save.textContent=t("saveLibrary");const saved=card.querySelector(".saved-label");if(saved)saved.textContent=t("savedLabel");if(!open)return;const x=catalogItem(open.dataset.exploreOpen);if(!x||(!x.previewImage&&!x.previewVideo)||card.querySelector(".pm-preview-media"))return;const media=x.previewVideo?`<video class="pm-preview-media" src="${esc(x.previewVideo)}" muted playsinline controls></video>`:`<img class="pm-preview-media" src="${esc(x.previewImage)}" alt="${esc(x.title||"Prompt example")}">`;card.querySelector("h4")?.insertAdjacentHTML("afterend",media)});translateDefaultCategoryUI()};
 if(byId("exploreBack"))byId("exploreBack").onclick=()=>{featuredMode=false;exploreCategory=null;renderExplore()};
 if(byId("exploreSearch"))byId("exploreSearch").oninput=()=>{featuredMode=false;exploreCategory=null;renderExplore()};

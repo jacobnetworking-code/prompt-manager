@@ -139,3 +139,18 @@ header::after{
   -webkit-backdrop-filter:blur(8px);
   backdrop-filter:blur(8px);
 }
+
+/* M1.6.4.6 — silent autoplay Featured video */
+.pm-featured-video{
+  pointer-events:none;
+  user-select:none;
+  -webkit-user-select:none;
+}
+.pm-featured-video::-webkit-media-controls,
+.pm-featured-video::-webkit-media-controls-enclosure,
+.pm-featured-video::-webkit-media-controls-panel,
+.pm-featured-video::-webkit-media-controls-play-button,
+.pm-featured-video::-webkit-media-controls-start-playback-button{
+  display:none!important;
+  -webkit-appearance:none;
+}

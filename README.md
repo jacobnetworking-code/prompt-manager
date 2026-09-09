@@ -1,20 +1,25 @@
-# Prompt Manager — M1.6.4.5
-
-## Fix
-The Featured assets existed in the repository, but the Featured renderer still hardcoded the old decorative cover and never inserted `previewImage` / `previewVideo` into the card.
-
-This release fixes that renderer.
+# Prompt Manager — M1.6.4.6
 
 ## Changes
-- Featured image/video previews now render in the top area of the card.
-- Category + FEATURED badge overlays the media.
-- Added a local cinematic poster asset for current Video Featured prompts.
-- Expanded preview mapping to current visual Featured items.
-- PWA cache bumped to `pm-m1.6.4.5-v1`.
+- Featured video previews autoplay when the card is sufficiently visible.
+- Videos are muted, loop continuously, play inline, and expose no playback controls.
+- Off-screen videos pause automatically to reduce battery/data use and resume when visible.
 - No IndexedDB or Supabase schema changes.
 
-## Commit title
-M1.6.4.5 — Fix Featured Media Rendering
+## Media provenance
+This release changes playback behavior only. Do not label existing visual assets as exact prompt outputs unless the asset was actually generated from that card prompt. Exact prompt → output provenance remains a separate content task.
 
-## Deploy
-Upload every file/folder from this ZIP to the repository root, including `featured/`.
+## Commit title
+M1.6.4.6 — Silent Autoplay Featured Video
+
+## Replace
+- ui-refine.js
+- ui-refine.css
+- sw.js
+- README.md
+
+## Add
+- none
+
+## Delete
+- none
