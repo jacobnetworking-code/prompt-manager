@@ -8,3 +8,9 @@
 .pm-share-lock{position:relative;min-height:230px}.pm-blur-lines{position:absolute;inset:0;background:repeating-linear-gradient(#1a1a1a 0 12px,#202020 12px 22px);filter:blur(7px);opacity:.9}.pm-lock-copy{position:relative;z-index:1;min-height:230px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;background:linear-gradient(transparent,rgba(9,9,9,.92) 30%)}.pm-lock-copy strong{font-size:19px;margin:8px 0}.pm-lock-copy small{color:#aaa;margin-bottom:16px}.pm-lock-copy button,.pm-share-actions button{width:100%;max-width:360px;border-radius:14px;padding:14px 16px;font-weight:800;font-size:15px;border:1px solid #3b3b3b;background:#f5f4f0;color:#0b0b0b;margin-top:8px}.pm-lock-copy button+button{background:#151515;color:#f5f4f0}
 .pm-share-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}.pm-share-actions button{max-width:none;margin:0}.pm-share-actions button+button{background:#151515;color:#f5f4f0}.pm-shared-via{text-align:center;color:#d6ad52;font-size:12px;letter-spacing:.08em;margin-top:22px}
 @media(max-width:520px){.pm-share-actions{grid-template-columns:1fr}}
+
+/* M1.6.5.2 — teaser-first public share */
+.pm-share-lock{min-height:360px;margin-top:-2px}
+.pm-blur-lines{inset:0;background:linear-gradient(to bottom,rgba(21,21,21,.15),rgba(9,9,9,.96) 82%),repeating-linear-gradient(to bottom,#bdbbb5 0 3px,transparent 3px 19px);filter:blur(6px);opacity:.32;-webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 68%,transparent 100%);mask-image:linear-gradient(to bottom,#000 0%,#000 68%,transparent 100%)}
+.pm-lock-copy{min-height:360px;padding-top:118px;background:linear-gradient(transparent 0%,rgba(9,9,9,.72) 34%,rgba(9,9,9,.98) 72%)}
+.pm-public-prompt>pre#shareTeaser{max-height:230px;overflow:hidden}
