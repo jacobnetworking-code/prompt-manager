@@ -65,3 +65,50 @@
   max-height:none!important;
   padding-bottom:14px!important;
 }
+
+
+/* M1.6.5.6 — secure visual 20/80 preview */
+.pm-blur-lines{
+  height:auto!important;
+  min-height:0!important;
+  margin:0 24px!important;
+  display:flex!important;
+  flex-direction:column!important;
+  gap:11px!important;
+  padding:4px 0 18px!important;
+  background:none!important;
+  filter:blur(6px)!important;
+  opacity:.52!important;
+  -webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 88%,transparent 100%)!important;
+  mask-image:linear-gradient(to bottom,#000 0%,#000 88%,transparent 100%)!important;
+}
+.pm-blur-line{
+  display:block;
+  height:10px;
+  border-radius:999px;
+  background:rgba(232,230,224,.72);
+}
+.pm-lock-copy{
+  margin-top:-4px!important;
+  padding-top:20px!important;
+}
+
+/* M1.6.5.7 — prompt-like synthetic blurred continuation */
+.pm-blur-lines{
+  display:block!important;
+  margin:0 24px!important;
+  padding:4px 0 14px!important;
+  filter:blur(5.5px)!important;
+  opacity:.48!important;
+  background:none!important;
+  -webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 90%,transparent 100%)!important;
+  mask-image:linear-gradient(to bottom,#000 0%,#000 90%,transparent 100%)!important;
+}
+.pm-blur-prompt-text{
+  margin:0 0 10px!important;
+  color:rgba(238,236,230,.88)!important;
+  font:14px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace!important;
+  white-space:normal!important;
+  word-break:normal!important;
+  letter-spacing:0!important;
+}
