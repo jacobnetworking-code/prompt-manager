@@ -1,13 +1,20 @@
-# Prompt Manager — M1.6.4.4
+# Prompt Manager — M1.6.4.5
+
+## Fix
+The Featured assets existed in the repository, but the Featured renderer still hardcoded the old decorative cover and never inserted `previewImage` / `previewVideo` into the card.
+
+This release fixes that renderer.
 
 ## Changes
-- Header divider repositioned into the middle of the visual gap between the brand header and `← Categories`, without intentionally moving the Featured prompt list.
-- Added first-party local visual example assets to selected Featured image prompts.
-- Featured preview assets are attached at runtime; no IndexedDB/Supabase schema change.
-- Service worker caches the new visual assets for PWA/offline use.
+- Featured image/video previews now render in the top area of the card.
+- Category + FEATURED badge overlays the media.
+- Added a local cinematic poster asset for current Video Featured prompts.
+- Expanded preview mapping to current visual Featured items.
+- PWA cache bumped to `pm-m1.6.4.5-v1`.
+- No IndexedDB or Supabase schema changes.
 
 ## Commit title
-M1.6.4.4 — Featured Examples & Header Spacing
+M1.6.4.5 — Fix Featured Media Rendering
 
 ## Deploy
-Upload all files/folders from this ZIP to the repository root, including the new `featured/` folder, replacing existing files.
+Upload every file/folder from this ZIP to the repository root, including `featured/`.

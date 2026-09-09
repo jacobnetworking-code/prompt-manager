@@ -113,3 +113,29 @@ header::after{
 
 .pm-featured-card .pm-preview-wrap{min-height:0}
 .pm-featured-card .pm-preview-wrap img{display:block}
+
+/* M1.6.4.5 — Featured media render fix */
+.pm-featured-cover-media{
+  padding:0;
+  height:156px;
+  background:#111;
+}
+.pm-featured-cover-media:before{display:none}
+.pm-featured-media{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+}
+.pm-featured-cover-media span{
+  position:absolute;
+  left:14px;
+  bottom:12px;
+  padding:6px 9px;
+  border-radius:999px;
+  background:rgba(8,8,8,.72);
+  -webkit-backdrop-filter:blur(8px);
+  backdrop-filter:blur(8px);
+}
