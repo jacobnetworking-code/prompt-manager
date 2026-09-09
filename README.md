@@ -1,18 +1,19 @@
-# Prompt Manager — M1.6.5.7
+# Prompt Manager — M1.6.5.8
 
 ## Changes
-- Keeps the share rule: ~20% real prompt visible, cut at a natural sentence boundary.
-- Replaces generic gray blur bars with synthetic prompt-like text for the hidden ~80%.
-- Synthetic text uses prompt-style structure such as Style, Subject, Lighting, Camera, Environment and Output.
-- The synthetic continuation is strongly blurred and does not contain or derive from the user's hidden prompt content.
-- Locked Share view still contains no Copy Prompt or Save to My Library actions.
-- What's New updated to V1.6.5.7.
+- Locked Share preview keeps ~20% of the real prompt visible.
+- The visible portion is allowed to end mid-sentence; blur starts only on the next visual line.
+- Hidden ~80% is represented by safe synthetic continuation prose, not the private prompt.
+- Synthetic continuation now uses the same typography, size and line rhythm as the visible prompt so it reads visually as one continuous prompt.
+- Synthetic continuation length scales approximately with the visible portion.
+- Copy Prompt and Save to My Library are absent from the locked/public Share view.
 - No SQL/schema changes.
 
 ## Commit title
-M1.6.5.7 — Prompt-Like Synthetic Share Blur
+M1.6.5.8 — Seamless Locked Share Preview
 
 ## Replace
+- prompt/index.html
 - prompt/share.js
 - prompt/share.css
 - ui-refine.js
