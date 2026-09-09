@@ -1,0 +1,365 @@
+/* Prompt Manager — M1.6.6 Desktop Experience v1
+   Desktop-only presentation layer. Mobile/tablet behavior is unchanged. */
+
+@media (min-width: 1024px) {
+  :root{
+    --pm-desktop-sidebar:228px;
+    --pm-desktop-gutter:34px;
+    --pm-desktop-max:1360px;
+  }
+
+  html,body{min-height:100%}
+  body{min-height:100vh}
+
+  /* Turn the existing mobile shell into a true desktop workspace. */
+  .app{
+    width:auto!important;
+    max-width:var(--pm-desktop-max)!important;
+    margin:0 auto 0 var(--pm-desktop-sidebar)!important;
+    padding:34px var(--pm-desktop-gutter) 56px!important;
+  }
+
+  main{min-width:0}
+
+  /* Brand lives in the sidebar on desktop. */
+  header{
+    min-height:0!important;
+    height:0!important;
+    margin:0!important;
+    padding:0!important;
+    border:0!important;
+  }
+  header::after{display:none!important}
+
+  .brand{
+    position:fixed!important;
+    z-index:31;
+    left:28px;
+    top:28px;
+    width:172px;
+    display:flex!important;
+    align-items:center;
+    gap:12px!important;
+  }
+  .mark{
+    width:42px!important;
+    height:42px!important;
+    border-radius:13px!important;
+    flex:0 0 42px;
+  }
+  .brand-title-row{
+    min-width:0;
+    display:block!important;
+  }
+  .brand-title-row h1{
+    font-size:17px!important;
+    line-height:1.1;
+    white-space:nowrap;
+  }
+  .alpha-badge{
+    display:inline-flex!important;
+    margin-top:5px;
+    font-size:8px!important;
+  }
+
+  /* Profile becomes the bottom anchor of the desktop sidebar. */
+  #profileBtn{
+    position:fixed!important;
+    z-index:32;
+    left:28px;
+    bottom:28px;
+    width:44px!important;
+    height:44px!important;
+    border-radius:14px!important;
+  }
+
+  /* Existing bottom nav becomes a restrained left sidebar. */
+  .bottom-nav{
+    position:fixed!important;
+    z-index:30;
+    left:20px!important;
+    top:104px!important;
+    bottom:92px!important;
+    transform:none!important;
+    width:188px!important;
+    height:auto!important;
+    display:flex!important;
+    flex-direction:column!important;
+    justify-content:flex-start!important;
+    align-items:stretch!important;
+    gap:7px!important;
+    padding:12px!important;
+    border:1px solid var(--border)!important;
+    border-radius:22px!important;
+    background:color-mix(in srgb,var(--bg) 94%,transparent)!important;
+    box-shadow:none!important;
+    backdrop-filter:blur(18px);
+    -webkit-backdrop-filter:blur(18px);
+  }
+  .bottom-nav button{
+    width:100%!important;
+    min-height:48px!important;
+    height:48px!important;
+    display:grid!important;
+    grid-template-columns:24px minmax(0,1fr)!important;
+    align-items:center!important;
+    justify-content:start!important;
+    gap:11px!important;
+    padding:0 13px!important;
+    border-radius:13px!important;
+    transform:none!important;
+    text-align:left!important;
+  }
+  .bottom-nav button:hover{background:var(--surface)!important}
+  .bottom-nav button.selected{
+    background:var(--surface)!important;
+    color:var(--text)!important;
+  }
+  .bottom-nav button>span{
+    width:20px!important;
+    height:20px!important;
+    display:grid!important;
+    place-items:center!important;
+    font-size:20px!important;
+  }
+  .bottom-nav button>span svg{
+    width:20px!important;
+    height:20px!important;
+  }
+  .bottom-nav button small{
+    display:block!important;
+    font-size:12px!important;
+    line-height:1!important;
+    text-align:left!important;
+    font-weight:720!important;
+  }
+
+  /* Desktop Home */
+  #homeView{
+    min-height:calc(100vh - 90px)!important;
+    display:grid!important;
+    grid-template-columns:minmax(0,1.35fr) minmax(340px,.65fr)!important;
+    grid-template-areas:
+      "hero actions"
+      "hero news"!important;
+    align-items:start!important;
+    column-gap:54px!important;
+    row-gap:18px!important;
+  }
+  #homeView[hidden]{display:none!important}
+
+  #homeView .hero{
+    grid-area:hero;
+    padding:92px 0 40px!important;
+    max-width:760px;
+  }
+  #homeView .hero h2{
+    font-size:clamp(76px,7.2vw,116px)!important;
+    line-height:.88!important;
+    letter-spacing:-5.5px!important;
+    max-width:760px!important;
+  }
+  #homeView .hero p{
+    max-width:590px!important;
+    margin-top:28px!important;
+    font-size:18px!important;
+    line-height:1.55!important;
+  }
+  #homeView .hero .primary{
+    margin-top:32px!important;
+    min-height:50px;
+    padding:0 22px!important;
+    border-radius:15px!important;
+  }
+
+  #homeView .home-actions{
+    grid-area:actions;
+    margin-top:74px!important;
+    gap:12px!important;
+  }
+  #homeView .home-actions button{
+    min-height:118px!important;
+    padding:23px 24px!important;
+    border-radius:22px!important;
+  }
+  #homeView .home-actions button strong{
+    font-size:19px!important;
+    margin-top:12px!important;
+  }
+
+  #homeView .pm-whats-new{
+    grid-area:news;
+    margin:0!important;
+    padding:21px 4px 0!important;
+  }
+  #homeView .pm-whats-new h3{font-size:22px!important}
+  #homeView .pm-whats-new p{
+    font-size:14px!important;
+    line-height:1.55!important;
+    max-width:480px;
+  }
+
+  /* Consistent desktop page heading rhythm. */
+  .pagehead{
+    padding-top:44px!important;
+    padding-bottom:22px!important;
+    max-width:900px;
+  }
+  .pagehead h2{
+    font-size:clamp(50px,4.5vw,68px)!important;
+    letter-spacing:-2.6px!important;
+    line-height:.95!important;
+  }
+  .pagehead p{
+    max-width:650px;
+    font-size:15px!important;
+  }
+
+  /* Explore uses the canvas instead of stretching mobile cards. */
+  .explore,.library{max-width:none!important}
+
+  .explore-search{
+    max-width:760px!important;
+  }
+  .explore-categories{
+    display:grid!important;
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    gap:12px!important;
+  }
+
+  .pm-featured{
+    max-width:760px;
+  }
+  .pm-featured-grid{
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    gap:16px!important;
+  }
+  .pm-featured-card{
+    border-radius:20px!important;
+    min-width:0;
+  }
+  .pm-featured-cover-media{height:auto!important;aspect-ratio:16/10}
+  .pm-featured-body{padding:17px!important}
+  .pm-featured-body h4{font-size:18px!important}
+  .pm-featured-body p{
+    min-height:54px;
+    -webkit-line-clamp:3!important;
+  }
+
+  #exploreList:not(:has(.pm-featured-grid)){
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:14px;
+  }
+  #exploreList:not(:has(.pm-featured-grid))>.explore-card{
+    margin:0!important;
+    min-width:0;
+  }
+
+  /* Library toolbar feels like a desktop product, while retaining the same controls. */
+  .library-head{max-width:none}
+  .library-title-grid{max-width:none}
+  .library{
+    display:grid;
+    grid-template-columns:1fr;
+  }
+  #libraryOriginFilters,
+  #categoryFilters{
+    max-width:100%;
+  }
+  .search-filter-row{
+    width:100%;
+    max-width:none!important;
+    grid-template-columns:minmax(320px,1fr) auto!important;
+  }
+  .search-filter-row .searchwrap{min-width:0}
+
+  #list{
+    display:grid!important;
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    gap:14px!important;
+    align-items:start;
+  }
+  #list>.card{
+    margin:0!important;
+    min-width:0;
+    height:100%;
+  }
+  .pm-card-footer-actions{margin-top:18px!important}
+
+  /* Selection bar belongs to the content area, not the physical screen center. */
+  .pm-selection-bar{
+    left:calc(var(--pm-desktop-sidebar) + (100vw - var(--pm-desktop-sidebar))/2)!important;
+    bottom:28px!important;
+    width:min(680px,calc(100vw - var(--pm-desktop-sidebar) - 80px))!important;
+  }
+
+  /* Prompt usage becomes a roomy right-side workspace on desktop. */
+  #useDialog{
+    width:100vw!important;
+    max-width:none!important;
+    height:100vh!important;
+    max-height:none!important;
+    margin:0!important;
+    padding:0!important;
+    border:0!important;
+    background:transparent!important;
+  }
+  #useDialog::backdrop{
+    background:rgba(0,0,0,.38)!important;
+    backdrop-filter:blur(2px);
+  }
+  #useDialog>.sheet{
+    position:absolute!important;
+    top:18px;
+    right:18px;
+    bottom:18px;
+    width:min(680px,calc(100vw - var(--pm-desktop-sidebar) - 56px))!important;
+    max-width:680px!important;
+    max-height:none!important;
+    overflow:auto!important;
+    margin:0!important;
+    border-radius:24px!important;
+    padding:24px!important;
+    box-shadow:var(--shadow)!important;
+  }
+  #useDialog .ready-prompt{
+    max-height:none!important;
+    min-height:210px;
+  }
+
+  /* Other dialogs stay centered and desktop-sized. */
+  dialog:not(#useDialog) .sheet,
+  dialog.sheet:not(#useDialog){
+    max-width:600px!important;
+  }
+
+  /* Hide the floating mobile add button on desktop; Add remains explicit in the UI. */
+  #fab{display:none!important}
+}
+
+@media (min-width: 1450px) {
+  .app{
+    margin-left:var(--pm-desktop-sidebar)!important;
+    padding-left:48px!important;
+    padding-right:48px!important;
+  }
+  .pm-featured-grid,
+  #list,
+  #exploreList:not(:has(.pm-featured-grid)){
+    gap:18px!important;
+  }
+}
+
+/* Intermediate laptop widths: keep three columns where useful without crowding. */
+@media (min-width:1024px) and (max-width:1180px){
+  :root{--pm-desktop-sidebar:206px;--pm-desktop-gutter:26px}
+  .bottom-nav{width:168px!important}
+  .brand-title-row h1{font-size:15px!important}
+  #homeView{grid-template-columns:minmax(0,1.2fr) minmax(300px,.8fr)!important;column-gap:34px!important}
+  .pm-featured-grid,
+  #list,
+  #exploreList:not(:has(.pm-featured-grid)){
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+}

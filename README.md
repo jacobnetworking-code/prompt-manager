@@ -1,17 +1,25 @@
-# Prompt Manager — M1.6.5.11
+# Prompt Manager — M1.6.6 Desktop Experience v1
 
-## Changes
-- Featured images and the current Seedance video preload silently after authentication.
-- The app remains usable immediately; preload runs in idle time / shortly after login and never blocks Home.
-- Images use browser image decoding/cache.
-- Video uses `preload="auto"` with muted inline loading.
-- Existing service-worker runtime caching remains the second cache layer.
-- Only current Featured media is preloaded, not the whole catalog.
-- What's New updated to V1.6.5.11.
-- No SQL/schema changes.
+## User-facing changes
+- Dedicated left-side desktop navigation while preserving bottom navigation on mobile.
+- Desktop Home now uses the full screen with a balanced two-column layout.
+- Explore and Featured use wider multi-column grids.
+- Library uses more horizontal space and shows more prompts at once.
+- Opening a prompt on desktop uses a roomy right-side workspace.
+- Mobile behavior remains unchanged.
+
+## What's New
+V1.6.6
+Made for bigger screens.
+Prompt Manager now makes better use of desktop space with a dedicated sidebar, wider layouts and more room for your prompts.
+
+Chips:
+- Desktop Layout
+- Wider Explore
+- Roomier Library
 
 ## Commit title
-M1.6.5.11 — Preload Featured Media After Login
+M1.6.6 — Desktop Experience v1
 
 ## Replace
 - ui-refine.js
@@ -19,7 +27,10 @@ M1.6.5.11 — Preload Featured Media After Login
 - README.md
 
 ## Add
-- none
+- desktop-v1.css
 
 ## Delete
+- none
+
+## SQL
 - none
