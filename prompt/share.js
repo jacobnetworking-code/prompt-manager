@@ -23,26 +23,21 @@ function fail(){$("shareLoading").hidden=true;$("shareError").hidden=false}
 function buildSyntheticBlur(teaserText){
   const wrap=$("shareLocked")?.querySelector(".pm-blur-lines");
   if(!wrap)return;
-  const normalized=String(teaserText||"").replace(/\s+/g," ").trim();
-  const visibleApproxLines=Math.max(2,Math.ceil(normalized.length/42));
-  const targetLines=Math.max(10,Math.min(30,visibleApproxLines*4));
-  const continuation=[
-    "Continue with precise visual direction, natural detail, balanced composition, and a cohesive atmosphere throughout the scene.",
-    "Keep the subject clearly defined within the environment while preserving realistic proportions, materials, texture, depth, and light.",
-    "Use intentional framing and perspective with believable shadows, subtle imperfections, controlled contrast, and natural color response.",
-    "Maintain visual consistency across the complete result, avoiding distracting artifacts, unnecessary elements, text, logos, or watermarks.",
-    "The final output should feel polished, specific, coherent, physically plausible, and professionally art directed from edge to edge."
-  ];
-  wrap.innerHTML="";
-  let lines=0,i=0;
-  while(lines<targetLines){
-    const p=document.createElement("p");
-    p.className="pm-blur-prompt-text";
-    p.textContent=continuation[i%continuation.length];
-    wrap.appendChild(p);
-    lines+=Math.max(1,Math.ceil(p.textContent.length/42));
-    i++;
-  }
+
+  const teaser=String(teaserText||"").replace(/\s+/g," ").trim();
+  const targetChars=Math.max(520,Math.min(2200,teaser.length*4));
+
+  const source=[
+    "Continue by defining the visual direction, environment, composition, lighting, camera perspective, materials, texture, color atmosphere, and overall mood with enough specificity to guide a high quality result. ",
+    "Keep the subject coherent with the scene and preserve believable proportions, natural detail, realistic surfaces, consistent shadows, depth, and physical relationships between all visible elements. ",
+    "Use intentional framing, clean hierarchy, balanced negative space, subtle imperfections, controlled contrast, and a polished but natural finish without unnecessary artifacts or distracting elements. ",
+    "Maintain continuity across the full result so every detail feels deliberate, visually consistent, and professionally art directed while preserving a realistic sense of scale and atmosphere. ",
+    "The final output should feel specific, refined, immersive, cohesive, and production ready, with no added text, watermarks, interface elements, or unrelated objects. "
+  ].join("");
+
+  let fake="";
+  while(fake.length<targetChars) fake+=source;
+  wrap.textContent=fake.slice(0,targetChars).trim();
 }
 
 async function unlock(){

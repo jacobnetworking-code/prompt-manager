@@ -130,3 +130,40 @@
   letter-spacing:inherit!important;
 }
 .pm-blur-prompt-text + .pm-blur-prompt-text{margin-top:0!important;}
+
+/* M1.6.5.9 — seamless full-width blurred text continuation */
+.pm-public-prompt>pre#shareTeaser{
+  margin:0!important;
+  padding:20px 20px 0!important;
+  white-space:pre-wrap!important;
+  word-break:break-word!important;
+  font:15px/1.55 ui-monospace,SFMono-Regular,Menlo,monospace!important;
+  color:#eee!important;
+}
+.pm-share-lock{
+  margin:0!important;
+  padding:0!important;
+  min-height:0!important;
+}
+.pm-blur-lines{
+  display:block!important;
+  margin:0!important;
+  padding:0 20px 18px!important;
+  white-space:pre-wrap!important;
+  word-break:break-word!important;
+  font:15px/1.55 ui-monospace,SFMono-Regular,Menlo,monospace!important;
+  color:#eee!important;
+  letter-spacing:normal!important;
+  filter:blur(5.5px)!important;
+  opacity:.50!important;
+  background:none!important;
+  -webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 92%,transparent 100%)!important;
+  mask-image:linear-gradient(to bottom,#000 0%,#000 92%,transparent 100%)!important;
+}
+.pm-blur-prompt-text{display:contents!important}
+.pm-lock-copy{
+  margin:0!important;
+  padding:18px 24px 28px!important;
+  min-height:0!important;
+  background:linear-gradient(to bottom,rgba(9,9,9,.25),rgba(9,9,9,.96) 22%,#090909 100%)!important;
+}
