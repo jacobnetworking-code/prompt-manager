@@ -62,7 +62,7 @@ function flashButton(btn,label,ms=1500){if(!btn)return;if(!btn.dataset.pmOrigina
 function ensureLanguageSettings(){if(byId("pmLanguageSection"))return;const profileSection=byId("displayName")?.closest(".settings-section");if(!profileSection)return;const section=document.createElement("div");section.className="settings-section";section.id="pmLanguageSection";section.innerHTML=`<span class="settings-label" id="pmLanguageLabel"></span><div class="pm-language-options"><button type="button" class="pm-language-option" data-pm-language="en">${FLAG_EN}<span>English</span><b></b></button><button type="button" class="pm-language-option" data-pm-language="es">${FLAG_ES}<span>Español</span><b></b></button><button type="button" class="pm-language-option" data-pm-language="sr">${FLAG_RS}<span>Srpski</span><b></b></button></div>`;profileSection.insertAdjacentElement("afterend",section);section.addEventListener("click",e=>{const b=e.target.closest("[data-pm-language]");if(!b)return;currentLang=b.dataset.pmLanguage;localStorage.setItem(LANG_KEY,currentLang);applyLanguage()})}
 
 const PM_RELEASE={
-  version:"1.6.5.9",
+  version:"1.6.5.10",
   highlights:["Cloud Sync","ChatGPT MCP","Featured Media","Responsive Desktop","Library Actions","Compact Navigation","Streamlined Headers","Public Prompt Sharing","Public Share Fix","Share Teaser UX","Share Unlock Flow","Compact Share Preview","Secure 20/80 Share Preview","Prompt-Like Share Blur"]
 };
 function ensureWhatsNew(){const homeActions=document.querySelector("#homeView .home-actions");if(!homeActions)return;document.querySelector(".pm-whats-new")?.remove();const n=document.createElement("section");n.className="pm-whats-new";n.innerHTML=`<div class="pm-whats-new-kicker"><span data-pm-whats-kicker></span><span>·</span><span class="pm-version">V${PM_RELEASE.version}</span></div><h3 data-pm-whats-title></h3><p data-pm-whats-copy></p><ul>${PM_RELEASE.highlights.map(x=>`<li>${x}</li>`).join("")}</ul>`;homeActions.insertAdjacentElement("afterend",n)}
@@ -183,17 +183,19 @@ async function ensurePublicShare(p){
   if(!user)throw new Error("Sign in required");
   const fullText=(p.content||"").trim();
   const target=Math.min(fullText.length,Math.max(120,Math.ceil(fullText.length*.20)));
-  const sentenceEnds=[...fullText.matchAll(/[.!?](?:["'’”)]*)\s+/g)].map(m=>m.index+m[0].trimEnd().length);
-  const before=sentenceEnds.filter(i=>i<=target).pop();
-  const after=sentenceEnds.find(i=>i>target);
-  let teaserEnd=before||after||Math.min(fullText.length,target);
-  if(after&&before&&target-before>after-target&&after<=Math.ceil(fullText.length*.30))teaserEnd=after;
-  const teaser=fullText.slice(0,teaserEnd).trim();
+  const searchStart=Math.max(0,target-48);
+  const windowText=fullText.slice(searchStart,target+1);
+  let teaserEnd=target;
+  const lastSpace=windowText.lastIndexOf(" ");
+  if(lastSpace>0)teaserEnd=searchStart+lastSpace;
+  while(teaserEnd>0 && /[.!?;:,\-—]/.test(fullText[teaserEnd-1]))teaserEnd--;
+  const teaser=fullText.slice(0,teaserEnd).trimEnd();
   const payload={
     owner_user_id:user.id,
     source_prompt_id:p.cloudId||null,
     title:p.title||"Prompt",
     teaser,
+    total_length:fullText.length,
     category_id:categoryId(p),
     platforms:platformsOf(p),
     source_name:p.sourceName||null
