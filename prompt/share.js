@@ -7,11 +7,11 @@ let meta=null,full=null;
 
 async function load(){
   if(!slug)return fail();
-  const {data,error}=await sb.from("prompt_shares").select("slug,title,teaser,category_id,platforms,source_name").eq("slug",slug).eq("is_active",true).maybeSingle();
+  const {data,error}=await sb.from("prompt_shares").select("slug,title,teaser,total_length,category_id,platforms,source_name").eq("slug",slug).eq("is_active",true).maybeSingle();
   if(error||!data)return fail();
   meta=data;$("shareLoading").hidden=true;$("shareCard").hidden=false;
   $("shareTitle").textContent=data.title;
-  $("shareTeaser").textContent=data.teaser;buildSyntheticBlur(data.teaser);
+  $("shareTeaser").textContent=data.teaser;buildSyntheticBlur(data.teaser,data.total_length);
   const rawBadges=[data.category_id,...(data.platforms||[])].filter(Boolean);
   const badges=[];for(const b of rawBadges){const label=b==="general"?(badges.length?"Multiplatform":"General"):b;if(!badges.some(x=>x.toLowerCase()===label.toLowerCase()))badges.push(label)}
   $("shareBadges").innerHTML=badges.map(x=>`<span class="platformbadge">${escapeHtml(x)}</span>`).join("");
@@ -20,12 +20,13 @@ async function load(){
 }
 function fail(){$("shareLoading").hidden=true;$("shareError").hidden=false}
 
-function buildSyntheticBlur(teaserText){
+function buildSyntheticBlur(teaserText,totalLength){
   const wrap=$("shareLocked")?.querySelector(".pm-blur-lines");
   if(!wrap)return;
 
   const teaser=String(teaserText||"").replace(/\s+/g," ").trim();
-  const targetChars=Math.max(520,Math.min(2200,teaser.length*4));
+  const hiddenTarget=Math.max(0,(Number(totalLength)||teaser.length*5)-teaser.length);
+  const targetChars=Math.max(220,Math.min(5000,hiddenTarget));
 
   const source=[
     "Continue by defining the visual direction, environment, composition, lighting, camera perspective, materials, texture, color atmosphere, and overall mood with enough specificity to guide a high quality result. ",
