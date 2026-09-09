@@ -1,27 +1,19 @@
-# Prompt Manager — M1.6.5 Public Prompt Sharing Foundation
+# Prompt Manager — M1.6.5.1
 
-## Product behavior
-- Library Share now creates/reuses a Prompt Manager permalink instead of sharing raw prompt text.
-- Logged-out visitors see title, metadata and a real teaser only.
-- The rest is a visual locked state; full prompt content is NOT sent to anonymous clients.
-- Google/email sign-in unlocks the complete prompt.
-- Signed-in visitors can Copy Prompt or Save to My Library.
-- Shared prompt page is a dedicated `/prompt/?s=<slug>` route.
-- Full shared content remains protected by Supabase RLS.
-- Existing private personal prompts remain private.
+## Fix
+M1.6.5 used `window.supabaseClient`, but `app.js` defines `const supabaseClient` in the global script scope rather than as a property on `window`.
 
-## Security model
-Public teaser metadata and authenticated full content are stored separately. This avoids a fake CSS-only blur where anonymous users could inspect the network response and recover the full prompt.
+The Share flow therefore stopped before making any Supabase request and surfaced `Share unavailable`.
 
-## Deployment order
-1. Run `m1.6.5-share-schema.sql` in Supabase SQL Editor.
-2. Upload the web files to GitHub.
-3. Test Share from one personal prompt.
-4. Open the resulting link in a private/incognito browser and confirm only teaser is available.
-5. Sign in and confirm full prompt + Save to My Library.
+## Changes
+- Public Share now uses the existing `supabaseClient` instance from `app.js`.
+- Improves console diagnostics for any subsequent Supabase/RLS error.
+- What's New updated to V1.6.5.1.
+- Service worker cache bumped to `pm-m1.6.5.1-v1`.
+- No database/schema changes.
 
 ## Commit title
-M1.6.5 — Public Prompt Sharing Foundation
+M1.6.5.1 — Fix Public Share Client
 
 ## Replace
 - ui-refine.js
@@ -29,10 +21,7 @@ M1.6.5 — Public Prompt Sharing Foundation
 - README.md
 
 ## Add
-- prompt/index.html
-- prompt/share.css
-- prompt/share.js
-- m1.6.5-share-schema.sql
+- none
 
 ## Delete
 - none

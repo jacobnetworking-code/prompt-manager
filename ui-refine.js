@@ -62,8 +62,8 @@ function flashButton(btn,label,ms=1500){if(!btn)return;if(!btn.dataset.pmOrigina
 function ensureLanguageSettings(){if(byId("pmLanguageSection"))return;const profileSection=byId("displayName")?.closest(".settings-section");if(!profileSection)return;const section=document.createElement("div");section.className="settings-section";section.id="pmLanguageSection";section.innerHTML=`<span class="settings-label" id="pmLanguageLabel"></span><div class="pm-language-options"><button type="button" class="pm-language-option" data-pm-language="en">${FLAG_EN}<span>English</span><b></b></button><button type="button" class="pm-language-option" data-pm-language="es">${FLAG_ES}<span>Español</span><b></b></button><button type="button" class="pm-language-option" data-pm-language="sr">${FLAG_RS}<span>Srpski</span><b></b></button></div>`;profileSection.insertAdjacentElement("afterend",section);section.addEventListener("click",e=>{const b=e.target.closest("[data-pm-language]");if(!b)return;currentLang=b.dataset.pmLanguage;localStorage.setItem(LANG_KEY,currentLang);applyLanguage()})}
 
 const PM_RELEASE={
-  version:"1.6.5",
-  highlights:["Cloud Sync","ChatGPT MCP","Featured Media","Responsive Desktop","Library Actions","Compact Navigation","Streamlined Headers","Public Prompt Sharing"]
+  version:"1.6.5.1",
+  highlights:["Cloud Sync","ChatGPT MCP","Featured Media","Responsive Desktop","Library Actions","Compact Navigation","Streamlined Headers","Public Prompt Sharing","Public Share Fix"]
 };
 function ensureWhatsNew(){const homeActions=document.querySelector("#homeView .home-actions");if(!homeActions)return;document.querySelector(".pm-whats-new")?.remove();const n=document.createElement("section");n.className="pm-whats-new";n.innerHTML=`<div class="pm-whats-new-kicker"><span data-pm-whats-kicker></span><span>·</span><span class="pm-version">V${PM_RELEASE.version}</span></div><h3 data-pm-whats-title></h3><p data-pm-whats-copy></p><ul>${PM_RELEASE.highlights.map(x=>`<li>${x}</li>`).join("")}</ul>`;homeActions.insertAdjacentElement("afterend",n)}
 
@@ -178,8 +178,8 @@ render=function(){const xs=filtered(),has=prompts.length>0,q=byId("search").valu
 function promptById(id){return prompts.find(p=>String(p.id)===String(id))}
 async function copyPromptFromCard(p,btn){try{await navigator.clipboard.writeText(p.content||"");flashButton(btn,t("copied"));toast(t("copied"))}catch{toast(t("copyUnavailable"))}}
 async function ensurePublicShare(p){
-  if(!window.supabaseClient)throw new Error("Cloud unavailable");
-  const {data:{user}}=await window.supabaseClient.auth.getUser();
+  if(typeof supabaseClient==="undefined"||!supabaseClient)throw new Error("Cloud unavailable");
+  const {data:{user}}=await supabaseClient.auth.getUser();
   if(!user)throw new Error("Sign in required");
   const teaser=(p.content||"").trim().slice(0,Math.min(360,(p.content||"").length));
   const payload={
@@ -191,13 +191,13 @@ async function ensurePublicShare(p){
     platforms:platformsOf(p),
     source_name:p.sourceName||null
   };
-  const {data:share,error}=await window.supabaseClient
+  const {data:share,error}=await supabaseClient
     .from("prompt_shares")
     .upsert(payload,{onConflict:"owner_user_id,source_prompt_id"})
     .select("slug")
     .single();
   if(error)throw error;
-  const {error:contentError}=await window.supabaseClient
+  const {error:contentError}=await supabaseClient
     .from("prompt_share_contents")
     .upsert({share_slug:share.slug,owner_user_id:user.id,content:p.content||""},{onConflict:"share_slug"});
   if(contentError)throw contentError;
@@ -216,7 +216,7 @@ async function sharePrompt(p,btn){
     }
   }catch(err){
     if(err?.name!=="AbortError"){
-      console.error("Prompt share failed",err);
+      console.error("Prompt share failed",err?.code||"",err?.message||err,err?.details||"");
       toast(err?.message==="Sign in required"?"Sign in to share this prompt":t("shareUnavailable"));
     }
   }
