@@ -62,8 +62,8 @@ function flashButton(btn,label,ms=1500){if(!btn)return;if(!btn.dataset.pmOrigina
 function ensureLanguageSettings(){if(byId("pmLanguageSection"))return;const profileSection=byId("displayName")?.closest(".settings-section");if(!profileSection)return;const section=document.createElement("div");section.className="settings-section";section.id="pmLanguageSection";section.innerHTML=`<span class="settings-label" id="pmLanguageLabel"></span><div class="pm-language-options"><button type="button" class="pm-language-option" data-pm-language="en">${FLAG_EN}<span>English</span><b></b></button><button type="button" class="pm-language-option" data-pm-language="es">${FLAG_ES}<span>Español</span><b></b></button><button type="button" class="pm-language-option" data-pm-language="sr">${FLAG_RS}<span>Srpski</span><b></b></button></div>`;profileSection.insertAdjacentElement("afterend",section);section.addEventListener("click",e=>{const b=e.target.closest("[data-pm-language]");if(!b)return;currentLang=b.dataset.pmLanguage;localStorage.setItem(LANG_KEY,currentLang);applyLanguage()})}
 
 const PM_RELEASE={
-  version:"1.6.5.1",
-  highlights:["Cloud Sync","ChatGPT MCP","Featured Media","Responsive Desktop","Library Actions","Compact Navigation","Streamlined Headers","Public Prompt Sharing","Public Share Fix"]
+  version:"1.6.5.2",
+  highlights:["Cloud Sync","ChatGPT MCP","Featured Media","Responsive Desktop","Library Actions","Compact Navigation","Streamlined Headers","Public Prompt Sharing","Public Share Fix","Share Teaser UX"]
 };
 function ensureWhatsNew(){const homeActions=document.querySelector("#homeView .home-actions");if(!homeActions)return;document.querySelector(".pm-whats-new")?.remove();const n=document.createElement("section");n.className="pm-whats-new";n.innerHTML=`<div class="pm-whats-new-kicker"><span data-pm-whats-kicker></span><span>·</span><span class="pm-version">V${PM_RELEASE.version}</span></div><h3 data-pm-whats-title></h3><p data-pm-whats-copy></p><ul>${PM_RELEASE.highlights.map(x=>`<li>${x}</li>`).join("")}</ul>`;homeActions.insertAdjacentElement("afterend",n)}
 
@@ -181,7 +181,9 @@ async function ensurePublicShare(p){
   if(typeof supabaseClient==="undefined"||!supabaseClient)throw new Error("Cloud unavailable");
   const {data:{user}}=await supabaseClient.auth.getUser();
   if(!user)throw new Error("Sign in required");
-  const teaser=(p.content||"").trim().slice(0,Math.min(360,(p.content||"").length));
+  const fullText=(p.content||"").trim();
+  const teaserLength=Math.min(fullText.length,Math.max(180,Math.ceil(fullText.length*.20)));
+  const teaser=fullText.slice(0,teaserLength);
   const payload={
     owner_user_id:user.id,
     source_prompt_id:p.cloudId||null,
