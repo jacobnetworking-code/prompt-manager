@@ -112,3 +112,21 @@
   word-break:normal!important;
   letter-spacing:0!important;
 }
+
+/* M1.6.5.8 — seamless same-format continuation */
+.pm-blur-lines{
+  margin:0!important;
+  padding:0 40px 14px!important;
+  filter:blur(5.5px)!important;
+  opacity:.50!important;
+}
+.pm-blur-prompt-text{
+  margin:0!important;
+  color:inherit!important;
+  font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace!important;
+  font-size:inherit!important;
+  line-height:inherit!important;
+  font-weight:inherit!important;
+  letter-spacing:inherit!important;
+}
+.pm-blur-prompt-text + .pm-blur-prompt-text{margin-top:0!important;}

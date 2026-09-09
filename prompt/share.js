@@ -23,33 +23,24 @@ function fail(){$("shareLoading").hidden=true;$("shareError").hidden=false}
 function buildSyntheticBlur(teaserText){
   const wrap=$("shareLocked")?.querySelector(".pm-blur-lines");
   if(!wrap)return;
-
   const normalized=String(teaserText||"").replace(/\s+/g," ").trim();
   const visibleApproxLines=Math.max(2,Math.ceil(normalized.length/42));
   const targetLines=Math.max(10,Math.min(30,visibleApproxLines*4));
-
-  const syntheticBlocks=[
-    "Style: cinematic realism, premium detail, natural texture, intentional composition.",
-    "Subject: [SUBJECT] with clearly defined posture, expression, wardrobe, and visual hierarchy.",
-    "Lighting: soft directional key light, subtle rim light, realistic reflections, controlled contrast.",
-    "Camera: medium-format look, shallow depth of field, crisp focal plane, natural lens falloff.",
-    "Environment: [LOCATION] with grounded materials, believable atmosphere, and contextual detail.",
-    "Composition: strong foreground-background separation, clean negative space, balanced framing.",
-    "Color: restrained palette, realistic skin tones, subtle filmic response, no artificial oversaturation.",
-    "Details: preserve anatomy, texture, fabric behavior, reflections, scale, and physical plausibility.",
-    "Mood: confident, polished, contemporary, editorial, immersive, and visually cohesive.",
-    "Output: photorealistic, high detail, natural imperfections, no text, no watermark, no UI elements."
+  const continuation=[
+    "Continue with precise visual direction, natural detail, balanced composition, and a cohesive atmosphere throughout the scene.",
+    "Keep the subject clearly defined within the environment while preserving realistic proportions, materials, texture, depth, and light.",
+    "Use intentional framing and perspective with believable shadows, subtle imperfections, controlled contrast, and natural color response.",
+    "Maintain visual consistency across the complete result, avoiding distracting artifacts, unnecessary elements, text, logos, or watermarks.",
+    "The final output should feel polished, specific, coherent, physically plausible, and professionally art directed from edge to edge."
   ];
-
   wrap.innerHTML="";
-  let lines=0;
-  let i=0;
+  let lines=0,i=0;
   while(lines<targetLines){
     const p=document.createElement("p");
     p.className="pm-blur-prompt-text";
-    p.textContent=syntheticBlocks[i%syntheticBlocks.length];
+    p.textContent=continuation[i%continuation.length];
     wrap.appendChild(p);
-    lines+=Math.max(1,Math.ceil(p.textContent.length/46));
+    lines+=Math.max(1,Math.ceil(p.textContent.length/42));
     i++;
   }
 }
