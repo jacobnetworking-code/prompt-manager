@@ -89,3 +89,27 @@ header::after{
   backdrop-filter:blur(8px);
   -webkit-backdrop-filter:blur(8px);
 }
+
+/* M1.6.4.4 — precise header divider placement */
+header{
+  position:relative;
+  padding-bottom:0!important;
+  margin-bottom:0!important;
+  border-bottom:0!important;
+}
+header::after{
+  content:"";
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:-26px;
+  height:1px;
+  background:var(--border);
+  transform:none!important;
+  pointer-events:none;
+}
+/* Preserve the existing Featured content coordinates while the divider floats in the gap. */
+#exploreView{position:relative}
+
+.pm-featured-card .pm-preview-wrap{min-height:0}
+.pm-featured-card .pm-preview-wrap img{display:block}

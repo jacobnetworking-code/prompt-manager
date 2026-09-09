@@ -1,14 +1,13 @@
-# Prompt Manager — M1.6.4.3
-
-Complete replacement upload package.
+# Prompt Manager — M1.6.4.4
 
 ## Changes
-- Platform selector button now expands to show the complete selected platform name without truncation.
-- `Select` and `+` controls in Library are exactly the same height.
-- Header divider has more breathing room below the Prompt Manager brand while preserving Featured content position.
-- Featured cards now place any real `previewImage` / `previewVideo` media in the full top media zone, with the category/Featured badge overlaid on the preview.
-- No fake visual outputs were added: previews render only when an actual media asset is attached to the prompt.
-- No IndexedDB or Supabase schema changes.
+- Header divider repositioned into the middle of the visual gap between the brand header and `← Categories`, without intentionally moving the Featured prompt list.
+- Added first-party local visual example assets to selected Featured image prompts.
+- Featured preview assets are attached at runtime; no IndexedDB/Supabase schema change.
+- Service worker caches the new visual assets for PWA/offline use.
+
+## Commit title
+M1.6.4.4 — Featured Examples & Header Spacing
 
 ## Deploy
-Upload all files in this ZIP to the repository root and replace existing files.
+Upload all files/folders from this ZIP to the repository root, including the new `featured/` folder, replacing existing files.
