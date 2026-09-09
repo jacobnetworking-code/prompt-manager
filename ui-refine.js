@@ -1,382 +1,118 @@
-/* Prompt Manager — M1.6.4 UI refinement
+/* Prompt Manager — M1.6.4.1 UX Polish, Language & Featured
    Loaded AFTER app.js. No schema changes. */
-
 (()=>{
 "use strict";
-
-const ICONS={
-  copy:`<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="11" height="11" rx="2"></rect><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"></path></svg>`,
-  share:`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V3"></path><path d="m8 7 4-4 4 4"></path><path d="M7 10H5a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2h-2"></path></svg>`,
-  edit:`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4l11-11a2.8 2.8 0 0 0-4-4L4 16v4Z"></path><path d="m13.5 6.5 4 4"></path></svg>`,
-  trash:`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16"></path><path d="M9 7V4h6v3"></path><path d="M7 7l1 13h8l1-13"></path><path d="M10 11v5M14 11v5"></path></svg>`
-};
-
 const byId=id=>document.getElementById(id);
-
-function authDefaultName(){
-  const meta=authUser?.user_metadata||{};
-  return (meta.full_name||meta.name||meta.user_name||authUser?.email||"Prompt Manager").trim();
-}
-function effectiveName(){
-  return (localStorage.getItem("pm-display-name")||"").trim() || authDefaultName();
-}
-
-/* Profile: authenticated identity by default, editable override after user saves one. */
-renderProfileUI=function(){
-  const name=effectiveName();
-  const menu=byId("profileMenuName");
-  const input=byId("displayName");
-  if(menu)menu.textContent=name;
-  if(input)input.value=name;
-  const theme=localStorage.getItem("pm-theme")||"system";
-  document.querySelectorAll("[data-quick-theme]").forEach(b=>b.classList.toggle("active",b.dataset.quickTheme===theme));
-};
-
-function flashButton(btn,label,ms=1500){
-  if(!btn)return;
-  if(!btn.dataset.pmOriginal)btn.dataset.pmOriginal=btn.innerHTML;
-  btn.innerHTML=label;
-  btn.classList.add("pm-inline-feedback");
-  clearTimeout(btn._pmTimer);
-  btn._pmTimer=setTimeout(()=>{
-    btn.innerHTML=btn.dataset.pmOriginal;
-    btn.classList.remove("pm-inline-feedback");
-  },ms);
-}
-
-/* Settings save feedback. */
-document.addEventListener("click",e=>{
-  const b=e.target.closest("#saveDisplayName");
-  if(!b)return;
-  setTimeout(()=>flashButton(b,"✓ Saved"),0);
-},true);
-
-/* Close sheets/modals by tapping backdrop. Native-looking app UI remains; no browser confirm(). */
-document.addEventListener("pointerdown",e=>{
-  const d=e.target.closest("dialog");
-  if(!d || e.target!==d || !d.open)return;
-  d.close();
-});
-
-/* Add Prompt always reopens clean. */
-const captureDefault=()=>{
-  localStorage.setItem("pm-last-category","general");
-  const f=byId("form");
-  if(f)f.reset();
-  if(byId("category"))byId("category").value="general";
-  if(byId("platform"))byId("platform").value="general";
-  if(byId("source"))byId("source").value="";
-  if(byId("title"))byId("title").value="";
-  if(byId("prompt"))byId("prompt").value="";
-  if(byId("pasteHint"))byId("pasteHint").textContent="Paste prompt text or a source URL.";
-};
-byId("dialog")?.addEventListener("close",captureDefault);
-["homeAdd","libraryAdd","fab"].forEach(id=>{
-  byId(id)?.addEventListener("click",()=>setTimeout(()=>{
-    localStorage.setItem("pm-last-category","general");
-    if(byId("category"))byId("category").value="general";
-    if(byId("platform"))byId("platform").value="general";
-  },0),true);
-});
-
-/* Home: lightweight What's New, never a tour/popup. */
-const homeActions=document.querySelector("#homeView .home-actions");
-if(homeActions && !document.querySelector(".pm-whats-new")){
-  const n=document.createElement("section");
-  n.className="pm-whats-new";
-  n.innerHTML=`<div class="pm-whats-new-head"><div><small>WHAT'S NEW</small><h3>Prompt Manager is getting faster.</h3></div><span class="pm-version">ALPHA</span></div><p>Cloud sync, ChatGPT access, improved prompt actions and a cleaner library experience.</p>`;
-  homeActions.insertAdjacentElement("afterend",n);
-}
-
-/* Explore always starts at its category root when user returns to it. */
-document.querySelector(".bottom-nav")?.addEventListener("click",e=>{
-  const b=e.target.closest('[data-nav="explore"]');
-  if(!b)return;
-  exploreCategory=null;
-  if(byId("exploreSearch"))byId("exploreSearch").value="";
-  setTimeout(()=>renderExplore(),0);
-},true);
-document.querySelectorAll('[data-go="explore"]').forEach(b=>b.addEventListener("click",()=>{
-  exploreCategory=null;
-  if(byId("exploreSearch"))byId("exploreSearch").value="";
-  setTimeout(()=>renderExplore(),0);
-},true));
-
-/* Featured, rather than fake "Trending" until Prompt Manager has real behavioral signals. */
-const exploreSearch=document.querySelector(".explore-search");
-if(exploreSearch && !document.querySelector(".pm-featured")){
-  const f=document.createElement("section");
-  f.className="pm-featured";
-  f.innerHTML=`<small>★ FEATURED</small><h3>Prompts worth trying</h3><p>Curated for Alpha. This becomes Trending once we have enough real save, use and rating signals.</p>`;
-  exploreSearch.insertAdjacentElement("afterend",f);
-}
-
-/* Optional preview media support for future catalog items.
-   We only render actual previewImage/previewVideo fields; no fake placeholders. */
-const baseRenderExplore=renderExplore;
-renderExplore=function(){
-  baseRenderExplore();
-  document.querySelectorAll("#exploreList .explore-card").forEach(card=>{
-    const open=card.querySelector("[data-explore-open]");
-    if(!open)return;
-    const x=catalogItem(open.dataset.exploreOpen);
-    if(!x || (!x.previewImage && !x.previewVideo) || card.querySelector(".pm-preview-media"))return;
-    const media=x.previewVideo
-      ? `<video class="pm-preview-media" src="${esc(x.previewVideo)}" muted playsinline controls></video>`
-      : `<img class="pm-preview-media" src="${esc(x.previewImage)}" alt="${esc(x.title||"Prompt example")}">`;
-    card.querySelector("h4")?.insertAdjacentHTML("afterend",media);
-  });
-};
-
-/* Custom in-app confirmation dialog. */
-function ensureConfirmDialog(){
-  let d=byId("pmConfirmDialog");
-  if(d)return d;
-  d=document.createElement("dialog");
-  d.id="pmConfirmDialog";
-  d.innerHTML=`<section class="sheet"><div class="sheethead"><div><small>CONFIRM</small><h3 id="pmConfirmTitle">Delete prompt?</h3></div><button type="button" class="round" data-pm-confirm-cancel>×</button></div><p class="pm-confirm-copy" id="pmConfirmCopy">This can't be undone.</p><div class="pm-confirm-actions"><button type="button" data-pm-confirm-cancel>Cancel</button><button type="button" class="pm-confirm-delete" id="pmConfirmDelete">Delete</button></div></section>`;
-  document.body.appendChild(d);
-  d.addEventListener("click",e=>{
-    if(e.target.closest("[data-pm-confirm-cancel]"))d.close("cancel");
-  });
-  d.addEventListener("pointerdown",e=>{if(e.target===d)d.close("cancel")});
-  return d;
-}
-function confirmDelete({title="Delete prompt?",copy="This can't be undone.",button="Delete"}={}){
-  return new Promise(resolve=>{
-    const d=ensureConfirmDialog();
-    byId("pmConfirmTitle").textContent=title;
-    byId("pmConfirmCopy").textContent=copy;
-    const delBtn=byId("pmConfirmDelete");
-    delBtn.textContent=button;
-    const done=ok=>{
-      delBtn.onclick=null;
-      d.removeEventListener("close",closed);
-      if(d.open)d.close(ok?"delete":"cancel");
-      resolve(ok);
-    };
-    const closed=()=>done(false);
-    delBtn.onclick=()=>done(true);
-    d.addEventListener("close",closed,{once:true});
-    d.showModal();
-  });
-}
-
-/* Edit dialog. */
-function ensureEditDialog(){
-  let d=byId("pmEditDialog");
-  if(d)return d;
-  d=document.createElement("dialog");
-  d.id="pmEditDialog";
-  d.innerHTML=`<section class="sheet"><div class="sheethead"><div><small>EDIT PROMPT</small><h3>Edit</h3></div><button type="button" class="round" data-pm-edit-close>×</button></div><div class="pm-edit-grid"><label>Title<input id="pmEditTitle" maxlength="80"></label><label>Prompt<textarea id="pmEditContent"></textarea></label><label>Source URL <em>optional</em><input id="pmEditSource" type="url" inputmode="url"></label><button class="full primary" type="button" id="pmEditSave">Save changes</button></div></section>`;
-  document.body.appendChild(d);
-  d.addEventListener("click",e=>{if(e.target.closest("[data-pm-edit-close]"))d.close()});
-  d.addEventListener("pointerdown",e=>{if(e.target===d)d.close()});
-  return d;
-}
-let editingPrompt=null;
-function openEdit(p){
-  editingPrompt=p;
-  const d=ensureEditDialog();
-  byId("pmEditTitle").value=p.title||"";
-  byId("pmEditContent").value=p.content||"";
-  byId("pmEditSource").value=p.source||"";
-  d.showModal();
-}
-ensureEditDialog();
-byId("pmEditSave")?.addEventListener("click",async()=>{
-  if(!editingPrompt)return;
-  const b=byId("pmEditSave");
-  const title=byId("pmEditTitle").value.trim();
-  const content=byId("pmEditContent").value.trim();
-  if(!title||!content){toast("Title and prompt are required");return}
-  b.disabled=true;
-  try{
-    editingPrompt.title=title;
-    editingPrompt.content=content;
-    editingPrompt.source=byId("pmEditSource").value.trim();
-    await put("prompts",editingPrompt);
-    await refresh();
-    flashButton(b,"✓ Saved");
-    setTimeout(()=>byId("pmEditDialog")?.close(),500);
-  }catch(err){
-    console.error(err);toast("Could not save changes");
-  }finally{b.disabled=false}
-});
-
-/* Bulk selection */
+const LANG_KEY="pm-language";
+let currentLang=localStorage.getItem(LANG_KEY)==="es"?"es":"en";
+let featuredMode=false;
 let selectMode=false;
 let selectedIds=new Set();
-function ensureLibraryTools(){
-  let t=byId("pmLibraryTools");
-  if(t)return t;
-  t=document.createElement("div");
-  t.id="pmLibraryTools";t.className="pm-library-tools";
-  t.innerHTML=`<button type="button" id="pmSelectToggle">Select</button><span class="pm-selection-summary" id="pmSelectionSummary"></span><button type="button" id="pmDeleteSelected" class="pm-delete-selected" hidden>Delete</button>`;
-  const filters=byId("libraryOriginFilters");
-  filters?.insertAdjacentElement("beforebegin",t);
-  byId("pmSelectToggle").onclick=()=>{
-    selectMode=!selectMode;
-    selectedIds.clear();
-    render();
-    updateSelectionTools();
-  };
-  byId("pmDeleteSelected").onclick=async()=>{
-    const ids=[...selectedIds];
-    if(!ids.length)return;
-    const ok=await confirmDelete({
-      title:`Delete ${ids.length} prompt${ids.length===1?"":"s"}?`,
-      copy:"The selected prompts will be removed from your library. This can't be undone.",
-      button:`Delete ${ids.length}`
-    });
-    if(!ok)return;
-    /* Optimistic UI: remove from in-memory view first, then persist each deletion. */
-    prompts=prompts.filter(p=>!selectedIds.has(p.id));
-    render();
-    for(const id of ids)await del("prompts",id);
-    selectedIds.clear();selectMode=false;
-    await refresh();
-    toast(`✓ Deleted ${ids.length}`);
-    updateSelectionTools();
-  };
-  return t;
-}
-function updateSelectionTools(){
-  ensureLibraryTools();
-  const count=selectedIds.size;
-  byId("pmSelectToggle").textContent=selectMode?"Cancel":"Select";
-  byId("pmSelectionSummary").textContent=selectMode?(count?`${count} selected`:"Select prompts"):"";
-  byId("pmDeleteSelected").hidden=!selectMode||!count;
-}
-ensureLibraryTools();
+let editingPrompt=null;
 
-/* Replace Library renderer with clickable cards + Apple-like icon actions. */
-render=function(){
-  const xs=filtered(),has=prompts.length>0,q=byId("search").value.trim();
-  byId("count").textContent=prompts.length;
-  byId("empty").hidden=has;
-  byId("noresults").hidden=!(has&&(q||activeCategory!=="all"||activeOrigin!=="all")&&!xs.length);
-  renderFilters();
-  byId("list").innerHTML=xs.map(p=>`
-    <article class="card ${selectMode?"pm-select-mode":""} ${selectedIds.has(p.id)?"pm-selected":""}" data-use="${p.id}">
-      ${selectMode?`<span class="pm-select-dot">${selectedIds.has(p.id)?"✓":""}</span>`:""}
-      <div class="cardtop">
-        <div><div class="badges"><span class="categorybadge">${esc(catName(categoryId(p)))}</span>${platformsOf(p).map(x=>`<span class="platformbadge">${esc(platformName(x))}</span>`).join("")}</div><h4>${esc(p.title||"Untitled")}</h4></div>
-      </div>
-      <div class="preview">${esc((p.content||"").length>320?p.content.slice(0,320)+"…":p.content||"")}</div>
-      <div class="meta"><span>${new Date(p.createdAt||Date.now()).toLocaleDateString()}</span>${p.source?'<span>Source saved</span>':""}${p.acquisitionType==="catalog"?`<span>Saved from ${esc(p.sourceName||"Explore")}</span>`:""}${(p.useCount||0)?`<span>Used ${p.useCount}×</span>`:""}</div>
-      <div class="pm-card-actions">
-        <button class="pm-icon-btn" data-pm-copy="${p.id}" aria-label="Copy prompt" title="Copy">${ICONS.copy}</button>
-        <button class="pm-icon-btn" data-pm-share="${p.id}" aria-label="Share prompt" title="Share">${ICONS.share}</button>
-        <span class="pm-spacer"></span>
-        <button class="pm-icon-btn" data-pm-edit="${p.id}" aria-label="Edit prompt" title="Edit">${ICONS.edit}</button>
-        <button class="pm-icon-btn pm-danger" data-pm-delete="${p.id}" aria-label="Delete prompt" title="Delete">${ICONS.trash}</button>
-      </div>
-    </article>`).join("");
-  updateSelectionTools();
+const ICONS={
+ copy:`<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="11" height="11" rx="2"></rect><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"></path></svg>`,
+ share:`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V3"></path><path d="m8 7 4-4 4 4"></path><path d="M7 10H5a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2h-2"></path></svg>`,
+ edit:`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4l11-11a2.8 2.8 0 0 0-4-4L4 16v4Z"></path><path d="m13.5 6.5 4 4"></path></svg>`,
+ trash:`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16"></path><path d="M9 7V4h6v3"></path><path d="M7 7l1 13h8l1-13"></path><path d="M10 11v5M14 11v5"></path></svg>`
 };
+const FLAG_EN=`<svg viewBox="0 0 30 20" aria-hidden="true"><rect width="30" height="20" fill="#173a75"/><path d="M0 0 30 20M30 0 0 20" stroke="#fff" stroke-width="4"/><path d="M0 0 30 20M30 0 0 20" stroke="#c42b3c" stroke-width="2"/><path d="M15 0v20M0 10h30" stroke="#fff" stroke-width="6"/><path d="M15 0v20M0 10h30" stroke="#c42b3c" stroke-width="3"/></svg>`;
+const FLAG_ES=`<svg viewBox="0 0 30 20" aria-hidden="true"><rect width="30" height="20" fill="#f1c40f"/><rect width="30" height="5" y="0" fill="#aa151b"/><rect width="30" height="5" y="15" fill="#aa151b"/></svg>`;
 
+const S={
+ en:{home:"Home",explore:"Explore",library:"Library",useBetter:"Use better prompts.",homeDesc:"Your personal workspace for finding, keeping and using prompts worth returning to.",addPrompt:"Add prompt",yourLibrary:"YOUR LIBRARY",openSaved:"Open saved prompts →",discover:"DISCOVER",explorePrompts:"Explore prompts →",whatsNew:"WHAT'S NEW",faster:"Prompt Manager is getting faster.",updateText:"Cloud sync, ChatGPT access, a new Featured section, improved prompt actions and a cleaner library experience.",featured:"FEATURED",featuredTitle:"Prompts worth trying",featuredText:"A curated collection for Alpha. Real save, use and rating signals will turn this into Trending later.",discoverPrompts:"Discover prompts.",exploreDesc:"Choose what you want to do, or search the catalog.",searchPrompts:"Search prompts",yourPrompts:"Your prompts",libraryDesc:"Prompts you chose to keep.",all:"All",added:"Added",saved:"Saved",select:"Select",cancel:"Cancel",delete:"Delete",copy:"Copy",share:"Share",edit:"Edit",platform:"Platform",any:"Any",multiplatform:"Multiplatform",noPrompts:"No prompts found",tryAnother:"Try another search or filter.",settings:"Settings",profile:"PROFILE",name:"Name",save:"Save",data:"DATA",backup:"Backup & Restore",diagnostics:"Storage Diagnostics",language:"LANGUAGE",english:"English",spanish:"Español",appearance:"Appearance",signout:"Sign out",filter:"FILTER",featuredBack:"Featured",viewPrompt:"View prompt",saveLibrary:"Save to Library",savedLabel:"✓ Saved",sourceSaved:"Source saved",used:"Used",selected:"selected",selectPrompts:"Select prompts",deletePrompt:"Delete prompt?",cantUndo:"This can't be undone.",deleteSelected:"The selected prompts will be removed from your library. This can't be undone.",editPrompt:"EDIT PROMPT",title:"Title",prompt:"Prompt",sourceUrl:"Source URL",optional:"optional",saveChanges:"Save changes",required:"Title and prompt are required",couldNotSave:"Could not save changes",copied:"✓ Copied",shared:"✓ Shared",copyUnavailable:"Copy unavailable",shareUnavailable:"Share unavailable",deleted:"✓ Deleted",fastCapture:"FAST CAPTURE",paste:"Paste",fromClipboard:"FROM CLIPBOARD",pasteHint:"Paste prompt text or a source URL.",category:"Category",createCategory:"Create category",usePrompt:"USE PROMPT",readyPrompt:"READY PROMPT",yourRating:"YOUR RATING",copyPrompt:"Copy Prompt",newCategory:"New category",organize:"ORGANIZE",storage:"STORAGE",refreshDiagnostics:"Refresh diagnostics",copyDiagnostics:"Copy diagnostics",exportBackup:"Export backup",restoreBackup:"Restore from backup"},
+ es:{home:"Inicio",explore:"Explorar",library:"Biblioteca",useBetter:"Usa mejores prompts.",homeDesc:"Tu espacio personal para descubrir, guardar y usar prompts a los que merece la pena volver.",addPrompt:"Añadir prompt",yourLibrary:"TU BIBLIOTECA",openSaved:"Abrir prompts guardados →",discover:"DESCUBRIR",explorePrompts:"Explorar prompts →",whatsNew:"NOVEDADES",faster:"Prompt Manager es cada vez más rápido.",updateText:"Sincronización en la nube, acceso desde ChatGPT, nueva sección Featured, mejores acciones y una biblioteca más limpia.",featured:"FEATURED",featuredTitle:"Prompts que merece la pena probar",featuredText:"Una selección curada para Alpha. Más adelante, las señales reales de guardado, uso y valoración la convertirán en Trending.",discoverPrompts:"Descubre prompts.",exploreDesc:"Elige qué quieres hacer o busca en el catálogo.",searchPrompts:"Buscar prompts",yourPrompts:"Tus prompts",libraryDesc:"Prompts que decidiste guardar.",all:"Todos",added:"Añadidos",saved:"Guardados",select:"Seleccionar",cancel:"Cancelar",delete:"Eliminar",copy:"Copiar",share:"Compartir",edit:"Editar",platform:"Plataforma",any:"Cualquiera",multiplatform:"Multiplataforma",noPrompts:"No se encontraron prompts",tryAnother:"Prueba otra búsqueda o filtro.",settings:"Ajustes",profile:"PERFIL",name:"Nombre",save:"Guardar",data:"DATOS",backup:"Copia de seguridad y restauración",diagnostics:"Diagnóstico de almacenamiento",language:"IDIOMA",english:"English",spanish:"Español",appearance:"Apariencia",signout:"Cerrar sesión",filter:"FILTRO",featuredBack:"Featured",viewPrompt:"Ver prompt",saveLibrary:"Guardar en Biblioteca",savedLabel:"✓ Guardado",sourceSaved:"Fuente guardada",used:"Usado",selected:"seleccionados",selectPrompts:"Selecciona prompts",deletePrompt:"¿Eliminar este prompt?",cantUndo:"Esta acción no se puede deshacer.",deleteSelected:"Los prompts seleccionados se eliminarán de tu biblioteca. Esta acción no se puede deshacer.",editPrompt:"EDITAR PROMPT",title:"Título",prompt:"Prompt",sourceUrl:"URL de origen",optional:"opcional",saveChanges:"Guardar cambios",required:"El título y el prompt son obligatorios",couldNotSave:"No se pudieron guardar los cambios",copied:"✓ Copiado",shared:"✓ Compartido",copyUnavailable:"No se puede copiar",shareUnavailable:"No se puede compartir",deleted:"✓ Eliminado",fastCapture:"CAPTURA RÁPIDA",paste:"Pegar",fromClipboard:"DEL PORTAPAPELES",pasteHint:"Pega el texto del prompt o una URL de origen.",category:"Categoría",createCategory:"Crear categoría",usePrompt:"USAR PROMPT",readyPrompt:"PROMPT LISTO",yourRating:"TU VALORACIÓN",copyPrompt:"Copiar prompt",newCategory:"Nueva categoría",organize:"ORGANIZAR",storage:"ALMACENAMIENTO",refreshDiagnostics:"Actualizar diagnóstico",copyDiagnostics:"Copiar diagnóstico",exportBackup:"Exportar copia",restoreBackup:"Restaurar copia"}
+};
+const t=k=>S[currentLang][k]||S.en[k]||k;
+const CATEGORY_ES={General:"General",Coding:"Programación",Marketing:"Marketing",Writing:"Escritura",Image:"Imagen",Video:"Vídeo",Research:"Investigación",Productivity:"Productividad",Learning:"Aprendizaje",Business:"Negocio"};
+function displayCategory(name){return currentLang==="es"?(CATEGORY_ES[name]||name):name}
+function displayPlatform(id){if(id==="general")return t("multiplatform");return platformName(id)}
+function setText(sel,text){const el=document.querySelector(sel);if(el)el.textContent=text}
+function setPlaceholder(sel,text){const el=document.querySelector(sel);if(el)el.placeholder=text}
+
+function authDefaultName(){const meta=authUser?.user_metadata||{};return (meta.full_name||meta.name||meta.user_name||authUser?.email||"Prompt Manager").trim()}
+function effectiveName(){return (localStorage.getItem("pm-display-name")||"").trim()||authDefaultName()}
+renderProfileUI=function(){const name=effectiveName();if(byId("profileMenuName"))byId("profileMenuName").textContent=name;if(byId("displayName"))byId("displayName").value=name;const theme=localStorage.getItem("pm-theme")||"system";document.querySelectorAll("[data-quick-theme]").forEach(b=>b.classList.toggle("active",b.dataset.quickTheme===theme));applyStaticLanguage()};
+
+function flashButton(btn,label,ms=1500){if(!btn)return;if(!btn.dataset.pmOriginal)btn.dataset.pmOriginal=btn.innerHTML;btn.innerHTML=label;btn.classList.add("pm-inline-feedback");clearTimeout(btn._pmTimer);btn._pmTimer=setTimeout(()=>{btn.innerHTML=btn.dataset.pmOriginal;btn.classList.remove("pm-inline-feedback")},ms)}
+
+function ensureLanguageSettings(){if(byId("pmLanguageSection"))return;const profileSection=byId("displayName")?.closest(".settings-section");if(!profileSection)return;const section=document.createElement("div");section.className="settings-section";section.id="pmLanguageSection";section.innerHTML=`<span class="settings-label" id="pmLanguageLabel"></span><div class="pm-language-options"><button type="button" class="pm-language-option" data-pm-language="en">${FLAG_EN}<span>English</span><b></b></button><button type="button" class="pm-language-option" data-pm-language="es">${FLAG_ES}<span>Español</span><b></b></button></div>`;profileSection.insertAdjacentElement("afterend",section);section.addEventListener("click",e=>{const b=e.target.closest("[data-pm-language]");if(!b)return;currentLang=b.dataset.pmLanguage;localStorage.setItem(LANG_KEY,currentLang);applyLanguage()})}
+
+function ensureWhatsNew(){const homeActions=document.querySelector("#homeView .home-actions");if(!homeActions)return;document.querySelector(".pm-whats-new")?.remove();const n=document.createElement("section");n.className="pm-whats-new";n.innerHTML=`<div class="pm-whats-new-kicker"><span data-pm-whats-kicker></span><span>·</span><span class="pm-version">V1.6.4</span></div><h3 data-pm-whats-title></h3><p data-pm-whats-copy></p><ul><li>Cloud Sync</li><li>ChatGPT MCP</li><li>Featured</li><li>Library Actions</li></ul>`;homeActions.insertAdjacentElement("afterend",n)}
+
+function ensureFeaturedEntry(){const search=document.querySelector(".explore-search");if(!search)return;document.querySelector(".pm-featured")?.remove();const f=document.createElement("section");f.className="pm-featured";f.innerHTML=`<button type="button" id="pmFeaturedOpen"><div><small>★ <span data-pm-featured-label></span></small><h3 data-pm-featured-title></h3><p data-pm-featured-copy></p></div><span class="pm-featured-arrow">›</span></button>`;search.insertAdjacentElement("afterend",f);byId("pmFeaturedOpen").onclick=()=>{featuredMode=true;exploreCategory=null;if(byId("exploreSearch"))byId("exploreSearch").value="";renderExplore()}}
+
+function ensureLibraryHeaderTools(){let actions=document.querySelector(".pm-library-head-actions");if(actions)return actions;const grid=document.querySelector(".library-title-grid");const add=byId("libraryAdd");if(!grid||!add)return null;actions=document.createElement("div");actions.className="pm-library-head-actions";const select=document.createElement("button");select.type="button";select.id="pmSelectToggle";select.className="pm-select-toggle";actions.append(select);actions.append(add);grid.append(actions);select.onclick=()=>{selectMode=!selectMode;selectedIds.clear();render();updateSelectionUI()};const bar=document.createElement("div");bar.id="pmSelectionBar";bar.className="pm-selection-bar";bar.hidden=true;bar.innerHTML=`<span id="pmSelectionSummary"></span><button type="button" id="pmDeleteSelected"></button>`;document.body.appendChild(bar);byId("pmDeleteSelected").onclick=deleteSelected;return actions}
+function updateSelectionUI(){ensureLibraryHeaderTools();const count=selectedIds.size;const sel=byId("pmSelectToggle");if(sel)sel.textContent=selectMode?t("cancel"):t("select");const bar=byId("pmSelectionBar");if(bar){bar.hidden=!selectMode||!count;if(byId("pmSelectionSummary"))byId("pmSelectionSummary").textContent=`${count} ${t("selected")}`;if(byId("pmDeleteSelected"))byId("pmDeleteSelected").textContent=t("delete")}}
+
+function applyStaticLanguage(){document.documentElement.lang=currentLang==="es"?"es":"en";ensureLanguageSettings();ensureWhatsNew();ensureFeaturedEntry();ensureLibraryHeaderTools();
+ setText("#homeView .hero h2",t("useBetter"));setText("#homeView .hero p",t("homeDesc"));setText("#homeAdd",`＋ ${t("addPrompt")}`);setText('#homeView [data-go="library"] small',t("yourLibrary"));setText('#homeView [data-go="library"] strong',t("openSaved"));setText('#homeView [data-go="explore"] small',t("discover"));setText('#homeView [data-go="explore"] strong',t("explorePrompts"));
+ setText("[data-pm-whats-kicker]",t("whatsNew"));setText("[data-pm-whats-title]",t("faster"));setText("[data-pm-whats-copy]",t("updateText"));
+ setText("#exploreView .eyebrow",t("explore"));setText("#exploreView .pagehead h2",t("discoverPrompts"));setText("#exploreView .pagehead p",t("exploreDesc"));setPlaceholder("#exploreSearch",t("searchPrompts"));setText("[data-pm-featured-label]",t("featured"));setText("[data-pm-featured-title]",t("featuredTitle"));setText("[data-pm-featured-copy]",t("featuredText"));
+ setText("#libraryView .eyebrow",t("library"));setText("#libraryView .library-title-grid h2",t("yourPrompts"));setText("#libraryView .library-title-grid p",t("libraryDesc"));setPlaceholder("#search",t("searchPrompts"));
+ const origin=[...document.querySelectorAll("#libraryOriginFilters button")];if(origin[0])origin[0].textContent=t("all");if(origin[1])origin[1].textContent=t("added");if(origin[2])origin[2].textContent=t("saved");
+ setText("#noresults strong",t("noPrompts"));setText("#noresults span",t("tryAnother"));
+ const nav=[...document.querySelectorAll(".bottom-nav [data-nav] small")];if(nav[0])nav[0].textContent=t("home");if(nav[1])nav[1].textContent=t("explore");if(nav[2])nav[2].textContent=t("library");
+ setText("#settingsDialog .sheethead small","SETTINGS");setText("#settingsDialog .sheethead h3",t("settings"));const settingLabels=document.querySelectorAll("#settingsDialog .settings-label");if(settingLabels[0])settingLabels[0].textContent=t("profile");if(byId("pmLanguageLabel"))byId("pmLanguageLabel").textContent=t("language");if(settingLabels[settingLabels.length-1]&&settingLabels.length>1)settingLabels[settingLabels.length-1].textContent=t("data");
+ const nameLabel=byId("displayName")?.closest("label")?.querySelector(":scope > span");if(nameLabel)nameLabel.textContent=t("name");if(byId("saveDisplayName"))byId("saveDisplayName").textContent=t("save");const rows=document.querySelectorAll("#settingsDialog .settings-row span:first-child");if(rows[0])rows[0].textContent=t("backup");if(rows[1])rows[1].textContent=t("diagnostics");
+ const appearanceLabel=document.querySelector("#profileMenu .settings-label");if(appearanceLabel)appearanceLabel.textContent=t("appearance");const profileSmall=document.querySelector("#profileMenu .sheethead small");if(profileSmall)profileSmall.textContent=t("profile");const signout=document.querySelector("#logoutBtn span:first-child");if(signout)signout.textContent=t("signout");
+ document.querySelectorAll("[data-pm-language]").forEach(b=>{b.classList.toggle("active",b.dataset.pmLanguage===currentLang);const check=b.querySelector("b");if(check)check.textContent=b.dataset.pmLanguage===currentLang?"✓":""});
+ updateSelectionUI();translateDefaultCategoryUI();renderPlatformButton();
+}
+function translateDefaultCategoryUI(){document.querySelectorAll("#categoryFilters [data-filter]").forEach(b=>{if(b.dataset.filter==="all")b.textContent=t("all");else b.textContent=displayCategory(catName(b.dataset.filter))});document.querySelectorAll("#category option").forEach(o=>{const c=categories.find(x=>x.id===o.value);if(c)o.textContent=displayCategory(c.name)});document.querySelectorAll("#exploreCategories [data-explore-category] strong").forEach(s=>{const id=s.closest("[data-explore-category]")?.dataset.exploreCategory;s.textContent=displayCategory(id||s.textContent)})}
+function applyLanguage(){applyStaticLanguage();try{render();renderExplore()}catch(err){console.warn("Language redraw deferred",err)}}
+
+/* Platform filter: fixed handler + all options always selectable. */
+function renderPlatformButton(){const b=byId("platformFilterButton");if(!b)return;b.textContent=`${t("platform")} · ${activePlatform==="any"?t("any"):displayPlatform(activePlatform)} ▾`}
+if(byId("platformFilterButton"))byId("platformFilterButton").onclick=()=>{const opts=[["any",t("any")],...Object.entries(PLATFORMS).map(([id,name])=>[id,id==="general"?t("multiplatform"):name])];byId("platformOptions").innerHTML=opts.map(([id,name])=>`<button data-platform-filter="${id}"><span>${esc(name)}</span><b>${activePlatform===id?"✓":""}</b></button>`).join("");const small=byId("platformDialog")?.querySelector(".sheethead small");const h=byId("platformDialog")?.querySelector(".sheethead h3");if(small)small.textContent=t("filter");if(h)h.textContent=t("platform");byId("platformDialog").showModal()};
+if(byId("platformOptions"))byId("platformOptions").onclick=e=>{const b=e.target.closest("[data-platform-filter]");if(!b)return;activePlatform=b.dataset.platformFilter;byId("platformDialog").close();render()};
+
+/* Add Prompt always reopens clean. */
+const captureDefault=()=>{localStorage.setItem("pm-last-category","general");const f=byId("form");if(f)f.reset();if(byId("category"))byId("category").value="general";if(byId("platform"))byId("platform").value="general";if(byId("source"))byId("source").value="";if(byId("title"))byId("title").value="";if(byId("prompt"))byId("prompt").value="";if(byId("pasteHint"))byId("pasteHint").textContent=t("pasteHint")};byId("dialog")?.addEventListener("close",captureDefault);
+["homeAdd","libraryAdd","fab"].forEach(id=>byId(id)?.addEventListener("click",()=>setTimeout(()=>{localStorage.setItem("pm-last-category","general");if(byId("category"))byId("category").value="general";if(byId("platform"))byId("platform").value="general";translateDefaultCategoryUI()},0),true));
+const baseRenderCategorySelect=renderCategorySelect;renderCategorySelect=function(){baseRenderCategorySelect();translateDefaultCategoryUI()};
+
+/* Explore */
+const FEATURED_IDS=["pc-017","pm-055","pm-059","pc-021","pm-061","pm-063","pc-009","pm-035"];
+const baseRenderExplore=renderExplore;
+function featuredItems(){const picks=FEATURED_IDS.map(catalogItem).filter(Boolean);return picks.length?picks:catalog.slice(0,8)}
+function renderFeatured(){renderExploreCategories();byId("exploreCategories").hidden=true;byId("exploreResultsHead").hidden=false;byId("exploreResultsHead").style.display="flex";byId("exploreResultsTitle").textContent=t("featuredBack");const xs=featuredItems();byId("exploreStatus").textContent=`${xs.length} prompt${xs.length===1?"":"s"}`;byId("exploreList").innerHTML=`<div class="pm-featured-grid">${xs.map(x=>{const saved=catalogSaved(x);return `<article class="pm-featured-card"><div class="pm-featured-cover"><span>${esc(displayCategory(x.category))} · ${t("featured")}</span></div><div class="pm-featured-body"><h4>${esc(x.title)}</h4><p>${esc(x.prompt||"")}</p><div class="pm-featured-actions"><button data-explore-open="${x.id}">${t("viewPrompt")}</button>${saved?`<button disabled>${t("savedLabel")}</button>`:`<button class="save" data-explore-save="${x.id}">${t("saveLibrary")}</button>`}</div></div></article>`}).join("")}</div>`}
+renderExplore=function(){if(featuredMode){renderFeatured();return}baseRenderExplore();document.querySelectorAll("#exploreList .explore-card").forEach(card=>{const source=card.querySelector(".sourcebadge");if(source)source.textContent="PROMPT MANAGER";const cat=card.querySelector(".platformbadge");if(cat)cat.textContent=displayCategory(cat.textContent);const open=card.querySelector("[data-explore-open]");if(open)open.textContent=t("viewPrompt");const save=card.querySelector("[data-explore-save]");if(save)save.textContent=t("saveLibrary");const saved=card.querySelector(".saved-label");if(saved)saved.textContent=t("savedLabel");if(!open)return;const x=catalogItem(open.dataset.exploreOpen);if(!x||(!x.previewImage&&!x.previewVideo)||card.querySelector(".pm-preview-media"))return;const media=x.previewVideo?`<video class="pm-preview-media" src="${esc(x.previewVideo)}" muted playsinline controls></video>`:`<img class="pm-preview-media" src="${esc(x.previewImage)}" alt="${esc(x.title||"Prompt example")}">`;card.querySelector("h4")?.insertAdjacentHTML("afterend",media)});translateDefaultCategoryUI()};
+if(byId("exploreBack"))byId("exploreBack").onclick=()=>{featuredMode=false;exploreCategory=null;renderExplore()};
+if(byId("exploreSearch"))byId("exploreSearch").oninput=()=>{featuredMode=false;exploreCategory=null;renderExplore()};
+if(byId("exploreCategories"))byId("exploreCategories").onclick=e=>{const b=e.target.closest("[data-explore-category]");if(!b)return;featuredMode=false;exploreCategory=b.dataset.exploreCategory;renderExplore()};
+document.querySelector(".bottom-nav")?.addEventListener("click",e=>{if(!e.target.closest('[data-nav="explore"]'))return;featuredMode=false;exploreCategory=null;if(byId("exploreSearch"))byId("exploreSearch").value="";setTimeout(()=>renderExplore(),0)},true);document.querySelectorAll('[data-go="explore"]').forEach(b=>b.addEventListener("click",()=>{featuredMode=false;exploreCategory=null;if(byId("exploreSearch"))byId("exploreSearch").value="";setTimeout(()=>renderExplore(),0)},true));
+
+/* Custom confirmation */
+function ensureConfirmDialog(){let d=byId("pmConfirmDialog");if(d)return d;d=document.createElement("dialog");d.id="pmConfirmDialog";d.innerHTML=`<section class="sheet"><div class="sheethead"><div><small>CONFIRM</small><h3 id="pmConfirmTitle"></h3></div><button type="button" class="round" data-pm-confirm-cancel>×</button></div><p class="pm-confirm-copy" id="pmConfirmCopy"></p><div class="pm-confirm-actions"><button type="button" data-pm-confirm-cancel id="pmConfirmCancel"></button><button type="button" class="pm-confirm-delete" id="pmConfirmDelete"></button></div></section>`;document.body.appendChild(d);d.addEventListener("click",e=>{if(e.target.closest("[data-pm-confirm-cancel]"))d.close("cancel")});d.addEventListener("pointerdown",e=>{if(e.target===d)d.close("cancel")});return d}
+function confirmDelete({title=t("deletePrompt"),copy=t("cantUndo"),button=t("delete")}={}){return new Promise(resolve=>{const d=ensureConfirmDialog();byId("pmConfirmTitle").textContent=title;byId("pmConfirmCopy").textContent=copy;byId("pmConfirmCancel").textContent=t("cancel");const delBtn=byId("pmConfirmDelete");delBtn.textContent=button;let settled=false;const finish=ok=>{if(settled)return;settled=true;delBtn.onclick=null;if(d.open)d.close(ok?"delete":"cancel");resolve(ok)};delBtn.onclick=()=>finish(true);d.addEventListener("close",()=>finish(false),{once:true});d.showModal()})}
+
+/* Edit dialog */
+function ensureEditDialog(){let d=byId("pmEditDialog");if(d)return d;d=document.createElement("dialog");d.id="pmEditDialog";d.innerHTML=`<section class="sheet"><div class="sheethead"><div><small id="pmEditKicker"></small><h3 id="pmEditHeading"></h3></div><button type="button" class="round" data-pm-edit-close>×</button></div><div class="pm-edit-grid"><label><span id="pmEditTitleLabel"></span><input id="pmEditTitle" maxlength="80"></label><label><span id="pmEditPromptLabel"></span><textarea id="pmEditContent"></textarea></label><label><span id="pmEditSourceLabel"></span><input id="pmEditSource" type="url" inputmode="url"></label><button class="full primary" type="button" id="pmEditSave"></button></div></section>`;document.body.appendChild(d);d.addEventListener("click",e=>{if(e.target.closest("[data-pm-edit-close]"))d.close()});d.addEventListener("pointerdown",e=>{if(e.target===d)d.close()});byId("pmEditSave").onclick=saveEdit;return d}
+function translateEdit(){setText("#pmEditKicker",t("editPrompt"));setText("#pmEditHeading",t("edit"));setText("#pmEditTitleLabel",t("title"));setText("#pmEditPromptLabel",t("prompt"));setText("#pmEditSourceLabel",`${t("sourceUrl")} · ${t("optional")}`);setText("#pmEditSave",t("saveChanges"))}
+function openEdit(p){editingPrompt=p;ensureEditDialog();translateEdit();byId("pmEditTitle").value=p.title||"";byId("pmEditContent").value=p.content||"";byId("pmEditSource").value=p.source||"";byId("pmEditDialog").showModal()}
+async function saveEdit(){if(!editingPrompt)return;const b=byId("pmEditSave"),title=byId("pmEditTitle").value.trim(),content=byId("pmEditContent").value.trim();if(!title||!content){toast(t("required"));return}b.disabled=true;try{editingPrompt.title=title;editingPrompt.content=content;editingPrompt.source=byId("pmEditSource").value.trim();await put("prompts",editingPrompt);await refresh();flashButton(b,`✓ ${t("saved")}`);setTimeout(()=>byId("pmEditDialog")?.close(),500)}catch(err){console.error(err);toast(t("couldNotSave"))}finally{b.disabled=false}}
+
+/* Library renderer */
+render=function(){const xs=filtered(),has=prompts.length>0,q=byId("search").value.trim();byId("count").textContent=prompts.length;byId("empty").hidden=has;byId("noresults").hidden=!(has&&(q||activeCategory!=="all"||activeOrigin!=="all"||activePlatform!=="any")&&!xs.length);renderFilters();renderPlatformButton();byId("list").innerHTML=xs.map(p=>`<article class="card ${selectMode?"pm-select-mode":""} ${selectedIds.has(p.id)?"pm-selected":""}" data-use="${p.id}">${selectMode?`<span class="pm-select-dot">${selectedIds.has(p.id)?"✓":""}</span>`:""}<div class="pm-card-head"><div><div class="badges"><span class="categorybadge">${esc(displayCategory(catName(categoryId(p))))}</span>${platformsOf(p).map(x=>`<span class="platformbadge">${esc(displayPlatform(x))}</span>`).join("")}</div><h4>${esc(p.title||"Untitled")}</h4></div><div class="pm-card-manage"><button class="pm-icon-btn" data-pm-edit="${p.id}" aria-label="${t("edit")}" title="${t("edit")}">${ICONS.edit}</button><button class="pm-icon-btn pm-danger" data-pm-delete="${p.id}" aria-label="${t("delete")}" title="${t("delete")}">${ICONS.trash}</button></div></div><div class="preview">${esc((p.content||"").length>320?p.content.slice(0,320)+"…":p.content||"")}</div><div class="meta"><span>${new Date(p.createdAt||Date.now()).toLocaleDateString(currentLang==="es"?"es-ES":"en-US")}</span>${p.source?`<span>${t("sourceSaved")}</span>`:""}${p.acquisitionType==="catalog"?`<span>${currentLang==="es"?"Guardado desde":"Saved from"} ${esc(p.sourceName||"Explore")}</span>`:""}${(p.useCount||0)?`<span>${t("used")} ${p.useCount}×</span>`:""}</div><div class="pm-card-footer-actions"><button class="pm-card-action pm-copy" data-pm-copy="${p.id}">${ICONS.copy}<span>${t("copy")}</span></button><button class="pm-card-action pm-share" data-pm-share="${p.id}">${ICONS.share}<span>${t("share")}</span></button></div></article>`).join("");translateDefaultCategoryUI();updateSelectionUI()};
 function promptById(id){return prompts.find(p=>String(p.id)===String(id))}
-async function copyPromptFromCard(p,btn){
-  try{
-    await navigator.clipboard.writeText(p.content||"");
-    flashButton(btn,"✓");
-    toast("✓ Copied");
-  }catch{toast("Copy unavailable")}
-}
-async function sharePrompt(p,btn){
-  const text=`${p.title||"Prompt"}\n\n${p.content||""}`;
-  try{
-    if(navigator.share){
-      await navigator.share({title:p.title||"Prompt",text});
-      flashButton(btn,"✓");toast("✓ Shared");
-    }else{
-      await navigator.clipboard.writeText(text);
-      flashButton(btn,"✓");toast("✓ Copied");
-    }
-  }catch(err){
-    if(err?.name!=="AbortError")toast("Share unavailable");
-  }
-}
-async function deleteOne(p){
-  const ok=await confirmDelete({
-    title:"Delete prompt?",
-    copy:`"${p.title||"This prompt"}" will be removed from your library. This can't be undone.`,
-    button:"Delete"
-  });
-  if(!ok)return;
-  /* Immediate visual update before cloud sync completes. */
-  prompts=prompts.filter(x=>x.id!==p.id);
-  render();
-  await del("prompts",p.id);
-  await refresh();
-  toast("✓ Deleted");
-}
+async function copyPromptFromCard(p,btn){try{await navigator.clipboard.writeText(p.content||"");flashButton(btn,t("copied"));toast(t("copied"))}catch{toast(t("copyUnavailable"))}}
+async function sharePrompt(p,btn){const text=`${p.title||"Prompt"}\n\n${p.content||""}`;try{if(navigator.share){await navigator.share({title:p.title||"Prompt",text});flashButton(btn,t("shared"));toast(t("shared"))}else{await navigator.clipboard.writeText(text);flashButton(btn,t("copied"));toast(t("copied"))}}catch(err){if(err?.name!=="AbortError")toast(t("shareUnavailable"))}}
+async function deleteOne(p){const ok=await confirmDelete({title:t("deletePrompt"),copy:`“${p.title||"Prompt"}” — ${t("cantUndo")}`,button:t("delete")});if(!ok)return;prompts=prompts.filter(x=>x.id!==p.id);render();await del("prompts",p.id);await refresh();toast(t("deleted"))}
+async function deleteSelected(){const ids=[...selectedIds];if(!ids.length)return;const ok=await confirmDelete({title:`${t("delete")} ${ids.length} prompt${ids.length===1?"":"s"}?`,copy:t("deleteSelected"),button:`${t("delete")} ${ids.length}`});if(!ok)return;prompts=prompts.filter(p=>!selectedIds.has(p.id));render();for(const id of ids)await del("prompts",id);selectedIds.clear();selectMode=false;await refresh();toast(`✓ ${t("delete")} ${ids.length}`);updateSelectionUI()}
+byId("list")?.addEventListener("click",async e=>{const card=e.target.closest(".card");if(!card)return;const p=promptById(card.dataset.use);if(!p)return;if(selectMode){e.preventDefault();e.stopImmediatePropagation();selectedIds.has(p.id)?selectedIds.delete(p.id):selectedIds.add(p.id);render();return}const copy=e.target.closest("[data-pm-copy]"),share=e.target.closest("[data-pm-share]"),edit=e.target.closest("[data-pm-edit]"),trash=e.target.closest("[data-pm-delete]");if(copy||share||edit||trash){e.preventDefault();e.stopImmediatePropagation();if(copy)return copyPromptFromCard(p,copy);if(share)return sharePrompt(p,share);if(edit)return openEdit(p);if(trash)return deleteOne(p)}e.preventDefault();e.stopImmediatePropagation();openUse(p)},true);
+byId("search").oninput=()=>render();byId("categoryFilters").onclick=e=>{const b=e.target.closest("[data-filter]");if(!b)return;activeCategory=b.dataset.filter;render()};byId("libraryOriginFilters").onclick=e=>{const b=e.target.closest("[data-origin]");if(!b)return;activeOrigin=b.dataset.origin;render()};
 
-/* Capture-phase handler prevents legacy card/menu handlers from double-firing. */
-byId("list")?.addEventListener("click",async e=>{
-  const card=e.target.closest(".card");
-  if(!card)return;
-  const p=promptById(card.dataset.use);
-  if(!p)return;
+/* Use/copy feedback */
+byId("useCopy")?.addEventListener("click",async e=>{e.preventDefault();e.stopImmediatePropagation();if(!currentPrompt)return;const b=byId("useCopy");try{await navigator.clipboard.writeText(personalized());await markUsed(currentPrompt);byId("useMeta").textContent=`${t("used")} ${currentPrompt.useCount}×${currentPrompt.source?` · ${t("sourceSaved")}`:""}`;flashButton(b,t("copied"))}catch{toast(t("copyUnavailable"))}},true);
+byId("diagnosticsCopy")?.addEventListener("click",()=>setTimeout(()=>flashButton(byId("diagnosticsCopy"),t("copied")),0),true);byId("export")?.addEventListener("click",()=>setTimeout(()=>flashButton(byId("export"),`✓ ${currentLang==="es"?"Exportado":"Exported"}`),0),true);document.addEventListener("click",e=>{const b=e.target.closest("#saveDisplayName");if(!b)return;setTimeout(()=>flashButton(b,`✓ ${t("saved")}`),0)},true);
 
-  if(selectMode){
-    e.preventDefault();e.stopImmediatePropagation();
-    selectedIds.has(p.id)?selectedIds.delete(p.id):selectedIds.add(p.id);
-    render();return;
-  }
+/* Replace browser alert on restore failure. */
+function showMessage(title,message){let d=byId("pmMessageDialog");if(!d){d=document.createElement("dialog");d.id="pmMessageDialog";d.innerHTML=`<section class="sheet"><div class="sheethead"><div><small>PROMPT MANAGER</small><h3 id="pmMessageTitle"></h3></div><button type="button" class="round" data-pm-message-close>×</button></div><p class="pm-confirm-copy" id="pmMessageCopy"></p><button type="button" class="full primary" data-pm-message-close>OK</button></section>`;document.body.appendChild(d);d.addEventListener("click",e=>{if(e.target.closest("[data-pm-message-close]"))d.close()});d.addEventListener("pointerdown",e=>{if(e.target===d)d.close()})}byId("pmMessageTitle").textContent=title;byId("pmMessageCopy").textContent=message;d.showModal()}
+if(byId("importFile"))byId("importFile").onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const r=await restore(f);byId("backupDialog").close();toast(`${r.added} ${currentLang==="es"?"restaurados":"restored"} · ${r.skipped} ${currentLang==="es"?"omitidos":"skipped"}`)}catch(err){showMessage(currentLang==="es"?"No se pudo restaurar":"Restore failed",err.message)}finally{e.target.value=""}};
 
-  const copy=e.target.closest("[data-pm-copy]");
-  const share=e.target.closest("[data-pm-share]");
-  const edit=e.target.closest("[data-pm-edit]");
-  const trash=e.target.closest("[data-pm-delete]");
-  if(copy||share||edit||trash){
-    e.preventDefault();e.stopImmediatePropagation();
-    if(copy)return copyPromptFromCard(p,copy);
-    if(share)return sharePrompt(p,share);
-    if(edit)return openEdit(p);
-    if(trash)return deleteOne(p);
-  }
+/* Backdrop-close all app dialogs. */
+document.addEventListener("pointerdown",e=>{const d=e.target.closest("dialog");if(!d||e.target!==d||!d.open)return;d.close()},true);
 
-  e.preventDefault();e.stopImmediatePropagation();
-  openUse(p);
-},true);
-
-/* Use sheet copy gets in-place feedback instead of toast-only. */
-byId("useCopy")?.addEventListener("click",async e=>{
-  e.preventDefault();e.stopImmediatePropagation();
-  if(!currentPrompt)return;
-  const b=byId("useCopy");
-  try{
-    await navigator.clipboard.writeText(personalized());
-    await markUsed(currentPrompt);
-    byId("useMeta").textContent=`Used ${currentPrompt.useCount} times${currentPrompt.source?" · Source saved":""}`;
-    flashButton(b,"✓ Copied");
-  }catch{toast("Copy unavailable")}
-},true);
-
-/* Diagnostics copy feedback. */
-byId("diagnosticsCopy")?.addEventListener("click",()=>setTimeout(()=>flashButton(byId("diagnosticsCopy"),"✓ Copied"),0),true);
-
-/* Export feedback. */
-byId("export")?.addEventListener("click",()=>setTimeout(()=>flashButton(byId("export"),"✓ Exported"),0),true);
-
-/* Remove browser alert() from backup restore failures by replacing it with an app modal. */
-function showMessage(title,message){
-  let d=byId("pmMessageDialog");
-  if(!d){
-    d=document.createElement("dialog");d.id="pmMessageDialog";
-    d.innerHTML=`<section class="sheet"><div class="sheethead"><div><small>PROMPT MANAGER</small><h3 id="pmMessageTitle"></h3></div><button type="button" class="round" data-pm-message-close>×</button></div><p class="pm-confirm-copy" id="pmMessageCopy"></p><button type="button" class="full primary" data-pm-message-close>OK</button></section>`;
-    document.body.appendChild(d);
-    d.addEventListener("click",e=>{if(e.target.closest("[data-pm-message-close]"))d.close()});
-    d.addEventListener("pointerdown",e=>{if(e.target===d)d.close()});
-  }
-  byId("pmMessageTitle").textContent=title;
-  byId("pmMessageCopy").textContent=message;
-  d.showModal();
-}
-
-/* Initial redraw with refined cards/profile. */
-try{renderProfileUI();render()}catch(err){console.warn("UI refinement initial render deferred",err)}
-
+ensureLanguageSettings();ensureLibraryHeaderTools();ensureEditDialog();applyLanguage();
 })();
