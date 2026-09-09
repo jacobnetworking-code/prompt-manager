@@ -26,6 +26,26 @@ const S={
  sr:{home:"Početna",explore:"Istraži",library:"Biblioteka",useBetter:"Koristi bolje promptove.",homeDesc:"Tvoj lični prostor za pronalaženje, čuvanje i korišćenje promptova kojima vredi da se vratiš.",addPrompt:"Dodaj prompt",yourLibrary:"TVOJA BIBLIOTEKA",openSaved:"Otvori sačuvane promptove →",discover:"OTKRIJ",explorePrompts:"Istraži promptove →",whatsNew:"NOVO",faster:"Prompt Manager postaje brži.",updateText:"Sinhronizacija u oblaku, pristup iz ChatGPT-a, nova Featured sekcija, bolje akcije nad promptovima i čistija biblioteka.",featured:"FEATURED",featuredTitle:"Promptovi koje vredi probati",featuredText:"Kurirana kolekcija za Alpha verziju. Kasnije će stvarni signali čuvanja, korišćenja i ocenjivanja ovo pretvoriti u Trending.",discoverPrompts:"Otkrij promptove.",exploreDesc:"Izaberi šta želiš da uradiš ili pretraži katalog.",searchPrompts:"Pretraži promptove",yourPrompts:"Tvoji promptovi",libraryDesc:"Promptovi koje si odlučio da sačuvaš.",all:"Sve",added:"Dodati",saved:"Sačuvani",select:"Izaberi",cancel:"Otkaži",delete:"Obriši",copy:"Kopiraj",share:"Podeli",edit:"Izmeni",platform:"Platforma",any:"Bilo koja",multiplatform:"Više platformi",noPrompts:"Nema pronađenih promptova",tryAnother:"Probaj drugu pretragu ili filter.",settings:"Podešavanja",profile:"PROFIL",name:"Ime",save:"Sačuvaj",data:"PODACI",backup:"Backup i vraćanje",diagnostics:"Dijagnostika skladišta",language:"JEZIK",english:"English",spanish:"Español",serbian:"Srpski",appearance:"Izgled",signout:"Odjavi se",filter:"FILTER",featuredBack:"Featured",viewPrompt:"Otvori prompt",saveLibrary:"Sačuvaj u Biblioteku",savedLabel:"✓ Sačuvano",sourceSaved:"Izvor sačuvan",used:"Korišćeno",selected:"izabrano",selectPrompts:"Izaberi promptove",deletePrompt:"Obrisati ovaj prompt?",cantUndo:"Ova radnja se ne može poništiti.",deleteSelected:"Izabrani promptovi će biti uklonjeni iz tvoje biblioteke. Ova radnja se ne može poništiti.",editPrompt:"IZMENI PROMPT",title:"Naslov",prompt:"Prompt",sourceUrl:"URL izvora",optional:"opciono",saveChanges:"Sačuvaj izmene",required:"Naslov i prompt su obavezni",couldNotSave:"Izmene nisu sačuvane",copied:"✓ Kopirano",shared:"✓ Podeljeno",copyUnavailable:"Kopiranje nije dostupno",shareUnavailable:"Deljenje nije dostupno",deleted:"✓ Obrisano",fastCapture:"BRZO ČUVANJE",paste:"Nalepi",fromClipboard:"IZ CLIPBOARD-A",pasteHint:"Nalepi tekst prompta ili URL izvora.",category:"Kategorija",createCategory:"Kreiraj kategoriju",usePrompt:"KORISTI PROMPT",readyPrompt:"SPREMAN PROMPT",yourRating:"TVOJA OCENA",copyPrompt:"Kopiraj prompt",newCategory:"Nova kategorija",organize:"ORGANIZUJ",storage:"SKLADIŠTE",refreshDiagnostics:"Osveži dijagnostiku",copyDiagnostics:"Kopiraj dijagnostiku",exportBackup:"Izvezi backup",restoreBackup:"Vrati backup"}
 };
 const t=k=>S[currentLang][k]||S.en[k]||k;
+
+let pmLockedScrollY=0;
+function syncModalScrollLock(){
+  const anyOpen=[...document.querySelectorAll("dialog")].some(d=>d.open);
+  const body=document.body;
+  if(anyOpen && !body.classList.contains("pm-modal-lock")){
+    pmLockedScrollY=window.scrollY||0;
+    body.classList.add("pm-modal-lock");
+    body.style.top=`-${pmLockedScrollY}px`;
+  }else if(!anyOpen && body.classList.contains("pm-modal-lock")){
+    body.classList.remove("pm-modal-lock");
+    body.style.top="";
+    window.scrollTo(0,pmLockedScrollY);
+  }
+}
+const pmDialogObserver=new MutationObserver(syncModalScrollLock);
+document.querySelectorAll("dialog").forEach(d=>pmDialogObserver.observe(d,{attributes:true,attributeFilter:["open"]}));
+document.addEventListener("cancel",()=>setTimeout(syncModalScrollLock,0),true);
+document.addEventListener("close",()=>setTimeout(syncModalScrollLock,0),true);
+
 const CATEGORY_ES={General:"General",Coding:"Programación",Marketing:"Marketing",Writing:"Escritura",Image:"Imagen",Video:"Vídeo",Research:"Investigación",Productivity:"Productividad",Learning:"Aprendizaje",Business:"Negocio"};
 const CATEGORY_SR={General:"Opšte",Coding:"Programiranje",Marketing:"Marketing",Writing:"Pisanje",Image:"Slika",Video:"Video",Research:"Istraživanje",Productivity:"Produktivnost",Learning:"Učenje",Business:"Biznis"};
 function displayCategory(name){if(currentLang==="es")return CATEGORY_ES[name]||name;if(currentLang==="sr")return CATEGORY_SR[name]||name;return name}
@@ -41,7 +61,11 @@ function flashButton(btn,label,ms=1500){if(!btn)return;if(!btn.dataset.pmOrigina
 
 function ensureLanguageSettings(){if(byId("pmLanguageSection"))return;const profileSection=byId("displayName")?.closest(".settings-section");if(!profileSection)return;const section=document.createElement("div");section.className="settings-section";section.id="pmLanguageSection";section.innerHTML=`<span class="settings-label" id="pmLanguageLabel"></span><div class="pm-language-options"><button type="button" class="pm-language-option" data-pm-language="en">${FLAG_EN}<span>English</span><b></b></button><button type="button" class="pm-language-option" data-pm-language="es">${FLAG_ES}<span>Español</span><b></b></button><button type="button" class="pm-language-option" data-pm-language="sr">${FLAG_RS}<span>Srpski</span><b></b></button></div>`;profileSection.insertAdjacentElement("afterend",section);section.addEventListener("click",e=>{const b=e.target.closest("[data-pm-language]");if(!b)return;currentLang=b.dataset.pmLanguage;localStorage.setItem(LANG_KEY,currentLang);applyLanguage()})}
 
-function ensureWhatsNew(){const homeActions=document.querySelector("#homeView .home-actions");if(!homeActions)return;document.querySelector(".pm-whats-new")?.remove();const n=document.createElement("section");n.className="pm-whats-new";n.innerHTML=`<div class="pm-whats-new-kicker"><span data-pm-whats-kicker></span><span>·</span><span class="pm-version">V1.6.4.11</span></div><h3 data-pm-whats-title></h3><p data-pm-whats-copy></p><ul><li>Cloud Sync</li><li>ChatGPT MCP</li><li>Featured</li><li>Library Actions</li></ul>`;homeActions.insertAdjacentElement("afterend",n)}
+const PM_RELEASE={
+  version:"1.6.4.14",
+  highlights:["Cloud Sync","ChatGPT MCP","Featured Media","Responsive Desktop","Library Actions","Compact Navigation"]
+};
+function ensureWhatsNew(){const homeActions=document.querySelector("#homeView .home-actions");if(!homeActions)return;document.querySelector(".pm-whats-new")?.remove();const n=document.createElement("section");n.className="pm-whats-new";n.innerHTML=`<div class="pm-whats-new-kicker"><span data-pm-whats-kicker></span><span>·</span><span class="pm-version">V${PM_RELEASE.version}</span></div><h3 data-pm-whats-title></h3><p data-pm-whats-copy></p><ul>${PM_RELEASE.highlights.map(x=>`<li>${x}</li>`).join("")}</ul>`;homeActions.insertAdjacentElement("afterend",n)}
 
 function ensureFeaturedEntry(){const search=document.querySelector(".explore-search");if(!search)return;document.querySelector(".pm-featured")?.remove();const f=document.createElement("section");f.className="pm-featured";f.innerHTML=`<button type="button" id="pmFeaturedOpen"><div><small>★ <span data-pm-featured-label></span></small><h3 data-pm-featured-title></h3><p data-pm-featured-copy></p></div><span class="pm-featured-arrow">›</span></button>`;search.insertAdjacentElement("afterend",f);byId("pmFeaturedOpen").onclick=()=>{featuredMode=true;exploreCategory=null;if(byId("exploreSearch"))byId("exploreSearch").value="";renderExplore()}}
 
