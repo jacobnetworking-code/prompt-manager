@@ -1,33 +1,25 @@
-# Prompt Manager — M1.6.5.10
+# Prompt Manager — M1.6.5.11
 
 ## Changes
-- The visible teaser now intentionally ends mid-sentence to create curiosity.
-- It still cuts at a word boundary, never through a word.
-- The blurred continuation begins on the next visual line.
-- Public share metadata now stores only `total_length` (character count), not hidden prompt text.
-- The synthetic blurred continuation length is generated to approximately match:
-  `original prompt length - visible teaser length`.
-- This makes the full preview visually approximate the original prompt's total character length.
-- Hidden real prompt content remains inaccessible to anonymous users.
-- Locked view still has no Copy Prompt / Save to My Library.
-- Requires one small SQL migration.
+- Featured images and the current Seedance video preload silently after authentication.
+- The app remains usable immediately; preload runs in idle time / shortly after login and never blocks Home.
+- Images use browser image decoding/cache.
+- Video uses `preload="auto"` with muted inline loading.
+- Existing service-worker runtime caching remains the second cache layer.
+- Only current Featured media is preloaded, not the whole catalog.
+- What's New updated to V1.6.5.11.
+- No SQL/schema changes.
 
 ## Commit title
-M1.6.5.10 — Curiosity Cut & Original-Length Share Preview
+M1.6.5.11 — Preload Featured Media After Login
 
 ## Replace
 - ui-refine.js
-- prompt/share.js
 - sw.js
 - README.md
 
 ## Add
-- m1.6.5.10-share-total-length.sql
+- none
 
 ## Delete
 - none
-
-## Deploy order
-1. Run `m1.6.5.10-share-total-length.sql` in Supabase SQL Editor.
-2. Upload the replacement files to GitHub.
-3. Re-share an existing prompt once so its `total_length` is populated correctly.

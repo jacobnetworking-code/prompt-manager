@@ -27,6 +27,46 @@ const S={
 };
 const t=k=>S[currentLang][k]||S.en[k]||k;
 
+const PM_FEATURED_MEDIA_PRELOAD=[
+  "./featured/image-builder-example.PNG?v=16410",
+  "./featured/portrait-example-real.jpg?v=16410",
+  "./featured/architecture-example-real.jpg?v=16410",
+  "./featured/fashion-editorial-example.jpg?v=16410",
+  "./featured/logo-concept-real.jpg?v=16410",
+  "./featured/seedance-arrival-example.mp4?v=16410"
+];
+
+let pmFeaturedPreloadStarted=false;
+function preloadFeaturedMedia(){
+  if(pmFeaturedPreloadStarted)return;
+  pmFeaturedPreloadStarted=true;
+
+  const start=()=>{
+    for(const url of PM_FEATURED_MEDIA_PRELOAD){
+      if(/\.mp4(?:\?|$)/i.test(url)){
+        const v=document.createElement("video");
+        v.preload="auto";
+        v.muted=true;
+        v.playsInline=true;
+        v.src=url;
+        v.load();
+      }else{
+        const img=new Image();
+        img.decoding="async";
+        img.loading="eager";
+        img.src=url;
+      }
+    }
+  };
+
+  if("requestIdleCallback" in window){
+    requestIdleCallback(start,{timeout:1800});
+  }else{
+    setTimeout(start,350);
+  }
+}
+
+
 let pmLockedScrollY=0;
 function syncModalScrollLock(){
   const anyOpen=[...document.querySelectorAll("dialog")].some(d=>d.open);
@@ -55,15 +95,15 @@ function setPlaceholder(sel,text){const el=document.querySelector(sel);if(el)el.
 
 function authDefaultName(){const meta=authUser?.user_metadata||{};return (meta.full_name||meta.name||meta.user_name||authUser?.email||"Prompt Manager").trim()}
 function effectiveName(){return (localStorage.getItem("pm-display-name")||"").trim()||authDefaultName()}
-renderProfileUI=function(){const name=effectiveName();if(byId("profileMenuName"))byId("profileMenuName").textContent=name;if(byId("displayName"))byId("displayName").value=name;const theme=localStorage.getItem("pm-theme")||"system";document.querySelectorAll("[data-quick-theme]").forEach(b=>b.classList.toggle("active",b.dataset.quickTheme===theme));applyStaticLanguage()};
+renderProfileUI=function(){const name=effectiveName();if(byId("profileMenuName"))byId("profileMenuName").textContent=name;if(byId("displayName"))byId("displayName").value=name;const theme=localStorage.getItem("pm-theme")||"system";document.querySelectorAll("[data-quick-theme]").forEach(b=>b.classList.toggle("active",b.dataset.quickTheme===theme));applyStaticLanguage();if(authUser)preloadFeaturedMedia()};
 
 function flashButton(btn,label,ms=1500){if(!btn)return;if(!btn.dataset.pmOriginal)btn.dataset.pmOriginal=btn.innerHTML;btn.innerHTML=label;btn.classList.add("pm-inline-feedback");clearTimeout(btn._pmTimer);btn._pmTimer=setTimeout(()=>{btn.innerHTML=btn.dataset.pmOriginal;btn.classList.remove("pm-inline-feedback")},ms)}
 
 function ensureLanguageSettings(){if(byId("pmLanguageSection"))return;const profileSection=byId("displayName")?.closest(".settings-section");if(!profileSection)return;const section=document.createElement("div");section.className="settings-section";section.id="pmLanguageSection";section.innerHTML=`<span class="settings-label" id="pmLanguageLabel"></span><div class="pm-language-options"><button type="button" class="pm-language-option" data-pm-language="en">${FLAG_EN}<span>English</span><b></b></button><button type="button" class="pm-language-option" data-pm-language="es">${FLAG_ES}<span>Español</span><b></b></button><button type="button" class="pm-language-option" data-pm-language="sr">${FLAG_RS}<span>Srpski</span><b></b></button></div>`;profileSection.insertAdjacentElement("afterend",section);section.addEventListener("click",e=>{const b=e.target.closest("[data-pm-language]");if(!b)return;currentLang=b.dataset.pmLanguage;localStorage.setItem(LANG_KEY,currentLang);applyLanguage()})}
 
 const PM_RELEASE={
-  version:"1.6.5.10",
-  highlights:["Cloud Sync","ChatGPT MCP","Featured Media","Responsive Desktop","Library Actions","Compact Navigation","Streamlined Headers","Public Prompt Sharing","Public Share Fix","Share Teaser UX","Share Unlock Flow","Compact Share Preview","Secure 20/80 Share Preview","Prompt-Like Share Blur"]
+  version:"1.6.5.11",
+  highlights:["Cloud Sync","ChatGPT MCP","Featured Media","Responsive Desktop","Library Actions","Compact Navigation","Streamlined Headers","Public Prompt Sharing","Public Share Fix","Share Teaser UX","Share Unlock Flow","Compact Share Preview","Secure 20/80 Share Preview","Prompt-Like Share Blur","Featured Media Preload"]
 };
 function ensureWhatsNew(){const homeActions=document.querySelector("#homeView .home-actions");if(!homeActions)return;document.querySelector(".pm-whats-new")?.remove();const n=document.createElement("section");n.className="pm-whats-new";n.innerHTML=`<div class="pm-whats-new-kicker"><span data-pm-whats-kicker></span><span>·</span><span class="pm-version">V${PM_RELEASE.version}</span></div><h3 data-pm-whats-title></h3><p data-pm-whats-copy></p><ul>${PM_RELEASE.highlights.map(x=>`<li>${x}</li>`).join("")}</ul>`;homeActions.insertAdjacentElement("afterend",n)}
 
