@@ -76,22 +76,25 @@ const captureDefault=()=>{localStorage.setItem("pm-last-category","general");con
 const baseRenderCategorySelect=renderCategorySelect;renderCategorySelect=function(){baseRenderCategorySelect();translateDefaultCategoryUI()};
 
 /* Explore */
-const FEATURED_IDS=["pc-017","pm-055","pm-059","pc-021","pm-061","pm-063","pc-009","pm-035"];
+const FEATURED_IDS=["pc-017","pc-019","pm-055","pm-056","pm-059","pc-021"];
 const baseRenderExplore=renderExplore;
 
 const PM_FEATURED_PREVIEWS={
-  "pc-017":"./featured/image-prompt-builder.svg",
+  "pc-017":"./featured/portrait-example.png",
+  "pc-019":"./featured/portrait-example.png",
   "pm-055":"./featured/logo-concept.svg",
-  "pm-059":"./featured/portrait-prompt.svg",
-  "pc-021":"./featured/cinematic-video.svg",
-  "pm-061":"./featured/cinematic-video.svg",
-  "pm-063":"./featured/cinematic-video.svg",
-  "pc-019":"./featured/portrait-prompt.svg",
-  "pm-056":"./featured/architecture-visual.svg"
+  "pm-056":"./featured/architecture-example.png",
+  "pm-059":"./featured/fashion-editorial-example.png"
+};
+const PM_FEATURED_VIDEOS={
+  "pc-021":"./featured/seedance-arrival-example.mp4"
 };
 function attachFeaturedPreview(p){
   if(!p||p.previewImage||p.previewVideo)return p;
-  const previewImage=PM_FEATURED_PREVIEWS[String(p.id)];
+  const id=String(p.id);
+  const previewVideo=PM_FEATURED_VIDEOS[id];
+  if(previewVideo)return {...p,previewVideo,previewModel:"Seedance 2.0"};
+  const previewImage=PM_FEATURED_PREVIEWS[id];
   return previewImage?{...p,previewImage}:p;
 }
 function featuredItems(){const picks=FEATURED_IDS.map(catalogItem).filter(Boolean);return picks.length?picks:catalog.slice(0,8)}

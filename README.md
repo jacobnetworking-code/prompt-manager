@@ -1,25 +1,26 @@
-# Prompt Manager — M1.6.4.6
+# Prompt Manager — M1.6.4.8
 
 ## Changes
-- Featured video previews autoplay when the card is sufficiently visible.
-- Videos are muted, loop continuously, play inline, and expose no playback controls.
-- Off-screen videos pause automatically to reduce battery/data use and resume when visible.
+- Added one real Seedance 2.0 video example to Featured.
+- The video is linked to the single `Cinematic Video Prompt` Featured card (`pc-021`).
+- Video autoplays only while visible, muted, looped, inline, and with no player controls.
+- The GitHub asset is a web-optimized H.264 MP4 with the audio track removed.
+- Removed the other placeholder video cards from Featured for now.
 - No IndexedDB or Supabase schema changes.
 
-## Media provenance
-This release changes playback behavior only. Do not label existing visual assets as exact prompt outputs unless the asset was actually generated from that card prompt. Exact prompt → output provenance remains a separate content task.
-
 ## Commit title
-M1.6.4.6 — Silent Autoplay Featured Video
+M1.6.4.8 — Real Seedance Featured Video
 
 ## Replace
 - ui-refine.js
-- ui-refine.css
 - sw.js
 - README.md
 
 ## Add
-- none
+- featured/seedance-arrival-example.mp4
 
 ## Delete
-- none
+- none required
+
+## Optional cleanup
+`featured/cinematic-video.svg` is no longer used by Featured and can be deleted.
