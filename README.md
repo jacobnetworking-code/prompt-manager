@@ -1,17 +1,24 @@
-# Prompt Manager — M1.6.6.1 Logout Flow Fix
+# Prompt Manager — M1.6.6.2 Compact Expandable Desktop Sidebar
 
-## User-facing fix
-Signing out now closes the open profile window immediately. Once Supabase finishes signing out, the existing authentication gate becomes the visible login screen instead of remaining hidden behind the profile dialog.
+## User-facing changes
+- The desktop sidebar is now compact and only tall enough for the product navigation.
+- The Prompt Manager logo is integrated into the rail.
+- Account access is integrated into the bottom of the same rail.
+- The collapsed state shows icons only.
+- Hovering or keyboard focusing expands the rail to reveal labels and the Prompt Manager name.
+- Expansion overlays the workspace rather than shifting the main content.
+- Mobile/tablet navigation is unchanged.
 
 ## What's New
-No change. This is a focused bug fix and does not replace the M1.6.6 Desktop Experience entry.
+No new entry. This is a refinement of the existing M1.6.6 desktop experience.
 
 ## Commit title
-M1.6.6.1 — Fix Logout Flow
+M1.6.6.2 — Compact Expandable Desktop Sidebar
 
 ## Replace
-- ui-refine.js
+- desktop-v1.css
 - sw.js
+- README.md
 
 ## Add
 - none
