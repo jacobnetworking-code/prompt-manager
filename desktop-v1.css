@@ -569,3 +569,62 @@
   :root{--pm-desktop-sidebar:104px}
   .bottom-nav{width:var(--pm-rail-collapsed)!important}
 }
+/* M1.6.6.3 — Sidebar text alignment refinement */
+@media (min-width:1024px){
+
+  /* Bring menu labels closer to their icons. */
+  .bottom-nav button{
+    grid-template-columns:42px minmax(0,1fr)!important;
+    gap:2px!important;
+  }
+
+  .bottom-nav button>span{
+    width:42px!important;
+    height:50px!important;
+  }
+
+  .bottom-nav button small{
+    margin-left:0!important;
+    padding-left:0!important;
+  }
+
+  /* Keep account text on the exact same label axis as navigation items. */
+  #profileBtn{
+    grid-template-columns:42px minmax(0,1fr)!important;
+    column-gap:2px!important;
+  }
+
+  #profileBtn::after{
+    margin-left:0!important;
+    padding-left:0!important;
+  }
+
+  /* Brand: Prompt Manager + Alpha on one horizontal line. */
+  .brand{
+    gap:2px!important;
+  }
+
+  .brand .mark{
+    width:42px!important;
+    min-width:42px!important;
+    flex-basis:42px!important;
+  }
+
+  .brand-title-row{
+    display:flex!important;
+    align-items:center!important;
+    gap:8px!important;
+    min-width:max-content!important;
+  }
+
+  .brand-title-row h1{
+    margin:0!important;
+    line-height:1!important;
+  }
+
+  .alpha-badge{
+    margin:0!important;
+    transform:none!important;
+    align-self:center!important;
+  }
+}
