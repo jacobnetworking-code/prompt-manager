@@ -907,3 +907,185 @@
     padding:24px!important;
   }
 }
+
+/* M1.6.6.6 — Persistent click sidebar + dynamic login backdrop */
+@media (min-width:1024px){
+  /* Definitively retire the legacy hover-to-expand behavior from M1.6.6.2. */
+  body:not(.pm-sidebar-expanded):has(.bottom-nav:hover) .bottom-nav,
+  body:not(.pm-sidebar-expanded):has(.brand:hover) .bottom-nav,
+  body:not(.pm-sidebar-expanded):has(#profileBtn:hover) .bottom-nav,
+  body:not(.pm-sidebar-expanded):has(.bottom-nav:focus-within) .bottom-nav,
+  body:not(.pm-sidebar-expanded):has(.brand:focus-within) .bottom-nav,
+  body:not(.pm-sidebar-expanded):has(#profileBtn:focus-visible) .bottom-nav{
+    width:var(--pm-rail-collapsed)!important;
+  }
+
+  body:not(.pm-sidebar-expanded):has(.bottom-nav:hover) .brand,
+  body:not(.pm-sidebar-expanded):has(.brand:hover) .brand,
+  body:not(.pm-sidebar-expanded):has(#profileBtn:hover) .brand,
+  body:not(.pm-sidebar-expanded):has(.bottom-nav:focus-within) .brand,
+  body:not(.pm-sidebar-expanded):has(.brand:focus-within) .brand,
+  body:not(.pm-sidebar-expanded):has(#profileBtn:focus-visible) .brand{
+    width:calc(var(--pm-rail-collapsed) - 20px)!important;
+  }
+
+  body:not(.pm-sidebar-expanded):has(.bottom-nav:hover) #profileBtn,
+  body:not(.pm-sidebar-expanded):has(.brand:hover) #profileBtn,
+  body:not(.pm-sidebar-expanded):has(#profileBtn:hover) #profileBtn,
+  body:not(.pm-sidebar-expanded):has(.bottom-nav:focus-within) #profileBtn,
+  body:not(.pm-sidebar-expanded):has(.brand:focus-within) #profileBtn,
+  body:not(.pm-sidebar-expanded):has(#profileBtn:focus-visible) #profileBtn{
+    width:50px!important;
+  }
+
+  /* Logo is the one persistent expansion control, ChatGPT-style. */
+  .brand{
+    user-select:none;
+    -webkit-user-select:none;
+  }
+  .brand:focus-visible .mark{
+    outline:2px solid var(--gold);
+    outline-offset:2px;
+  }
+  body.pm-sidebar-expanded .brand-title-row,
+  body.pm-sidebar-expanded .bottom-nav button small,
+  body.pm-sidebar-expanded #profileBtn::after{
+    opacity:1!important;
+    visibility:visible!important;
+    pointer-events:auto!important;
+  }
+  body:not(.pm-sidebar-expanded) .brand-title-row,
+  body:not(.pm-sidebar-expanded) .bottom-nav button small,
+  body:not(.pm-sidebar-expanded) #profileBtn::after{
+    opacity:0!important;
+    visibility:hidden!important;
+    pointer-events:none!important;
+  }
+
+  /* Login becomes a product preview rather than an empty screen. */
+  .auth-gate{
+    position:fixed!important;
+    inset:0!important;
+    width:100vw!important;
+    height:100vh!important;
+    overflow:hidden!important;
+    isolation:isolate;
+    background:#080808!important;
+  }
+  .auth-gate[hidden]{display:none!important}
+  .auth-gate::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    z-index:-1;
+    background:
+      radial-gradient(circle at 50% 42%,rgba(255,255,255,.025),transparent 34%),
+      linear-gradient(180deg,rgba(0,0,0,.26),rgba(0,0,0,.62));
+    pointer-events:none;
+  }
+  .auth-gate::after{
+    content:"";
+    position:absolute;
+    inset:0;
+    z-index:1;
+    background:rgba(6,6,6,.48);
+    -webkit-backdrop-filter:blur(1.5px);
+    backdrop-filter:blur(1.5px);
+    pointer-events:none;
+  }
+  .pm-auth-backdrop{
+    position:absolute;
+    inset:-7vh -7vw;
+    z-index:0;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    gap:18px;
+    transform:rotate(-2deg) scale(1.04);
+    opacity:.52;
+    pointer-events:none;
+    overflow:hidden;
+    -webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 10%,#000 90%,transparent 100%);
+    mask-image:linear-gradient(to bottom,transparent 0,#000 10%,#000 90%,transparent 100%);
+  }
+  .pm-auth-row{
+    width:100%;
+    overflow:hidden;
+    flex:0 0 auto;
+  }
+  .pm-auth-track{
+    display:flex;
+    width:max-content;
+    will-change:transform;
+    animation:pmAuthMarquee 86s linear infinite;
+  }
+  .pm-auth-row:nth-child(even) .pm-auth-track{
+    animation-name:pmAuthMarqueeReverse;
+    animation-duration:96s;
+  }
+  .pm-auth-row:nth-child(3n) .pm-auth-track{animation-duration:108s}
+  .pm-auth-group{
+    display:flex;
+    gap:14px;
+    padding-right:14px;
+    flex:0 0 auto;
+  }
+  .pm-auth-prompt-card{
+    width:280px;
+    min-height:150px;
+    flex:0 0 280px;
+    padding:17px 18px 18px;
+    border:1px solid rgba(255,255,255,.12);
+    border-radius:20px;
+    background:rgba(28,28,28,.72);
+    box-shadow:0 20px 56px rgba(0,0,0,.22);
+    color:#f4f4ef;
+  }
+  .pm-auth-prompt-card small{
+    color:rgba(200,164,93,.82)!important;
+    font-size:8px!important;
+    letter-spacing:1.15px!important;
+    text-transform:uppercase;
+  }
+  .pm-auth-prompt-card strong{
+    display:block;
+    margin-top:9px;
+    font-size:15px;
+    line-height:1.2;
+    letter-spacing:-.2px;
+  }
+  .pm-auth-prompt-card p{
+    margin-top:9px;
+    color:rgba(244,244,239,.48);
+    font-size:11px;
+    line-height:1.45;
+    display:-webkit-box;
+    -webkit-box-orient:vertical;
+    -webkit-line-clamp:3;
+    overflow:hidden;
+  }
+  .auth-card{
+    position:relative!important;
+    z-index:2!important;
+    width:min(420px,calc(100vw - 48px))!important;
+    border:1px solid rgba(255,255,255,.12)!important;
+    background:color-mix(in srgb,var(--bg) 86%,transparent)!important;
+    -webkit-backdrop-filter:blur(26px) saturate(115%);
+    backdrop-filter:blur(26px) saturate(115%);
+    box-shadow:0 30px 90px rgba(0,0,0,.46)!important;
+  }
+
+  @keyframes pmAuthMarquee{
+    from{transform:translateX(0)}
+    to{transform:translateX(-50%)}
+  }
+  @keyframes pmAuthMarqueeReverse{
+    from{transform:translateX(-50%)}
+    to{transform:translateX(0)}
+  }
+}
+
+@media (prefers-reduced-motion:reduce){
+  .pm-auth-track{animation:none!important}
+  .bottom-nav button .pm-nav-icon{transition:none!important}
+}
