@@ -1,23 +1,27 @@
-# Prompt Manager — M1.6.6.4 Sidebar Geometry Fix
+# Prompt Manager — M1.6.6.5 Desktop Workspace Redesign
 
 ## User-facing changes
-- Expanded sidebar is wider so the ALPHA badge is fully visible.
-- Collapsed navigation icons are centered precisely.
-- Account label now starts on the same text axis as Home, Explore and Library.
+- Desktop navigation now uses a restrained macOS Dock-style icon magnification.
+- The sidebar expands only when the Prompt Manager logo is clicked.
+- The chosen expanded/collapsed state is remembered.
+- Home, Explore and Library use a denser premium desktop layout.
+- Desktop typography, categories, filters and cards are more compact.
+- All desktop dialogs open centered in the viewport.
+- Mobile/tablet behavior remains unchanged.
 
 ## What's New
-No new entry. This is a visual refinement of the existing desktop experience.
+No new entry for internal refinements. Keep the existing user-facing M1.6.6 desktop entry.
 
 ## Commit title
-M1.6.6.4 — Fix Sidebar Geometry
+M1.6.6.5 — Refine Desktop Workspace & Navigation
 
 ## Replace
 - desktop-v1.css
 - sw.js
-- README.md
 
 ## Add
-- none
+- desktop-v1.js
+- INDEX-INSTALL.txt
 
 ## Delete
 - none

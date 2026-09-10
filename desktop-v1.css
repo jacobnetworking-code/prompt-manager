@@ -713,3 +713,197 @@
     transform:translateX(0);
   }
 }
+
+
+/* M1.6.6.5 — Desktop workspace redesign */
+@media (min-width:1024px){
+  :root{
+    --pm-desktop-sidebar:112px;
+    --pm-rail-expanded:250px;
+    --pm-workspace-max:1280px;
+  }
+
+  /* Sidebar is click-pinned; hover only magnifies icons. */
+  .bottom-nav,
+  .brand,
+  #profileBtn{transition:width .22s cubic-bezier(.2,.75,.2,1)!important}
+  .bottom-nav{width:var(--pm-rail-collapsed)!important}
+  .brand{width:calc(var(--pm-rail-collapsed) - 20px)!important}
+  #profileBtn{width:50px!important}
+  .brand-title-row,.bottom-nav button small,#profileBtn::after{opacity:0!important;pointer-events:none}
+  body.pm-sidebar-expanded .bottom-nav{width:var(--pm-rail-expanded)!important}
+  body.pm-sidebar-expanded .brand{width:calc(var(--pm-rail-expanded) - 20px)!important}
+  body.pm-sidebar-expanded #profileBtn{width:calc(var(--pm-rail-expanded) - 22px)!important}
+  body.pm-sidebar-expanded .brand-title-row,
+  body.pm-sidebar-expanded .bottom-nav button small,
+  body.pm-sidebar-expanded #profileBtn::after{
+    opacity:1!important;pointer-events:auto;transform:translateX(0)!important
+  }
+  .brand{cursor:pointer}
+
+  /* Dock-style restrained magnification. */
+  .bottom-nav button .pm-nav-icon{
+    transform:scale(1);
+    transform-origin:center;
+    transition:transform .18s cubic-bezier(.2,.8,.2,1);
+  }
+  .bottom-nav button:hover .pm-nav-icon{transform:scale(1.24)}
+  .bottom-nav button:has(+ button:hover) .pm-nav-icon,
+  .bottom-nav button:hover + button .pm-nav-icon{transform:scale(1.11)}
+
+  /* Premium workspace rhythm: application, not landing page. */
+  .app{
+    max-width:var(--pm-workspace-max)!important;
+    padding-top:30px!important;
+    padding-left:36px!important;
+    padding-right:36px!important;
+  }
+
+  #homeView{
+    min-height:calc(100vh - 60px)!important;
+    grid-template-columns:minmax(0,1.2fr) minmax(310px,.62fr)!important;
+    grid-template-areas:"hero actions" "news actions"!important;
+    align-content:center!important;
+    column-gap:64px!important;
+    row-gap:26px!important;
+  }
+  #homeView .hero{
+    padding:0!important;
+    max-width:650px!important;
+  }
+  #homeView .hero h2{
+    font-size:clamp(58px,5.3vw,82px)!important;
+    line-height:.94!important;
+    letter-spacing:-4px!important;
+    max-width:650px!important;
+  }
+  #homeView .hero p{
+    margin-top:22px!important;
+    max-width:540px!important;
+    font-size:16px!important;
+    line-height:1.5!important;
+  }
+  #homeView .hero .primary{
+    margin-top:26px!important;
+    min-height:46px!important;
+    padding:0 18px!important;
+    border-radius:13px!important;
+  }
+  #homeView .home-actions{
+    margin:0!important;
+    align-self:center!important;
+    gap:10px!important;
+  }
+  #homeView .home-actions button{
+    min-height:92px!important;
+    padding:18px 20px!important;
+    border-radius:18px!important;
+  }
+  #homeView .home-actions button strong{
+    margin-top:8px!important;
+    font-size:17px!important;
+  }
+  #homeView .pm-whats-new{
+    grid-area:news!important;
+    padding:0!important;
+    max-width:590px!important;
+  }
+  #homeView .pm-whats-new h3{font-size:18px!important}
+  #homeView .pm-whats-new p{font-size:13px!important;max-width:560px!important}
+  #homeView .pm-whats-new ul{margin-top:10px!important}
+
+  .pagehead{
+    padding-top:38px!important;
+    padding-bottom:18px!important;
+  }
+  .pagehead h2{
+    font-size:clamp(42px,3.7vw,56px)!important;
+    line-height:1!important;
+    letter-spacing:-2.4px!important;
+  }
+  .pagehead p{font-size:14px!important;margin-top:10px!important}
+
+  /* Explore: compact controls, content arrives earlier. */
+  .explore-search{max-width:720px!important}
+  .pm-featured{max-width:720px!important}
+  .explore-categories{
+    grid-template-columns:repeat(4,minmax(0,1fr))!important;
+    gap:9px!important;
+  }
+  .explore-categories button{
+    min-height:72px!important;
+    padding:14px 15px!important;
+    border-radius:16px!important;
+  }
+  .explore-categories button strong{font-size:14px!important}
+  .explore-categories button span{font-size:11px!important}
+  .pm-featured-grid{gap:12px!important}
+  .pm-featured-body{padding:14px!important}
+  .pm-featured-body h4{font-size:16px!important}
+  .pm-featured-body p{font-size:12px!important;line-height:1.45!important}
+
+  /* Library: compact toolbar and denser cards. */
+  .library-head{padding-bottom:14px!important}
+  #libraryOriginFilters{margin-top:0!important}
+  #categoryFilters{gap:7px!important;margin-top:12px!important}
+  #categoryFilters button{
+    min-height:32px!important;
+    padding:0 12px!important;
+    font-size:11px!important;
+  }
+  .search-filter-row{margin-top:12px!important}
+  .searchwrap,.filterbutton{min-height:44px!important}
+  #list{gap:12px!important;margin-top:14px!important}
+  #list>.card{
+    border-radius:18px!important;
+    padding:16px!important;
+  }
+  #list>.card h4{font-size:16px!important}
+  #list>.card .preview{font-size:12px!important;line-height:1.48!important}
+  .pm-card-footer-actions{margin-top:14px!important}
+
+  /* Every desktop dialog is a true centered window. */
+  dialog,
+  #useDialog{
+    position:fixed!important;
+    inset:0!important;
+    width:100vw!important;
+    height:100vh!important;
+    max-width:none!important;
+    max-height:none!important;
+    margin:0!important;
+    padding:24px!important;
+    border:0!important;
+    background:transparent!important;
+    box-sizing:border-box!important;
+  }
+  dialog[open]{
+    display:grid!important;
+    place-items:center!important;
+  }
+  dialog::backdrop{
+    background:rgba(0,0,0,.44)!important;
+    backdrop-filter:blur(3px);
+  }
+  dialog>.sheet,
+  dialog>form,
+  dialog.sheet{
+    position:relative!important;
+    inset:auto!important;
+    width:min(600px,calc(100vw - 48px))!important;
+    max-width:600px!important;
+    max-height:min(820px,calc(100vh - 48px))!important;
+    margin:auto!important;
+    overflow:auto!important;
+    border-radius:24px!important;
+  }
+  #useDialog>.sheet{
+    position:relative!important;
+    inset:auto!important;
+    width:min(680px,calc(100vw - 48px))!important;
+    max-width:680px!important;
+    max-height:calc(100vh - 48px)!important;
+    margin:auto!important;
+    padding:24px!important;
+  }
+}

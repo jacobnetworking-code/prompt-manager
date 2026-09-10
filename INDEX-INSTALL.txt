@@ -1,0 +1,9 @@
+M1.6.6.5 INDEX CHANGE
+
+In index.html, immediately before the existing app scripts at the bottom of the page, add:
+
+<script src="./desktop-v1.js"></script>
+
+IMPORTANT:
+- Keep all existing scripts.
+- desktop-v1.js may be loaded after ui-refine.js as well; it only initializes desktop behavior.
