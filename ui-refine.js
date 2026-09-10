@@ -291,6 +291,13 @@ byId("diagnosticsCopy")?.addEventListener("click",()=>setTimeout(()=>flashButton
 function showMessage(title,message){let d=byId("pmMessageDialog");if(!d){d=document.createElement("dialog");d.id="pmMessageDialog";d.innerHTML=`<section class="sheet"><div class="sheethead"><div><small>PROMPT MANAGER</small><h3 id="pmMessageTitle"></h3></div><button type="button" class="round" data-pm-message-close>×</button></div><p class="pm-confirm-copy" id="pmMessageCopy"></p><button type="button" class="full primary" data-pm-message-close>OK</button></section>`;document.body.appendChild(d);d.addEventListener("click",e=>{if(e.target.closest("[data-pm-message-close]"))d.close()});d.addEventListener("pointerdown",e=>{if(e.target===d)d.close()})}byId("pmMessageTitle").textContent=title;byId("pmMessageCopy").textContent=message;d.showModal()}
 if(byId("importFile"))byId("importFile").onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const r=await restore(f);byId("backupDialog").close();toast(`${r.added} ${currentLang==="es"?"restaurados":currentLang==="sr"?"vraćeno":"restored"} · ${r.skipped} ${currentLang==="es"?"omitidos":currentLang==="sr"?"preskočeno":"skipped"}`)}catch(err){showMessage(currentLang==="es"?"No se pudo restaurar":currentLang==="sr"?"Vraćanje nije uspelo":"Restore failed",err.message)}finally{e.target.value=""}};
 
+/* M1.6.6.1 — Logout flow: close profile immediately, then let auth gate take over. */
+byId("logoutBtn")?.addEventListener("click",()=>{
+  const profile=byId("profileMenu");
+  if(profile?.open)profile.close();
+  window.scrollTo({top:0,left:0,behavior:"auto"});
+},true);
+
 /* Backdrop-close all app dialogs. */
 document.addEventListener("pointerdown",e=>{const d=e.target.closest("dialog");if(!d||e.target!==d||!d.open)return;d.close()},true);
 
