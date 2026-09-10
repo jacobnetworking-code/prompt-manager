@@ -628,3 +628,88 @@
     align-self:center!important;
   }
 }
+/* M1.6.6.4 — Sidebar geometry fix */
+@media (min-width:1024px){
+  :root{
+    --pm-rail-expanded:250px;
+  }
+
+  /* Use the full inner rail width for the icon column so collapsed icons are truly centered. */
+  .bottom-nav button{
+    grid-template-columns:50px minmax(0,1fr)!important;
+    gap:0!important;
+  }
+
+  .bottom-nav button>span{
+    width:50px!important;
+    height:50px!important;
+    display:grid!important;
+    place-items:center!important;
+  }
+
+  .bottom-nav button small{
+    margin-left:0!important;
+    padding-left:0!important;
+    justify-self:start!important;
+  }
+
+  /* Brand geometry mirrors the nav geometry. */
+  .brand{
+    gap:0!important;
+  }
+
+  .brand .mark{
+    width:50px!important;
+    min-width:50px!important;
+    flex:0 0 50px!important;
+    display:grid!important;
+    place-items:center!important;
+  }
+
+  .brand-title-row{
+    gap:8px!important;
+  }
+
+  /* Give Prompt Manager + ALPHA enough horizontal room when expanded. */
+  .brand-title-row h1{
+    flex:0 0 auto!important;
+  }
+
+  .alpha-badge{
+    flex:0 0 auto!important;
+    white-space:nowrap!important;
+  }
+
+  /* Account uses the same 50px icon column and text origin as the three nav rows. */
+  #profileBtn{
+    grid-template-columns:50px minmax(0,1fr)!important;
+    column-gap:0!important;
+    justify-items:start!important;
+  }
+
+  #profileBtn svg{
+    grid-column:1!important;
+    justify-self:center!important;
+    align-self:center!important;
+    width:20px!important;
+    height:20px!important;
+  }
+
+  #profileBtn::after{
+    grid-column:2!important;
+    justify-self:start!important;
+    align-self:center!important;
+    margin:0!important;
+    padding:0!important;
+    transform:translateX(-6px);
+  }
+
+  body:has(.bottom-nav:hover) #profileBtn::after,
+  body:has(.brand:hover) #profileBtn::after,
+  body:has(#profileBtn:hover) #profileBtn::after,
+  body:has(.bottom-nav:focus-within) #profileBtn::after,
+  body:has(.brand:focus-within) #profileBtn::after,
+  body:has(#profileBtn:focus-visible) #profileBtn::after{
+    transform:translateX(0);
+  }
+}
