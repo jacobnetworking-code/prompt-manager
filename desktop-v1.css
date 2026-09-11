@@ -1089,3 +1089,420 @@
   .pm-auth-track{animation:none!important}
   .bottom-nav button .pm-nav-icon{transition:none!important}
 }
+
+/* M1.6.6.7 — Explore & Library desktop alignment */
+@media (min-width:1024px){
+  /* The desktop rail defines the workspace's top alignment. */
+  #exploreView > .pagehead,
+  #libraryView > .pagehead{
+    padding-top:0!important;
+  }
+
+  /* Explore: title and search share the first workspace row. */
+  #exploreView{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) minmax(360px,520px);
+    grid-template-areas:
+      "head search"
+      "content content";
+    column-gap:44px;
+    align-items:start;
+  }
+  #exploreView[hidden]{display:none!important}
+  #exploreView > .pagehead{
+    grid-area:head;
+    padding-bottom:18px!important;
+    min-width:0;
+  }
+  #exploreView > .explore{
+    grid-area:content;
+    min-width:0;
+  }
+  #exploreView .explore-search{
+    position:absolute;
+    top:30px;
+    right:36px;
+    width:min(520px,38vw)!important;
+    max-width:520px!important;
+    margin:0!important;
+  }
+
+  /* Keep Featured intact; make category cards proportional and readable. */
+  #exploreView .explore-categories{
+    grid-template-columns:repeat(4,minmax(0,1fr))!important;
+    gap:10px!important;
+  }
+  #exploreView .explore-categories button{
+    min-height:104px!important;
+    height:104px!important;
+    padding:16px 18px!important;
+    border-radius:18px!important;
+  }
+  #exploreView .explore-categories button > span:first-child,
+  #exploreView .explore-categories button .icon,
+  #exploreView .explore-categories button svg{
+    width:32px!important;
+    height:32px!important;
+    font-size:30px!important;
+  }
+  #exploreView .explore-categories button strong{
+    font-size:14px!important;
+    line-height:1.15!important;
+  }
+
+  /* Library uses the same top baseline and tighter desktop control rhythm. */
+  #libraryView > .library-head{
+    padding-bottom:12px!important;
+  }
+  #libraryView #libraryOriginFilters{
+    margin-top:0!important;
+  }
+  #libraryView #categoryFilters{
+    margin-top:10px!important;
+  }
+  #libraryView .search-filter-row{
+    margin-top:10px!important;
+  }
+  #libraryView #list{
+    margin-top:12px!important;
+  }
+}
+
+@media (min-width:1024px) and (max-width:1180px){
+  #exploreView{
+    grid-template-columns:minmax(0,1fr) minmax(320px,420px);
+    column-gap:28px;
+  }
+  #exploreView .explore-search{
+    width:min(420px,36vw)!important;
+  }
+  #exploreView .explore-categories{
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  }
+}
+
+/* M1.6.6.8 — Centered iOS-style Settings + interface preference */
+#settingsDialog{
+  padding:20px!important;
+  border:0!important;
+  background:transparent!important;
+  color:var(--text)!important;
+}
+#settingsDialog::backdrop{
+  background:rgba(0,0,0,.52)!important;
+  -webkit-backdrop-filter:blur(8px);
+  backdrop-filter:blur(8px);
+}
+#settingsDialog[open]{
+  display:grid!important;
+  place-items:center!important;
+}
+#settingsDialog .pm-settings-window{
+  width:min(520px,calc(100vw - 32px));
+  max-height:min(760px,calc(100vh - 40px));
+  overflow:auto;
+  padding:22px;
+  border:1px solid var(--border);
+  border-radius:26px;
+  background:color-mix(in srgb,var(--bg) 97%,var(--surface));
+  box-shadow:0 30px 90px rgba(0,0,0,.42);
+  -webkit-overflow-scrolling:touch;
+}
+#settingsDialog .sheethead{
+  position:sticky;
+  top:-22px;
+  z-index:2;
+  margin:-22px -22px 0;
+  padding:22px 22px 16px;
+  background:color-mix(in srgb,var(--bg) 94%,transparent);
+  -webkit-backdrop-filter:blur(20px);
+  backdrop-filter:blur(20px);
+}
+#settingsDialog .sheethead h3{font-size:25px!important}
+#settingsDialog .settings-section{
+  margin-top:18px;
+}
+#settingsDialog .settings-label{
+  display:block;
+  margin:0 0 8px 4px;
+  color:var(--muted);
+  font-size:10px;
+  font-weight:760;
+  letter-spacing:.9px;
+  text-transform:uppercase;
+}
+#settingsDialog .field,
+#settingsDialog .settings-row,
+#settingsDialog .pm-settings-segment,
+#settingsDialog .pm-interface-segment{
+  border:1px solid var(--border);
+  background:var(--surface);
+  border-radius:16px;
+}
+#settingsDialog .field{
+  margin:0;
+  padding:13px;
+}
+#settingsDialog .name-edit-row{margin-top:8px}
+#settingsDialog .settings-row{
+  width:100%;
+  min-height:48px;
+  padding:0 14px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  color:var(--text);
+  text-align:left;
+}
+#settingsDialog .settings-row + .settings-row{
+  margin-top:7px;
+}
+#settingsDialog .pm-settings-segment{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:4px;
+  padding:4px;
+}
+#settingsDialog .pm-settings-segment button{
+  min-height:38px;
+  border:0;
+  border-radius:12px;
+  background:transparent;
+  color:var(--muted);
+  font-size:12px;
+  font-weight:700;
+}
+#settingsDialog .pm-settings-segment button.active{
+  background:var(--surface2);
+  color:var(--text);
+  box-shadow:0 1px 5px rgba(0,0,0,.08);
+}
+#settingsDialog .pm-interface-segment{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:5px;
+  padding:5px;
+}
+#settingsDialog .pm-interface-segment button{
+  min-height:68px;
+  border:0;
+  border-radius:13px;
+  background:transparent;
+  color:var(--muted);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:5px;
+}
+#settingsDialog .pm-interface-segment button>span{
+  min-height:24px;
+  display:grid;
+  place-items:center;
+  font-size:22px;
+  line-height:1;
+}
+#settingsDialog .pm-interface-segment .pm-interface-auto{
+  width:24px;
+  height:24px;
+  min-height:24px;
+  border:1px solid currentColor;
+  border-radius:7px;
+  font-size:11px;
+  font-weight:800;
+}
+#settingsDialog .pm-interface-segment button small{
+  color:inherit;
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:0;
+}
+#settingsDialog .pm-interface-segment button.active{
+  background:var(--surface2);
+  color:var(--text);
+  box-shadow:0 1px 5px rgba(0,0,0,.08);
+}
+#settingsDialog .pm-settings-note{
+  margin:7px 4px 0;
+  color:var(--muted);
+  font-size:10px;
+  line-height:1.4;
+}
+#settingsDialog .pm-settings-signout{
+  margin-top:20px;
+  color:var(--danger)!important;
+}
+
+/* On desktop, Mobile mode is a real phone-width workspace preview. */
+@media (min-width:1024px){
+  body.pm-interface-mobile{
+    overflow-x:hidden!important;
+  }
+  body.pm-interface-mobile .app{
+    width:min(100%,720px)!important;
+    max-width:720px!important;
+    margin:0 auto!important;
+    padding:max(18px,env(safe-area-inset-top)) 18px max(112px,env(safe-area-inset-bottom))!important;
+  }
+  body.pm-interface-mobile header{
+    min-height:40px!important;
+    height:auto!important;
+    margin:0!important;
+    padding:0!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:space-between!important;
+  }
+  body.pm-interface-mobile .brand{
+    position:static!important;
+    width:auto!important;
+    display:flex!important;
+    gap:11px!important;
+  }
+  body.pm-interface-mobile .mark{
+    width:34px!important;
+    height:34px!important;
+    border-radius:11px!important;
+    flex:0 0 34px!important;
+  }
+  body.pm-interface-mobile .brand-title-row{
+    display:block!important;
+    opacity:1!important;
+    visibility:visible!important;
+    pointer-events:auto!important;
+  }
+  body.pm-interface-mobile #profileBtn{
+    position:static!important;
+    width:39px!important;
+    height:39px!important;
+    border-radius:13px!important;
+  }
+  body.pm-interface-mobile .bottom-nav,
+  body.pm-interface-mobile:has(.bottom-nav:hover) .bottom-nav,
+  body.pm-interface-mobile:has(.brand:hover) .bottom-nav,
+  body.pm-interface-mobile:has(#profileBtn:hover) .bottom-nav{
+    position:fixed!important;
+    z-index:12!important;
+    left:50%!important;
+    top:auto!important;
+    bottom:0!important;
+    transform:translateX(-50%)!important;
+    width:min(100%,720px)!important;
+    height:calc(76px + env(safe-area-inset-bottom))!important;
+    padding:8px 22px env(safe-area-inset-bottom)!important;
+    display:grid!important;
+    grid-template-columns:repeat(3,1fr)!important;
+    gap:0!important;
+    border:0!important;
+    border-top:1px solid var(--border)!important;
+    border-radius:0!important;
+    background:color-mix(in srgb,var(--bg) 92%,transparent)!important;
+  }
+  body.pm-interface-mobile .bottom-nav button{
+    width:auto!important;
+    min-height:0!important;
+    height:auto!important;
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:center!important;
+    justify-content:center!important;
+    gap:3px!important;
+    padding:0!important;
+    border-radius:0!important;
+    background:transparent!important;
+    text-align:center!important;
+  }
+  body.pm-interface-mobile .bottom-nav button>span{
+    width:20px!important;
+    height:20px!important;
+  }
+  body.pm-interface-mobile .bottom-nav button small{
+    display:block!important;
+    opacity:1!important;
+    visibility:visible!important;
+    font-size:9px!important;
+    text-align:center!important;
+  }
+  body.pm-interface-mobile #homeView,
+  body.pm-interface-mobile #exploreView,
+  body.pm-interface-mobile #libraryView{
+    display:block!important;
+    min-height:0!important;
+  }
+  body.pm-interface-mobile #homeView[hidden],
+  body.pm-interface-mobile #exploreView[hidden],
+  body.pm-interface-mobile #libraryView[hidden]{display:none!important}
+  body.pm-interface-mobile #homeView .hero{
+    padding:48px 2px 38px!important;
+    max-width:none!important;
+  }
+  body.pm-interface-mobile #homeView .hero h2{
+    font-size:clamp(42px,12vw,62px)!important;
+    line-height:.92!important;
+    letter-spacing:-3px!important;
+  }
+  body.pm-interface-mobile #homeView .hero p{
+    margin-top:16px!important;
+    font-size:15px!important;
+    max-width:390px!important;
+  }
+  body.pm-interface-mobile #homeView .home-actions{
+    margin:0!important;
+    display:grid!important;
+    gap:10px!important;
+  }
+  body.pm-interface-mobile #homeView .home-actions button{
+    min-height:0!important;
+    padding:18px!important;
+    border-radius:18px!important;
+  }
+  body.pm-interface-mobile .pagehead,
+  body.pm-interface-mobile #exploreView>.pagehead,
+  body.pm-interface-mobile #libraryView>.pagehead{
+    padding:42px 2px 24px!important;
+    max-width:none!important;
+  }
+  body.pm-interface-mobile .pagehead h2{
+    font-size:38px!important;
+    letter-spacing:-1.8px!important;
+    line-height:1!important;
+  }
+  body.pm-interface-mobile #exploreView{
+    grid-template-columns:none!important;
+  }
+  body.pm-interface-mobile #exploreView .explore-search{
+    position:static!important;
+    width:auto!important;
+    max-width:none!important;
+    margin:0 0 10px!important;
+  }
+  body.pm-interface-mobile #exploreView .explore-categories{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:10px!important;
+  }
+  body.pm-interface-mobile #exploreView .explore-categories button{
+    min-height:92px!important;
+    height:auto!important;
+  }
+  body.pm-interface-mobile #list{
+    display:block!important;
+  }
+  body.pm-interface-mobile #list>.card{
+    margin-bottom:10px!important;
+  }
+}
+
+@media (max-width:560px){
+  #settingsDialog{padding:12px!important}
+  #settingsDialog .pm-settings-window{
+    width:calc(100vw - 24px);
+    max-height:calc(100vh - 24px);
+    border-radius:24px;
+    padding:20px 16px;
+  }
+  #settingsDialog .sheethead{
+    top:-20px;
+    margin:-20px -16px 0;
+    padding:20px 16px 14px;
+  }
+}
