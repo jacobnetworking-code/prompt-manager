@@ -1506,3 +1506,91 @@
     padding:20px 16px 14px;
   }
 }
+
+/* M1.6.6.9 — Unified responsive Settings */
+/* Same Settings information architecture on every device; only the container adapts. */
+@media (max-width:1023px){
+  #settingsDialog{
+    inset:0!important;
+    width:100vw!important;
+    height:100dvh!important;
+    max-width:none!important;
+    max-height:none!important;
+    margin:0!important;
+    padding:0!important;
+    align-items:end!important;
+    justify-items:stretch!important;
+  }
+  #settingsDialog[open]{
+    display:grid!important;
+    place-items:end stretch!important;
+  }
+  #settingsDialog .pm-settings-window{
+    width:100%!important;
+    max-width:none!important;
+    max-height:min(92dvh,820px)!important;
+    margin:0!important;
+    padding:20px 18px calc(22px + env(safe-area-inset-bottom))!important;
+    border-left:1px solid var(--border)!important;
+    border-right:1px solid var(--border)!important;
+    border-top:1px solid var(--border)!important;
+    border-bottom:0!important;
+    border-radius:28px 28px 0 0!important;
+    box-shadow:0 -18px 70px rgba(0,0,0,.34)!important;
+    overscroll-behavior:contain;
+  }
+  #settingsDialog .sheethead{
+    top:-20px!important;
+    margin:-20px -18px 0!important;
+    padding:20px 18px 15px!important;
+  }
+  #settingsDialog .sheethead h3{
+    font-size:24px!important;
+  }
+  #settingsDialog .settings-section{
+    margin-top:16px!important;
+  }
+  #settingsDialog .field,
+  #settingsDialog .settings-row,
+  #settingsDialog .pm-settings-segment,
+  #settingsDialog .pm-interface-segment{
+    border-radius:15px!important;
+  }
+  #settingsDialog .settings-row{
+    min-height:50px!important;
+  }
+  #settingsDialog .pm-settings-segment button{
+    min-height:42px!important;
+  }
+  #settingsDialog .pm-interface-segment button{
+    min-height:72px!important;
+  }
+  #settingsDialog .pm-settings-signout{
+    margin-top:18px!important;
+  }
+}
+
+@media (max-width:560px){
+  #settingsDialog{
+    padding:0!important;
+  }
+  #settingsDialog .pm-settings-window{
+    width:100%!important;
+    max-height:92dvh!important;
+    padding:18px 16px calc(20px + env(safe-area-inset-bottom))!important;
+    border-radius:26px 26px 0 0!important;
+  }
+  #settingsDialog .sheethead{
+    top:-18px!important;
+    margin:-18px -16px 0!important;
+    padding:18px 16px 14px!important;
+  }
+  #settingsDialog .pm-interface-segment{
+    gap:4px!important;
+    padding:4px!important;
+  }
+  #settingsDialog .pm-interface-segment button{
+    min-width:0!important;
+    min-height:70px!important;
+  }
+}

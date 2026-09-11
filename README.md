@@ -1,10 +1,9 @@
-# Prompt Manager M1.6.6.8 — Explore, Library & Settings refinement
+# Prompt Manager M1.6.6.9 — Unified Responsive Settings
 
-Combined incremental update. Supersedes the previously prepared M1.6.6.7 package.
+Incremental update built on the pushed M1.6.6.8 baseline (`3a3cc018c4359719194cd13888811e84adeba972`).
 
 ## Replace
 - `desktop-v1.css`
-- `desktop-v1.js`
 - `sw.js`
 
 ## Add
@@ -16,18 +15,21 @@ None.
 ## SQL
 None.
 
-## Included
-- Explore/Library workspace moved up to the desktop rail baseline.
-- Explore search aligned to the right of the title.
-- Explore category cards compacted with larger visual icons.
-- Library vertical control rhythm tightened without changing behavior.
-- Settings rebuilt as a centered iOS/macOS-style modal window.
-- Appearance controls are available inside Settings.
-- Interface selector: Auto / Mobile / Desktop, persisted locally.
-- Mobile mode on desktop presents a phone-width workspace preview.
-- Desktop mode requests a desktop-sized viewport on smaller devices.
-- Sign out included at the bottom of Settings.
-- Service-worker cache bumped to M1.6.6.8.
+## User-facing change
+- Settings now uses the same information architecture on mobile and desktop: Profile, Appearance, Interface, Data and Sign out.
+- Desktop keeps the centered macOS/iOS-style window introduced in M1.6.6.8.
+- Mobile/tablet uses the same Settings content in an iOS-style high bottom sheet with touch-friendly controls and safe-area spacing.
+- Interface selection remains Auto / Mobile / Desktop and continues to persist locally.
+- No Explore, Library, data model or authentication behavior changed in this release.
 
 ## What’s New
-No separate entry. This remains a refinement of the existing M1.6.6 desktop experience.
+No separate entry. This is a consistency refinement of the M1.6.6 experience.
+
+## Commit title
+`M1.6.6.9 — Unify Responsive Settings`
+
+## QA
+- CSS braces balanced.
+- Service worker cache bumped to `pm-m1.6.6.9-v1`.
+- Settings mobile rules are scoped below 1024px and do not alter the desktop modal.
+- Existing M1.6.6.8 Settings logic and persisted interface preference are reused; no duplicate settings implementation was added.
