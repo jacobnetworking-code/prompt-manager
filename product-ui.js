@@ -1218,3 +1218,64 @@ if(library)new MutationObserver(ensureMoreMenu).observe(library,{childList:true,
 ensureMoreMenu();
 translateMenu();
 })();
+/* What's New — user-visible M1.7 capabilities */
+(()=>{
+"use strict";
+
+const COPY={
+  en:{
+    kicker:"WHAT'S NEW",
+    title:"Your library, more flexible.",
+    copy:"Import prompt collections in bulk, manage your categories directly from Library, and keep access to your local prompts when you're offline.",
+    highlights:["Bulk Import","Category Management","Offline Library"]
+  },
+  es:{
+    kicker:"NOVEDADES",
+    title:"Tu biblioteca, más flexible.",
+    copy:"Importa colecciones de prompts de golpe, gestiona tus categorías directamente desde Biblioteca y accede a tus prompts locales incluso sin conexión.",
+    highlights:["Importación masiva","Gestión de categorías","Biblioteca offline"]
+  },
+  sr:{
+    kicker:"NOVO",
+    title:"Fleksibilnija biblioteka.",
+    copy:"Uvezi kolekcije promptova odjednom, upravljaj kategorijama direktno iz Biblioteke i pristupi lokalnim promptovima čak i bez interneta.",
+    highlights:["Masovni uvoz","Upravljanje kategorijama","Offline biblioteka"]
+  }
+};
+
+function language(){
+  const raw=(localStorage.getItem("pm-language")||document.documentElement.lang||"en").toLowerCase();
+  if(raw.startsWith("es"))return"es";
+  if(raw.startsWith("sr"))return"sr";
+  return"en";
+}
+
+function updateWhatsNew(){
+  const card=document.querySelector(".pm-whats-new");
+  if(!card)return;
+  const c=COPY[language()];
+  const kicker=card.querySelector("[data-pm-whats-kicker]");
+  const version=card.querySelector(".pm-version");
+  const title=card.querySelector("[data-pm-whats-title]");
+  const copy=card.querySelector("[data-pm-whats-copy]");
+  const list=card.querySelector("ul");
+
+  if(kicker)kicker.textContent=c.kicker;
+  if(version)version.textContent="V1.7";
+  if(title)title.textContent=c.title;
+  if(copy)copy.textContent=c.copy;
+  if(list)list.innerHTML=c.highlights.map(x=>`<li>${x}</li>`).join("");
+}
+
+updateWhatsNew();
+
+const home=document.getElementById("homeView");
+if(home){
+  new MutationObserver(updateWhatsNew).observe(home,{childList:true,subtree:true});
+}
+
+document.addEventListener("change",event=>{
+  if(event.target?.id==="pmLanguageSelect")setTimeout(updateWhatsNew,0);
+},true);
+window.addEventListener("storage",updateWhatsNew);
+})();
