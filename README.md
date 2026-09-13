@@ -1,28 +1,30 @@
-# Prompt Manager M1.6.6.19
+# Prompt Manager M1.6.6.20
 
 ## Commit
-`M1.6.6.19 — Restore Language Flags & Eliminate Desktop Load Flash`
+`M1.6.6.20 — Open Featured Cards & Share Explore Prompts`
 
 ## Replace
 - `index.html`
 - `sw.js`
 
 ## Add
-- `m1.6.6.19.css`
-- `m1.6.6.19.js`
+- `m1.6.6.20.css`
+- `m1.6.6.20.js`
 
 ## Delete
-- `m1.6.6.18.css`
-- `m1.6.6.18.js`
+None.
 
-Do not delete the M1.6.6.18 files inside `/prompt/`; the Share page still uses those intentionally.
+Keep M1.6.6.19 assets in place because this update layers on top of them.
 
 ## What changed
-- Settings language selector keeps the compact dropdown but restores the visible flag next to each language.
-- `desktop-v1.css` is now loaded synchronously in `<head>` instead of waiting for `ui-refine.js` to inject it. This removes the unstyled/intermediate desktop frame that could expose prompt content for a moment during startup.
-- Expanded desktop navigation continues to show `Prompt Manager` beside the `{ }` logo.
-- Share-page language/header behavior from M1.6.6.18 is unchanged.
-- Service-worker cache bumped to `pm-m1.6.6.19-v1`.
+- Featured cards are now fully clickable, matching the Library interaction: clicking the card opens the prompt.
+- Featured cards are keyboard accessible with Enter/Space.
+- Every catalog prompt shown in Explore/category results now gets a Share button even when it has not been saved to Library.
+- Featured prompts also get the same Share button.
+- Sharing an unsaved catalog prompt does **not** silently save it to Library.
+- Catalog shares reuse an existing public share for that user + catalog prompt using an internal `catalog:<id>` marker, so repeated shares do not create unnecessary duplicate links.
+- Existing Library sharing is untouched.
+- Service-worker cache bumped to `pm-m1.6.6.20-v1`.
 
 ## SQL
 None.
@@ -30,6 +32,6 @@ None.
 ## QA
 - JavaScript syntax checked.
 - Service-worker syntax checked.
-- Confirmed `desktop-v1.css` is present in `<head>` with `data-pm-desktop-v1`.
-- Confirmed Settings options contain 🇬🇧 / 🇪🇸 / 🇷🇸.
-- Confirmed M1.6.6.19 assets are pre-cached.
+- Confirmed M1.6.6.20 CSS/JS are loaded after M1.6.6.19.
+- Confirmed new assets are included in the service-worker cache.
+- Confirmed Featured card clicks ignore action buttons so Save/Share do not accidentally open the prompt.

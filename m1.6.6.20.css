@@ -1,0 +1,36 @@
+/* Prompt Manager M1.6.6.20 — Explore/Featured interaction */
+.pm-featured-card{
+  cursor:pointer;
+}
+.pm-featured-card:focus-visible{
+  outline:2px solid var(--gold);
+  outline-offset:2px;
+}
+.pm-featured-actions{
+  grid-template-columns:minmax(0,1fr) auto auto!important;
+}
+.pm-explore-share{
+  width:42px!important;
+  min-width:42px!important;
+  height:42px!important;
+  padding:0!important;
+  display:inline-grid!important;
+  place-items:center!important;
+  border:1px solid var(--border)!important;
+  border-radius:12px!important;
+  background:var(--surface2)!important;
+  color:var(--text)!important;
+  flex:0 0 42px;
+}
+.pm-explore-share svg{
+  width:18px;
+  height:18px;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:1.9;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+.explore-card .actions .pm-explore-share{
+  margin-left:auto;
+}

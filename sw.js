@@ -1,7 +1,7 @@
-const CACHE="pm-m1.6.6.19-v1";
+const CACHE="pm-m1.6.6.20-v1";
 const CORE=[
   "./","./index.html","./styles.css","./ui-refine.css","./desktop-v1.css","./desktop-v1.js","./m1.6.6.18.css","./m1.6.6.18.js","./app.js","./ui-refine.js",
-  "./m1.6.6.19.css","./m1.6.6.19.js","./manifest.webmanifest","./apple-touch-icon.png","./icon-192.png","./icon-512.png","./catalog.json","./prompt/","./prompt/share.css","./prompt/share-m1.6.6.18.css","./prompt/share.js"
+  "./m1.6.6.19.css","./m1.6.6.19.js","./m1.6.6.20.css","./m1.6.6.20.js","./manifest.webmanifest","./apple-touch-icon.png","./icon-192.png","./icon-512.png","./catalog.json","./prompt/","./prompt/share.css","./prompt/share-m1.6.6.18.css","./prompt/share.js"
 ];
 
 self.addEventListener("install",event=>{
