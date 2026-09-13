@@ -2506,3 +2506,22 @@ body.pm-interface-mobile #profileBtn .pm-profile-label{
     visibility:visible!important;
   }
 }
+
+/* M1.6.6.16 — Exact work-view title alignment + Featured isolation */
+html body #exploreView #exploreCategories[hidden]{
+  display:none!important;
+}
+
+@media (max-width:1023px){
+  html body.pm-interface-desktop #exploreView>.pagehead,
+  html body.pm-interface-desktop #libraryView>.pagehead{
+    padding-top:34px!important;
+  }
+}
+
+@media (min-width:1024px){
+  html body #exploreView>.pagehead,
+  html body #libraryView>.pagehead{
+    padding-top:92px!important;
+  }
+}
