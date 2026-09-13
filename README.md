@@ -1,9 +1,4 @@
-# Prompt Manager M1.6.6.12 — Compact Rail & Library Controls
-
-Incremental update over M1.6.6.11.
-
-## Commit title
-`M1.6.6.12 — Refine Compact Rail & Library Controls`
+# Prompt Manager M1.6.6.14 — Stable Rail & Instant Desktop Restore
 
 ## Replace
 - `desktop-v1.css`
@@ -19,21 +14,15 @@ None.
 ## SQL
 None.
 
-## Included
-- Mobile/Auto profile returns to the original icon-only button; generated `Profile` text is removed outside compact Desktop mode.
-- Compact Desktop logo remains a stable square trigger when the rail expands.
-- Compact rail width reduced from 148px to 132px.
-- More breathing room between navigation icons and labels.
-- Removed the iOS width-morph that could show a malformed first-open navigation state.
-- Library `+` action is a true 46x46 square.
-- Library Select action is narrower while preserving readable text.
-- Existing safe-area / Dynamic Island positioning remains intact.
+## Fixes
+- Includes the deterministic compact rail correction: closed rail matches the `{ }` logo width exactly, first logo tap opens it, navigation clicks do not move icons, and the expanded rail is compact.
+- Mobile/Auto profile is icon-only; stale/generated `Profile` labels and pseudo-labels are removed defensively.
+- Persisted Desktop mode is applied immediately when `desktop-v1.js` executes instead of waiting for `DOMContentLoaded`.
+- Static app-shell assets now use cache-first delivery after the release cache is installed, preventing slow network-first CSS/JS requests from exposing the raw/unrefined prompt list for several seconds after login or relaunch.
+- `catalog.json` remains network-first.
 
-## What’s New
-No separate entry. This is a visual refinement of the existing M1.6.6 desktop experience.
+## What's New
+No new entry. This is a stability/visual correction to the existing M1.6.6 experience.
 
-## QA
-- `desktop-v1.js` syntax checked with Node.
-- `sw.js` syntax checked with Node.
-- CSS brace balance checked.
-- Service-worker cache: `pm-m1.6.6.12-v1`.
+## Commit title
+`M1.6.6.14 — Stabilize Rail & Desktop Restore`

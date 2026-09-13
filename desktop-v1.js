@@ -49,25 +49,38 @@ function syncCompactDesktopRail(){
     if(profile.parentElement!==nav)nav.appendChild(profile);
     profile.classList.add("pm-profile-in-rail");
   }else{
-    // Mobile/Auto keeps the original icon-only profile button. Do not leave a
-    // generated label in the header where mobile CSS can accidentally expose it.
-    label?.remove();
+    // Mobile/Auto keeps the original icon-only profile button. Remove every small
+    // child, not only our generated class, so older cached refinements cannot
+    // leave a visible “Profile” label behind.
+    profile.querySelectorAll("small").forEach(node=>node.remove());
     if(profile.parentElement!==header)header.appendChild(profile);
     profile.classList.remove("pm-profile-in-rail");
   }
 }
-function applySidebarPreference(){
-  if(!desktop()||interfaceMode()==="mobile"){
-    document.body.classList.remove("pm-sidebar-expanded");
-    return;
+function setSidebarState(expanded,{persist=false}={}){
+  const allowed=desktop()&&interfaceMode()!=="mobile";
+  const next=Boolean(expanded&&allowed);
+  const nav=document.querySelector(".bottom-nav");
+  document.body.classList.toggle("pm-sidebar-expanded",next);
+  nav?.classList.toggle("pm-rail-open",next);
+  if(persist)localStorage.setItem(SIDEBAR_KEY,next?"1":"0");
+
+  // iOS Safari occasionally delays repainting a fixed, backdrop-filtered rail
+  // after only a parent class changes. Toggling the class on the rail itself and
+  // forcing one geometry read makes the logo tap deterministic.
+  if(nav){
+    void nav.offsetWidth;
+    nav.dataset.railState=next?"expanded":"collapsed";
   }
-  document.body.classList.toggle("pm-sidebar-expanded",localStorage.getItem(SIDEBAR_KEY)==="1");
+}
+function applySidebarPreference(){
+  setSidebarState(localStorage.getItem(SIDEBAR_KEY)==="1");
 }
 function toggleSidebar(){
   if(!desktop()||interfaceMode()==="mobile")return;
-  const next=!document.body.classList.contains("pm-sidebar-expanded");
-  document.body.classList.toggle("pm-sidebar-expanded",next);
-  localStorage.setItem(SIDEBAR_KEY,next?"1":"0");
+  const nav=document.querySelector(".bottom-nav");
+  const next=!(nav?.classList.contains("pm-rail-open")||document.body.classList.contains("pm-sidebar-expanded"));
+  setSidebarState(next,{persist:true});
   syncSidebarA11y();
 }
 function syncSidebarA11y(){
@@ -224,6 +237,8 @@ mq.addEventListener?.("change",()=>{
   if(desktop())void initAuthBackdrop();
 });
 new MutationObserver(()=>syncCompactDesktopRail()).observe(document.documentElement,{attributes:true,attributeFilter:["lang"]});
-if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});
-else init();
+// desktop-v1.js is loaded with defer, so the DOM is already parsed. Apply the
+// persisted interface mode immediately instead of waiting for DOMContentLoaded;
+// this avoids a visible base/mobile layout flash when Desktop is persisted.
+init();
 })();

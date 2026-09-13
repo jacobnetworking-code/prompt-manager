@@ -2234,3 +2234,146 @@ body.pm-interface-mobile #profileBtn .pm-profile-label{
     white-space:nowrap!important;
   }
 }
+
+
+/* M1.6.6.13 — Deterministic compact rail + icon-only mobile profile */
+
+/* Mobile/Auto profile is always icon-only, including against stale/generated
+   labels or older pseudo-element rules. */
+body:not(.pm-interface-desktop) #profileBtn small,
+body.pm-interface-mobile #profileBtn small,
+body:not(.pm-interface-desktop) #profileBtn .pm-profile-label,
+body.pm-interface-mobile #profileBtn .pm-profile-label{
+  display:none!important;
+  width:0!important;
+  height:0!important;
+  overflow:hidden!important;
+}
+body:not(.pm-interface-desktop) #profileBtn::before,
+body:not(.pm-interface-desktop) #profileBtn::after,
+body.pm-interface-mobile #profileBtn::before,
+body.pm-interface-mobile #profileBtn::after{
+  content:none!important;
+  display:none!important;
+}
+
+@media (max-width:1023px){
+  body.pm-interface-desktop{
+    --pm-compact-rail-box:42px;
+    --pm-compact-rail-open:112px;
+  }
+
+  /* Closed rail and logo are exactly the same outer width. */
+  body.pm-interface-desktop .brand,
+  body.pm-interface-desktop.pm-sidebar-expanded .brand,
+  body.pm-interface-desktop:has(.brand:hover) .brand,
+  body.pm-interface-desktop:has(.bottom-nav:hover) .brand,
+  body.pm-interface-desktop:has(#profileBtn:hover) .brand{
+    box-sizing:border-box!important;
+    width:var(--pm-compact-rail-box)!important;
+    min-width:var(--pm-compact-rail-box)!important;
+    max-width:var(--pm-compact-rail-box)!important;
+    transform:none!important;
+  }
+
+  body.pm-interface-desktop .bottom-nav,
+  body.pm-interface-desktop:has(.bottom-nav:hover) .bottom-nav,
+  body.pm-interface-desktop:has(.brand:hover) .bottom-nav,
+  body.pm-interface-desktop:has(#profileBtn:hover) .bottom-nav,
+  body.pm-interface-desktop:has(.bottom-nav:focus-within) .bottom-nav{
+    box-sizing:border-box!important;
+    width:var(--pm-compact-rail-box)!important;
+    min-width:var(--pm-compact-rail-box)!important;
+    max-width:var(--pm-compact-rail-box)!important;
+    padding:4px!important;
+    overflow:hidden!important;
+    transform:none!important;
+    transition:box-shadow .12s ease!important;
+  }
+
+  /* Explicit direct rail class wins over all historic :hover/:has rules. */
+  body.pm-interface-desktop .bottom-nav.pm-rail-open,
+  body.pm-interface-desktop:has(.bottom-nav:hover) .bottom-nav.pm-rail-open,
+  body.pm-interface-desktop:has(.brand:hover) .bottom-nav.pm-rail-open,
+  body.pm-interface-desktop:has(#profileBtn:hover) .bottom-nav.pm-rail-open,
+  body.pm-interface-desktop:has(.bottom-nav:focus-within) .bottom-nav.pm-rail-open{
+    width:var(--pm-compact-rail-open)!important;
+    min-width:var(--pm-compact-rail-open)!important;
+    max-width:var(--pm-compact-rail-open)!important;
+    padding:4px!important;
+    gap:2px!important;
+    border-radius:14px!important;
+    overflow:hidden!important;
+    clip-path:inset(0 round 14px)!important;
+    box-shadow:0 12px 30px rgba(0,0,0,.28)!important;
+  }
+
+  /* Closed means truly icon-only: no clipped first letters at the edge. */
+  body.pm-interface-desktop .bottom-nav:not(.pm-rail-open) button,
+  body.pm-interface-desktop .bottom-nav:not(.pm-rail-open) #profileBtn{
+    box-sizing:border-box!important;
+    width:34px!important;
+    min-width:34px!important;
+    max-width:34px!important;
+    padding:0!important;
+    grid-template-columns:1fr!important;
+    gap:0!important;
+    overflow:hidden!important;
+    transform:none!important;
+  }
+  body.pm-interface-desktop .bottom-nav:not(.pm-rail-open) button small,
+  body.pm-interface-desktop .bottom-nav:not(.pm-rail-open) .pm-profile-label{
+    display:none!important;
+    width:0!important;
+    max-width:0!important;
+    opacity:0!important;
+    visibility:hidden!important;
+    overflow:hidden!important;
+    pointer-events:none!important;
+  }
+
+  /* Open state: compact, but with deliberate icon/label breathing room. */
+  body.pm-interface-desktop .bottom-nav.pm-rail-open button,
+  body.pm-interface-desktop .bottom-nav.pm-rail-open #profileBtn{
+    box-sizing:border-box!important;
+    width:100%!important;
+    min-width:0!important;
+    max-width:none!important;
+    grid-template-columns:20px minmax(0,1fr)!important;
+    justify-content:start!important;
+    place-items:center start!important;
+    padding:0 6px!important;
+    gap:8px!important;
+    overflow:hidden!important;
+    transform:none!important;
+  }
+  body.pm-interface-desktop .bottom-nav.pm-rail-open button small,
+  body.pm-interface-desktop .bottom-nav.pm-rail-open .pm-profile-label{
+    display:block!important;
+    width:auto!important;
+    max-width:none!important;
+    opacity:1!important;
+    visibility:visible!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+    white-space:nowrap!important;
+    pointer-events:auto!important;
+    transform:none!important;
+    font-size:10px!important;
+    line-height:1!important;
+  }
+
+  /* Nav interaction must never move icons or resize the rail. */
+  body.pm-interface-desktop .bottom-nav button,
+  body.pm-interface-desktop .bottom-nav button:hover,
+  body.pm-interface-desktop .bottom-nav button:focus,
+  body.pm-interface-desktop .bottom-nav button:active,
+  body.pm-interface-desktop .bottom-nav button.selected,
+  body.pm-interface-desktop .bottom-nav .pm-nav-icon,
+  body.pm-interface-desktop .bottom-nav button>span,
+  body.pm-interface-desktop .bottom-nav #profileBtn,
+  body.pm-interface-desktop .bottom-nav #profileBtn:hover,
+  body.pm-interface-desktop .bottom-nav #profileBtn:active{
+    transform:none!important;
+  }
+}
