@@ -1,30 +1,28 @@
-# Prompt Manager M1.6.6.20
+# Prompt Manager M1.6.6.22
 
 ## Commit
-`M1.6.6.20 — Open Featured Cards & Share Explore Prompts`
+`M1.6.6.22 — Add Editorial Featured Descriptions`
 
 ## Replace
 - `index.html`
 - `sw.js`
 
 ## Add
-- `m1.6.6.20.css`
-- `m1.6.6.20.js`
+- `m1.6.6.22.js`
 
 ## Delete
 None.
 
-Keep M1.6.6.19 assets in place because this update layers on top of them.
+Keep all M1.6.6.19–M1.6.6.21 assets.
 
-## What changed
-- Featured cards are now fully clickable, matching the Library interaction: clicking the card opens the prompt.
-- Featured cards are keyboard accessible with Enter/Space.
-- Every catalog prompt shown in Explore/category results now gets a Share button even when it has not been saved to Library.
-- Featured prompts also get the same Share button.
-- Sharing an unsaved catalog prompt does **not** silently save it to Library.
-- Catalog shares reuse an existing public share for that user + catalog prompt using an internal `catalog:<id>` marker, so repeated shares do not create unnecessary duplicate links.
-- Existing Library sharing is untouched.
-- Service-worker cache bumped to `pm-m1.6.6.20-v1`.
+## Change
+Featured cards no longer expose a literal excerpt of the underlying prompt. Each of the six curated Featured prompts now has a short editorial description explaining what the prompt achieves.
+
+Descriptions are localized in English, Spanish and Serbian and update with the existing language selector.
+
+Only Featured changes. Normal Explore/category results continue showing prompt excerpts.
+
+No runtime AI call is used: these are deterministic curated metadata, keeping Featured fast, predictable and free of per-view inference cost.
 
 ## SQL
 None.
@@ -32,6 +30,6 @@ None.
 ## QA
 - JavaScript syntax checked.
 - Service-worker syntax checked.
-- Confirmed M1.6.6.20 CSS/JS are loaded after M1.6.6.19.
-- Confirmed new assets are included in the service-worker cache.
-- Confirmed Featured card clicks ignore action buttons so Save/Share do not accidentally open the prompt.
+- M1.6.6.22 loads after M1.6.6.21.
+- New JS included in app-shell cache.
+- Six Featured IDs have editorial descriptions in all three supported languages.
