@@ -1,7 +1,7 @@
-const CACHE="pm-m1.6.6.17-v1";
+const CACHE="pm-m1.6.6.18-v1";
 const CORE=[
-  "./","./index.html","./styles.css","./ui-refine.css","./desktop-v1.css","./desktop-v1.js","./app.js","./ui-refine.js",
-  "./manifest.webmanifest","./apple-touch-icon.png","./icon-192.png","./icon-512.png","./catalog.json","./prompt/","./prompt/share.css","./prompt/share.js"
+  "./","./index.html","./styles.css","./ui-refine.css","./desktop-v1.css","./desktop-v1.js","./m1.6.6.18.css","./m1.6.6.18.js","./app.js","./ui-refine.js",
+  "./manifest.webmanifest","./apple-touch-icon.png","./icon-192.png","./icon-512.png","./catalog.json","./prompt/","./prompt/share.css","./prompt/share-m1.6.6.18.css","./prompt/share.js"
 ];
 
 self.addEventListener("install",event=>{
@@ -50,9 +50,6 @@ self.addEventListener("fetch",event=>{
   const url=new URL(event.request.url);
   if(url.origin!==self.location.origin)return;
 
-  // The visual app shell must be instant on repeat launches. Network-first made
-  // cached CSS/JS wait on a slow connection, exposing the unenhanced prompt list.
-  // Catalog remains network-first because freshness matters more there.
   const isCatalog=url.pathname.endsWith("/catalog.json");
   event.respondWith(isCatalog?networkFirst(event.request):cacheFirst(event.request));
 });
