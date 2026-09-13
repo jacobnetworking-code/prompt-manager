@@ -1,4 +1,7 @@
-# Prompt Manager M1.6.6.14 — Stable Rail & Instant Desktop Restore
+# Prompt Manager M1.6.6.15 — Rail State & Explore Fixes
+
+## Commit title
+`M1.6.6.15 — Fix Rail State & Explore Featured Flow`
 
 ## Replace
 - `desktop-v1.css`
@@ -15,14 +18,17 @@ None.
 None.
 
 ## Fixes
-- Includes the deterministic compact rail correction: closed rail matches the `{ }` logo width exactly, first logo tap opens it, navigation clicks do not move icons, and the expanded rail is compact.
-- Mobile/Auto profile is icon-only; stale/generated `Profile` labels and pseudo-labels are removed defensively.
-- Persisted Desktop mode is applied immediately when `desktop-v1.js` executes instead of waiting for `DOMContentLoaded`.
-- Static app-shell assets now use cache-first delivery after the release cache is installed, preventing slow network-first CSS/JS requests from exposing the raw/unrefined prompt list for several seconds after login or relaunch.
-- `catalog.json` remains network-first.
+- Mobile/Auto profile is icon-only; historical profile pseudo-labels are disabled globally.
+- Forced-desktop compact rail now opens on the first logo tap using an authoritative direct state and fixed width.
+- Compact rail icons no longer move when Home / Explore / Library is tapped.
+- Collapsed rail width matches the logo exactly; expanded rail is 124px.
+- Explore and Library title blocks are vertically aligned with Home in forced-desktop layouts.
+- Featured mode now fully hides categories while Featured results are displayed.
+- Service-worker cache bumped to `pm-m1.6.6.15-v1`.
 
-## What's New
-No new entry. This is a stability/visual correction to the existing M1.6.6 experience.
-
-## Commit title
-`M1.6.6.14 — Stabilize Rail & Desktop Restore`
+## QA
+- `node --check desktop-v1.js`
+- `node --check sw.js`
+- CSS brace balance passed.
+- Featured `[hidden]` state has an explicit `display:none!important` guard.
+- Sidebar first-click handler runs in capture phase and stops competing handlers.

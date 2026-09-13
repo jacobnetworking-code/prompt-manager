@@ -35,10 +35,14 @@ function syncCompactDesktopRail(){
   const profile=document.getElementById("profileBtn");
   const header=document.querySelector(".app > header");
   if(!nav||!profile||!header)return;
-  const compactDesktop=interfaceMode()==="desktop"&&!mq.matches;
-  let label=profile.querySelector(".pm-profile-label");
 
-  if(compactDesktop){
+  const activeDesktop=desktop()&&interfaceMode()!=="mobile";
+  const compactDesktop=interfaceMode()==="desktop"&&!mq.matches;
+
+  // Never use generated/pseudo text for the profile control. Desktop gets one
+  // real label node; Mobile/Auto removes every possible text node entirely.
+  let label=profile.querySelector(".pm-profile-label");
+  if(activeDesktop){
     if(!label){
       label=document.createElement("small");
       label.className="pm-profile-label";
@@ -46,17 +50,22 @@ function syncCompactDesktopRail(){
     }
     const lang=document.documentElement.lang||"en";
     label.textContent=lang.startsWith("es")?"Perfil":lang.startsWith("sr")?"Profil":"Profile";
+  }else{
+    profile.querySelectorAll("small,.pm-profile-label").forEach(node=>node.remove());
+    [...profile.childNodes].forEach(node=>{
+      if(node.nodeType===Node.TEXT_NODE&&node.textContent.trim())node.remove();
+    });
+  }
+
+  if(compactDesktop){
     if(profile.parentElement!==nav)nav.appendChild(profile);
     profile.classList.add("pm-profile-in-rail");
   }else{
-    // Mobile/Auto keeps the original icon-only profile button. Remove every small
-    // child, not only our generated class, so older cached refinements cannot
-    // leave a visible “Profile” label behind.
-    profile.querySelectorAll("small").forEach(node=>node.remove());
     if(profile.parentElement!==header)header.appendChild(profile);
     profile.classList.remove("pm-profile-in-rail");
   }
 }
+
 function setSidebarState(expanded,{persist=false}={}){
   const allowed=desktop()&&interfaceMode()!=="mobile";
   const next=Boolean(expanded&&allowed);
@@ -65,14 +74,20 @@ function setSidebarState(expanded,{persist=false}={}){
   nav?.classList.toggle("pm-rail-open",next);
   if(persist)localStorage.setItem(SIDEBAR_KEY,next?"1":"0");
 
-  // iOS Safari occasionally delays repainting a fixed, backdrop-filtered rail
-  // after only a parent class changes. Toggling the class on the rail itself and
-  // forcing one geometry read makes the logo tap deterministic.
-  if(nav){
-    void nav.offsetWidth;
-    nav.dataset.railState=next?"expanded":"collapsed";
+  // On forced desktop phones, make the first logo tap authoritative instead of
+  // waiting for :focus-within/:hover side effects from legacy desktop CSS.
+  if(nav&&interfaceMode()==="desktop"&&!mq.matches){
+    nav.style.setProperty("width",next?"124px":"42px","important");
+    nav.style.setProperty("min-width",next?"124px":"42px","important");
+    nav.style.setProperty("max-width",next?"124px":"42px","important");
+  }else if(nav){
+    nav.style.removeProperty("width");
+    nav.style.removeProperty("min-width");
+    nav.style.removeProperty("max-width");
   }
+  if(nav)nav.dataset.railState=next?"expanded":"collapsed";
 }
+
 function applySidebarPreference(){
   setSidebarState(localStorage.getItem(SIDEBAR_KEY)==="1");
 }
@@ -219,13 +234,18 @@ function init(){
   if(brand){
     brand.setAttribute("role","button");
     brand.setAttribute("tabindex","0");
-    brand.addEventListener("click",toggleSidebar);
+    brand.addEventListener("click",event=>{
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      toggleSidebar();
+    },true);
     brand.addEventListener("keydown",event=>{
       if(event.key==="Enter"||event.key===" "){
         event.preventDefault();
+        event.stopImmediatePropagation();
         toggleSidebar();
       }
-    });
+    },true);
   }
   syncSidebarA11y();
   void initAuthBackdrop();

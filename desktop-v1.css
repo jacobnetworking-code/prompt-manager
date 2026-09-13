@@ -2377,3 +2377,132 @@ body.pm-interface-mobile #profileBtn::after{
     transform:none!important;
   }
 }
+
+
+/* M1.6.6.15 — Authoritative rail state, aligned work views, Featured isolation */
+
+/* Profile labels are DOM nodes only. Kill all historical pseudo-labels globally
+   so Mobile/Auto can never display Account/Profile text beside the icon. */
+#profileBtn::before,
+#profileBtn::after{
+  content:none!important;
+  display:none!important;
+}
+body:not(.pm-interface-desktop) #profileBtn .pm-profile-label,
+body.pm-interface-mobile #profileBtn .pm-profile-label{
+  display:none!important;
+}
+
+/* hidden must beat desktop grid declarations. This is what isolates Featured
+   from the category chooser when Featured mode is open. */
+#exploreCategories[hidden],
+#exploreResultsHead[hidden],
+#exploreView .pagehead[hidden],
+#exploreView .explore-search[hidden],
+#exploreView .pm-featured[hidden]{
+  display:none!important;
+}
+
+@media (max-width:1023px){
+  body.pm-interface-desktop{
+    --pm-compact-rail-box:42px;
+    --pm-compact-rail-open:124px;
+  }
+
+  /* The logo and collapsed navigation are exactly the same width. */
+  body.pm-interface-desktop .brand,
+  body.pm-interface-desktop .bottom-nav:not(.pm-rail-open){
+    width:var(--pm-compact-rail-box)!important;
+    min-width:var(--pm-compact-rail-box)!important;
+    max-width:var(--pm-compact-rail-box)!important;
+  }
+  body.pm-interface-desktop .bottom-nav.pm-rail-open{
+    width:var(--pm-compact-rail-open)!important;
+    min-width:var(--pm-compact-rail-open)!important;
+    max-width:var(--pm-compact-rail-open)!important;
+  }
+
+  /* Closed rail has icons only, regardless of focus/hover/selected state. */
+  body.pm-interface-desktop .bottom-nav:not(.pm-rail-open) button small,
+  body.pm-interface-desktop .bottom-nav:not(.pm-rail-open) .pm-profile-label,
+  body.pm-interface-desktop .bottom-nav:not(.pm-rail-open):focus-within button small,
+  body.pm-interface-desktop .bottom-nav:not(.pm-rail-open):focus-within .pm-profile-label{
+    display:none!important;
+    opacity:0!important;
+    visibility:hidden!important;
+    width:0!important;
+    max-width:0!important;
+  }
+  body.pm-interface-desktop .bottom-nav:not(.pm-rail-open) button,
+  body.pm-interface-desktop .bottom-nav:not(.pm-rail-open) #profileBtn,
+  body.pm-interface-desktop .bottom-nav:not(.pm-rail-open) button:hover,
+  body.pm-interface-desktop .bottom-nav:not(.pm-rail-open) button:focus,
+  body.pm-interface-desktop .bottom-nav:not(.pm-rail-open) button.selected{
+    width:34px!important;
+    min-width:34px!important;
+    max-width:34px!important;
+    grid-template-columns:34px!important;
+    padding:0!important;
+    gap:0!important;
+    transform:none!important;
+  }
+
+  /* Expanded rail: fixed geometry, no icon movement when a destination is tapped. */
+  body.pm-interface-desktop .bottom-nav.pm-rail-open button,
+  body.pm-interface-desktop .bottom-nav.pm-rail-open #profileBtn,
+  body.pm-interface-desktop .bottom-nav.pm-rail-open button:hover,
+  body.pm-interface-desktop .bottom-nav.pm-rail-open button:focus,
+  body.pm-interface-desktop .bottom-nav.pm-rail-open button.selected{
+    width:100%!important;
+    min-width:0!important;
+    max-width:none!important;
+    grid-template-columns:24px minmax(0,1fr)!important;
+    padding:0 7px!important;
+    gap:9px!important;
+    transform:none!important;
+  }
+  body.pm-interface-desktop .bottom-nav.pm-rail-open button small,
+  body.pm-interface-desktop .bottom-nav.pm-rail-open .pm-profile-label{
+    display:block!important;
+    opacity:1!important;
+    visibility:visible!important;
+    width:auto!important;
+    max-width:none!important;
+    transform:none!important;
+    white-space:nowrap!important;
+  }
+
+  /* Explore/Library h2 begins at the same visual height as Home's h2. The
+     eyebrow consumes ~20px, so pagehead padding compensates for it. */
+  body.pm-interface-desktop #exploreView>.pagehead,
+  body.pm-interface-desktop #libraryView>.pagehead{
+    padding-top:14px!important;
+  }
+}
+
+@media (min-width:700px) and (max-width:1023px){
+  body.pm-interface-desktop #exploreView>.pagehead,
+  body.pm-interface-desktop #libraryView>.pagehead{
+    padding-top:24px!important;
+  }
+}
+
+@media (min-width:1024px){
+  /* Large desktop: use one shared top rhythm for work views rather than the old
+     zero-padding exception that pulled Explore/Library above Home. */
+  #exploreView>.pagehead,
+  #libraryView>.pagehead{
+    padding-top:44px!important;
+  }
+
+  /* Real profile label replaces the historical ::after label. */
+  #profileBtn .pm-profile-label{
+    opacity:0!important;
+    visibility:hidden!important;
+    white-space:nowrap!important;
+  }
+  body.pm-sidebar-expanded #profileBtn .pm-profile-label{
+    opacity:1!important;
+    visibility:visible!important;
+  }
+}
