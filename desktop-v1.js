@@ -17,6 +17,7 @@ function applyInterfaceMode(mode=interfaceMode(),{persist=false}={}){
   document.body.classList.toggle("pm-interface-mobile",mode==="mobile");
   document.body.classList.toggle("pm-interface-desktop",mode==="desktop");
   document.body.dataset.interfaceMode=mode;
+  syncCompactDesktopRail();
 
   // Keep the real device viewport in every mode. Forced desktop is now a
   // responsive desktop layout, not a fake 1180px viewport that can overflow.
@@ -27,6 +28,29 @@ function applyInterfaceMode(mode=interfaceMode(),{persist=false}={}){
   syncInterfaceControls();
   applySidebarPreference();
   syncSidebarA11y();
+}
+
+function syncCompactDesktopRail(){
+  const nav=document.querySelector(".bottom-nav");
+  const profile=document.getElementById("profileBtn");
+  const header=document.querySelector(".app > header");
+  if(!nav||!profile||!header)return;
+  const compactDesktop=interfaceMode()==="desktop"&&!mq.matches;
+  let label=profile.querySelector(".pm-profile-label");
+  if(!label){
+    label=document.createElement("small");
+    label.className="pm-profile-label";
+    profile.appendChild(label);
+  }
+  const lang=document.documentElement.lang||"en";
+  label.textContent=lang.startsWith("es")?"Perfil":lang.startsWith("sr")?"Profil":"Profile";
+  if(compactDesktop){
+    if(profile.parentElement!==nav)nav.appendChild(profile);
+    profile.classList.add("pm-profile-in-rail");
+  }else{
+    if(profile.parentElement!==header)header.appendChild(profile);
+    profile.classList.remove("pm-profile-in-rail");
+  }
 }
 function applySidebarPreference(){
   if(!desktop()||interfaceMode()==="mobile"){
@@ -172,6 +196,7 @@ async function initAuthBackdrop(){
 function init(){
   applyInterfaceMode();
   enhanceSettings();
+  syncCompactDesktopRail();
   applySidebarPreference();
   const brand=document.querySelector(".brand");
   if(brand){
@@ -189,10 +214,12 @@ function init(){
   void initAuthBackdrop();
 }
 mq.addEventListener?.("change",()=>{
+  syncCompactDesktopRail();
   applySidebarPreference();
   syncSidebarA11y();
   if(desktop())void initAuthBackdrop();
 });
+new MutationObserver(()=>syncCompactDesktopRail()).observe(document.documentElement,{attributes:true,attributeFilter:["lang"]});
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});
 else init();
 })();

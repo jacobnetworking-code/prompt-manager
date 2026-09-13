@@ -1968,3 +1968,170 @@
     grid-template-columns:repeat(4,minmax(0,1fr))!important;
   }
 }
+
+/* M1.6.6.11 — Compact safe-area desktop rail on phones */
+@media (max-width:1023px){
+  body.pm-interface-desktop{
+    --pm-rail-safe-left:max(8px,env(safe-area-inset-left));
+    --pm-rail-safe-right:max(8px,env(safe-area-inset-right));
+    --pm-compact-rail:52px;
+    --pm-compact-gutter:12px;
+  }
+
+  /* Keep the entire desktop workspace clear of the Dynamic Island / camera cutout
+     in either landscape orientation. */
+  body.pm-interface-desktop .app{
+    width:calc(100% - var(--pm-rail-safe-left) - var(--pm-compact-rail) - var(--pm-rail-safe-right))!important;
+    margin-left:calc(var(--pm-rail-safe-left) + var(--pm-compact-rail))!important;
+    margin-right:var(--pm-rail-safe-right)!important;
+  }
+
+  body.pm-interface-desktop .brand{
+    left:var(--pm-rail-safe-left)!important;
+    top:max(8px,env(safe-area-inset-top))!important;
+    width:42px!important;
+    min-width:42px!important;
+    height:42px!important;
+    border-radius:13px!important;
+    overflow:hidden!important;
+    clip-path:inset(0 round 13px);
+    transition:width .16s cubic-bezier(.2,.8,.2,1),box-shadow .16s ease!important;
+  }
+
+  /* The rail is now content-sized. No viewport-height column. */
+  body.pm-interface-desktop .bottom-nav,
+  body.pm-interface-desktop:has(.bottom-nav:hover) .bottom-nav,
+  body.pm-interface-desktop:has(.brand:hover) .bottom-nav,
+  body.pm-interface-desktop:has(#profileBtn:hover) .bottom-nav{
+    left:var(--pm-rail-safe-left)!important;
+    top:calc(max(8px,env(safe-area-inset-top)) + 50px)!important;
+    bottom:auto!important;
+    width:42px!important;
+    height:auto!important;
+    min-height:0!important;
+    padding:4px!important;
+    gap:2px!important;
+    border-radius:14px!important;
+    overflow:hidden!important;
+    clip-path:inset(0 round 14px);
+    transition:width .16s cubic-bezier(.2,.8,.2,1),box-shadow .16s ease!important;
+  }
+
+  body.pm-interface-desktop .bottom-nav button,
+  body.pm-interface-desktop .bottom-nav #profileBtn{
+    position:static!important;
+    left:auto!important;
+    top:auto!important;
+    right:auto!important;
+    bottom:auto!important;
+    width:34px!important;
+    min-width:34px!important;
+    max-width:none!important;
+    height:38px!important;
+    min-height:38px!important;
+    margin:0!important;
+    padding:0!important;
+    border:0!important;
+    border-radius:10px!important;
+    box-shadow:none!important;
+    display:grid!important;
+    place-items:center!important;
+    grid-template-columns:1fr!important;
+    gap:0!important;
+    transform:none!important;
+  }
+
+  body.pm-interface-desktop .bottom-nav #profileBtn{
+    margin-top:2px!important;
+    box-shadow:inset 0 1px 0 var(--border)!important;
+  }
+
+  body.pm-interface-desktop .bottom-nav #profileBtn>svg{
+    width:19px!important;
+    height:19px!important;
+  }
+
+  body.pm-interface-desktop .bottom-nav .pm-profile-label{
+    display:none!important;
+  }
+
+  /* Expanded compact rail: narrower than before, with labels close to icons. */
+  body.pm-interface-desktop.pm-sidebar-expanded .bottom-nav,
+  body.pm-interface-desktop.pm-sidebar-expanded:has(.bottom-nav:hover) .bottom-nav{
+    width:148px!important;
+    padding:5px!important;
+    gap:2px!important;
+    align-items:stretch!important;
+    border-radius:14px!important;
+    box-shadow:0 14px 38px rgba(0,0,0,.32)!important;
+  }
+
+  body.pm-interface-desktop.pm-sidebar-expanded .bottom-nav button,
+  body.pm-interface-desktop.pm-sidebar-expanded .bottom-nav #profileBtn{
+    width:100%!important;
+    min-width:0!important;
+    grid-template-columns:20px minmax(0,1fr)!important;
+    justify-content:start!important;
+    place-items:center start!important;
+    padding:0 7px!important;
+    gap:6px!important;
+  }
+
+  body.pm-interface-desktop.pm-sidebar-expanded .bottom-nav button small,
+  body.pm-interface-desktop.pm-sidebar-expanded .bottom-nav .pm-profile-label{
+    display:block!important;
+    min-width:0!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+    white-space:nowrap!important;
+    text-align:left!important;
+    font-size:10px!important;
+    line-height:1!important;
+  }
+
+  body.pm-interface-desktop.pm-sidebar-expanded .brand{
+    width:148px!important;
+    min-width:148px!important;
+    padding:0 7px 0 0!important;
+    gap:6px!important;
+    border-radius:13px!important;
+    box-shadow:0 12px 34px rgba(0,0,0,.28)!important;
+  }
+
+  body.pm-interface-desktop.pm-sidebar-expanded .brand-title-row{
+    min-width:0!important;
+    overflow:hidden!important;
+  }
+  body.pm-interface-desktop.pm-sidebar-expanded .brand-title-row h1{
+    margin:0!important;
+    font-size:11.5px!important;
+    line-height:1.05!important;
+    white-space:nowrap!important;
+  }
+  body.pm-interface-desktop.pm-sidebar-expanded .alpha-badge{
+    margin-top:2px!important;
+    padding:2px 5px!important;
+    font-size:6.5px!important;
+    line-height:1!important;
+  }
+
+  /* Give Select / Seleccionar enough horizontal breathing room in Library. */
+  body.pm-interface-desktop #pmSelectToggle{
+    width:auto!important;
+    min-width:84px!important;
+    padding-inline:14px!important;
+    white-space:nowrap!important;
+  }
+}
+
+/* Landscape phones are the preferred compact-desktop presentation. Safe-area
+   variables automatically follow whichever side contains the camera cutout. */
+@media (orientation:landscape) and (max-width:1023px){
+  body.pm-interface-desktop{
+    --pm-compact-gutter:14px;
+  }
+  body.pm-interface-desktop .app{
+    padding-left:var(--pm-compact-gutter)!important;
+    padding-right:var(--pm-compact-gutter)!important;
+  }
+}

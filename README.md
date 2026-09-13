@@ -1,15 +1,4 @@
-# Prompt Manager M1.6.6.10 — Responsive Desktop Mode
-
-Incremental update over M1.6.6.9.
-
-## User-facing change
-- Forced Desktop on iPhone/iPad no longer requests a fake 1180px viewport.
-- Desktop mode now keeps the real device viewport and adapts the desktop UI to available width.
-- Compact screens use a narrow desktop rail, fluid content width, responsive cards and compact spacing.
-- Landscape phones progressively gain denser two-column desktop layouts where space allows.
-- Expanded desktop navigation overlays on compact screens instead of pushing the workspace off-screen.
-- Settings remains centered when Desktop mode is forced on a phone.
-- Horizontal app overflow is explicitly prevented.
+# Prompt Manager M1.6.6.11 — Compact Safe-Area Desktop Rail
 
 ## Replace
 - `desktop-v1.css`
@@ -25,16 +14,24 @@ None.
 ## SQL
 None.
 
+## Included
+- Compact phone Desktop rail now ends directly after its controls instead of stretching to the bottom of the viewport.
+- Profile moves directly below Library inside the compact rail when Desktop mode is forced on screens below 1024px.
+- Landscape phone Desktop mode respects `safe-area-inset-left/right`, keeping the rail clear of the Dynamic Island / camera cutout in either orientation.
+- Expanded compact rail reduced from 184px to 148px, with tighter icon/label spacing and stable clipping during expansion.
+- Library `Select / Seleccionar` control gets a larger minimum width and horizontal padding.
+- Native desktop and normal Mobile/Auto layouts remain unchanged.
+- Service-worker cache bumped to `pm-m1.6.6.11-v1`.
+
 ## What's New
-No separate entry. This fixes/refines the existing Interface mode introduced in M1.6.6.8–9.
+No new entry. This is a compact-desktop visual refinement within M1.6.6.
 
 ## Commit title
-`M1.6.6.10 — Make Desktop Mode Fully Responsive`
+`M1.6.6.11 — Compact Safe-Area Desktop Rail`
 
 ## QA
-- `node --check desktop-v1.js`
-- `node --check sw.js`
-- CSS brace balance = 0
-- Forced desktop no longer writes `width=1180` to the viewport meta tag.
-- Compact desktop CSS covers portrait and landscape widths below 1024px.
-- Service worker cache: `pm-m1.6.6.10-v1`
+- `desktop-v1.js` syntax checked with Node.
+- `sw.js` syntax checked with Node.
+- CSS brace balance checked.
+- Profile relocation preserves the existing DOM node/listeners and restores it to the header outside compact forced Desktop mode.
+- Safe-area positioning is CSS-driven, so flipping landscape orientation automatically protects the opposite side.
