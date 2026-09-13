@@ -2135,3 +2135,102 @@
     padding-right:var(--pm-compact-gutter)!important;
   }
 }
+
+/* M1.6.6.12 — Compact rail geometry + mobile profile cleanup */
+
+/* The generated Profile label belongs only to compact forced-desktop mode. */
+body:not(.pm-interface-desktop) #profileBtn .pm-profile-label,
+body.pm-interface-mobile #profileBtn .pm-profile-label{
+  display:none!important;
+}
+
+@media (max-width:1023px){
+  /* Compact desktop: logo remains a stable square trigger. Expanding the nav no
+     longer morphs the logo/header, which removes the malformed first-open state. */
+  body.pm-interface-desktop .brand,
+  body.pm-interface-desktop.pm-sidebar-expanded .brand{
+    width:42px!important;
+    min-width:42px!important;
+    max-width:42px!important;
+    padding:0!important;
+    gap:0!important;
+    border-radius:13px!important;
+    overflow:hidden!important;
+    clip-path:inset(0 round 13px)!important;
+    box-shadow:none!important;
+    transition:box-shadow .12s ease!important;
+  }
+  body.pm-interface-desktop .brand-title-row,
+  body.pm-interface-desktop.pm-sidebar-expanded .brand-title-row{
+    display:none!important;
+    opacity:0!important;
+    visibility:hidden!important;
+    pointer-events:none!important;
+  }
+
+  /* Open menu is deliberately compact. Width transitions were removed because
+     they exposed labels while the container was still growing on iOS Safari. */
+  body.pm-interface-desktop .bottom-nav,
+  body.pm-interface-desktop.pm-sidebar-expanded .bottom-nav,
+  body.pm-interface-desktop.pm-sidebar-expanded:has(.bottom-nav:hover) .bottom-nav{
+    transition:box-shadow .12s ease!important;
+  }
+  body.pm-interface-desktop.pm-sidebar-expanded .bottom-nav,
+  body.pm-interface-desktop.pm-sidebar-expanded:has(.bottom-nav:hover) .bottom-nav{
+    width:132px!important;
+    max-width:132px!important;
+    padding:5px!important;
+    gap:2px!important;
+    border-radius:14px!important;
+    overflow:hidden!important;
+    clip-path:inset(0 round 14px)!important;
+    box-shadow:0 12px 32px rgba(0,0,0,.30)!important;
+  }
+  body.pm-interface-desktop.pm-sidebar-expanded .bottom-nav button,
+  body.pm-interface-desktop.pm-sidebar-expanded .bottom-nav #profileBtn{
+    width:100%!important;
+    min-width:0!important;
+    grid-template-columns:20px minmax(0,1fr)!important;
+    justify-content:start!important;
+    place-items:center start!important;
+    padding:0 7px!important;
+    gap:10px!important;
+  }
+  body.pm-interface-desktop.pm-sidebar-expanded .bottom-nav button small,
+  body.pm-interface-desktop.pm-sidebar-expanded .bottom-nav .pm-profile-label{
+    font-size:10px!important;
+    line-height:1!important;
+    text-align:left!important;
+  }
+
+  /* Library header actions: square + button, compact Select with enough room for
+     English while avoiding the oversized control seen on narrow screens. */
+  body.pm-interface-desktop .pm-library-head-actions{
+    display:flex!important;
+    align-items:center!important;
+    justify-content:flex-end!important;
+    gap:8px!important;
+  }
+  body.pm-interface-desktop #libraryAdd{
+    box-sizing:border-box!important;
+    width:46px!important;
+    min-width:46px!important;
+    max-width:46px!important;
+    height:46px!important;
+    min-height:46px!important;
+    padding:0!important;
+    border-radius:13px!important;
+    display:grid!important;
+    place-items:center!important;
+    aspect-ratio:1/1!important;
+  }
+  body.pm-interface-desktop #pmSelectToggle{
+    width:auto!important;
+    min-width:72px!important;
+    max-width:none!important;
+    min-height:46px!important;
+    height:46px!important;
+    padding-inline:12px!important;
+    white-space:nowrap!important;
+  }
+}

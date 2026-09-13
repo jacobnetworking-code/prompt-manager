@@ -37,17 +37,21 @@ function syncCompactDesktopRail(){
   if(!nav||!profile||!header)return;
   const compactDesktop=interfaceMode()==="desktop"&&!mq.matches;
   let label=profile.querySelector(".pm-profile-label");
-  if(!label){
-    label=document.createElement("small");
-    label.className="pm-profile-label";
-    profile.appendChild(label);
-  }
-  const lang=document.documentElement.lang||"en";
-  label.textContent=lang.startsWith("es")?"Perfil":lang.startsWith("sr")?"Profil":"Profile";
+
   if(compactDesktop){
+    if(!label){
+      label=document.createElement("small");
+      label.className="pm-profile-label";
+      profile.appendChild(label);
+    }
+    const lang=document.documentElement.lang||"en";
+    label.textContent=lang.startsWith("es")?"Perfil":lang.startsWith("sr")?"Profil":"Profile";
     if(profile.parentElement!==nav)nav.appendChild(profile);
     profile.classList.add("pm-profile-in-rail");
   }else{
+    // Mobile/Auto keeps the original icon-only profile button. Do not leave a
+    // generated label in the header where mobile CSS can accidentally expose it.
+    label?.remove();
     if(profile.parentElement!==header)header.appendChild(profile);
     profile.classList.remove("pm-profile-in-rail");
   }

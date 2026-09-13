@@ -1,4 +1,9 @@
-# Prompt Manager M1.6.6.11 — Compact Safe-Area Desktop Rail
+# Prompt Manager M1.6.6.12 — Compact Rail & Library Controls
+
+Incremental update over M1.6.6.11.
+
+## Commit title
+`M1.6.6.12 — Refine Compact Rail & Library Controls`
 
 ## Replace
 - `desktop-v1.css`
@@ -15,23 +20,20 @@ None.
 None.
 
 ## Included
-- Compact phone Desktop rail now ends directly after its controls instead of stretching to the bottom of the viewport.
-- Profile moves directly below Library inside the compact rail when Desktop mode is forced on screens below 1024px.
-- Landscape phone Desktop mode respects `safe-area-inset-left/right`, keeping the rail clear of the Dynamic Island / camera cutout in either orientation.
-- Expanded compact rail reduced from 184px to 148px, with tighter icon/label spacing and stable clipping during expansion.
-- Library `Select / Seleccionar` control gets a larger minimum width and horizontal padding.
-- Native desktop and normal Mobile/Auto layouts remain unchanged.
-- Service-worker cache bumped to `pm-m1.6.6.11-v1`.
+- Mobile/Auto profile returns to the original icon-only button; generated `Profile` text is removed outside compact Desktop mode.
+- Compact Desktop logo remains a stable square trigger when the rail expands.
+- Compact rail width reduced from 148px to 132px.
+- More breathing room between navigation icons and labels.
+- Removed the iOS width-morph that could show a malformed first-open navigation state.
+- Library `+` action is a true 46x46 square.
+- Library Select action is narrower while preserving readable text.
+- Existing safe-area / Dynamic Island positioning remains intact.
 
-## What's New
-No new entry. This is a compact-desktop visual refinement within M1.6.6.
-
-## Commit title
-`M1.6.6.11 — Compact Safe-Area Desktop Rail`
+## What’s New
+No separate entry. This is a visual refinement of the existing M1.6.6 desktop experience.
 
 ## QA
 - `desktop-v1.js` syntax checked with Node.
 - `sw.js` syntax checked with Node.
 - CSS brace balance checked.
-- Profile relocation preserves the existing DOM node/listeners and restores it to the header outside compact forced Desktop mode.
-- Safe-area positioning is CSS-driven, so flipping landscape orientation automatically protects the opposite side.
+- Service-worker cache: `pm-m1.6.6.12-v1`.
