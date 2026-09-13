@@ -41,7 +41,7 @@ function applyFeaturedDescriptions(){
     const p=card.querySelector(".pm-featured-body > p");
     if(!open||!p)return;
     const text=descriptions[String(open.dataset.exploreOpen)];
-    if(text){
+    if(text && (p.textContent!==text || p.dataset.pmFeaturedDescription!=="true")){
       p.textContent=text;
       p.dataset.pmFeaturedDescription="true";
     }

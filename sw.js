@@ -1,7 +1,7 @@
-const CACHE="pm-m1.6.6.22-v1";
+const CACHE="pm-m1.6.6.23-v1";
 const CORE=[
   "./","./index.html","./styles.css","./ui-refine.css","./desktop-v1.css","./desktop-v1.js","./m1.6.6.18.css","./m1.6.6.18.js","./app.js","./ui-refine.js",
-  "./m1.6.6.19.css","./m1.6.6.19.js","./m1.6.6.20.css","./m1.6.6.20.js","./m1.6.6.21.css","./m1.6.6.21.js","./m1.6.6.22.js","./manifest.webmanifest","./apple-touch-icon.png","./icon-192.png","./icon-512.png","./catalog.json","./prompt/","./prompt/share.css","./prompt/share-m1.6.6.18.css","./prompt/share.js"
+  "./m1.6.6.19.css","./m1.6.6.19.js","./m1.6.6.20.css","./m1.6.6.20.js","./m1.6.6.21.css","./m1.6.6.21.js","./m1.6.6.22.js","https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2","./manifest.webmanifest","./apple-touch-icon.png","./icon-192.png","./icon-512.png","./catalog.json","./prompt/","./prompt/share.css","./prompt/share-m1.6.6.18.css","./prompt/share.js"
 ];
 
 self.addEventListener("install",event=>{
@@ -29,6 +29,11 @@ function cacheFirst(request){
         caches.open(CACHE).then(cache=>cache.put(request,copy)).catch(()=>{});
       }
       return response;
+    }).catch(()=>{
+      if(request.mode==="navigate"){
+        return caches.match("./index.html").then(x=>x||caches.match("./"));
+      }
+      throw new Error("Offline resource unavailable");
     });
   });
 }
@@ -48,6 +53,11 @@ function networkFirst(request){
 self.addEventListener("fetch",event=>{
   if(event.request.method!=="GET")return;
   const url=new URL(event.request.url);
+  const isSupabaseSDK=event.request.url.startsWith("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2");
+  if(isSupabaseSDK){
+    event.respondWith(cacheFirst(event.request));
+    return;
+  }
   if(url.origin!==self.location.origin)return;
 
   const isCatalog=url.pathname.endsWith("/catalog.json");

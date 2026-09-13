@@ -1,35 +1,36 @@
-# Prompt Manager M1.6.6.22
+# Prompt Manager M1.6.6.23
 
 ## Commit
-`M1.6.6.22 — Add Editorial Featured Descriptions`
+`M1.6.6.23 — Fix Featured Freeze & Enable Offline Library`
 
 ## Replace
-- `index.html`
+- `m1.6.6.22.js`
 - `sw.js`
+- `index.html`
 
 ## Add
-- `m1.6.6.22.js`
+None.
 
 ## Delete
 None.
 
-Keep all M1.6.6.19–M1.6.6.21 assets.
+## Changes
+- Fixes the Featured freeze caused by a self-triggering MutationObserver.
+- Caches the Supabase browser SDK so persisted auth can initialize offline.
+- Adds an offline navigation fallback to cached `index.html`.
+- Keeps the existing IndexedDB Library available without internet.
+- Existing local-first queued changes continue syncing when connectivity returns.
+- Public Share and other cloud-only actions still require internet.
 
-## Change
-Featured cards no longer expose a literal excerpt of the underlying prompt. Each of the six curated Featured prompts now has a short editorial description explaining what the prompt achieves.
-
-Descriptions are localized in English, Spanish and Serbian and update with the existing language selector.
-
-Only Featured changes. Normal Explore/category results continue showing prompt excerpts.
-
-No runtime AI call is used: these are deterministic curated metadata, keeping Featured fast, predictable and free of per-view inference cost.
+## Important
+Open this release once while online so the new service worker and SDK are cached. After that, the installed PWA can launch offline and access the local Library.
 
 ## SQL
 None.
 
 ## QA
 - JavaScript syntax checked.
-- Service-worker syntax checked.
-- M1.6.6.22 loads after M1.6.6.21.
-- New JS included in app-shell cache.
-- Six Featured IDs have editorial descriptions in all three supported languages.
+- Service worker syntax checked.
+- Featured observer guard verified.
+- Supabase SDK added to cache.
+- Offline navigation fallback verified.
