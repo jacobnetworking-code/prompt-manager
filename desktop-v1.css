@@ -2525,3 +2525,12 @@ html body #exploreView #exploreCategories[hidden]{
     padding-top:92px!important;
   }
 }
+
+
+/* M1.6.6.17 — Featured detail cleanup */
+/* Featured is a destination view: remove the Explore section divider once the
+   Featured grid is rendered. */
+#exploreView:has(#exploreList .pm-featured-grid) > .explore{
+  border-top:0!important;
+  padding-top:0!important;
+}

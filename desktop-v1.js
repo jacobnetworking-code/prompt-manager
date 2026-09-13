@@ -4,6 +4,45 @@ const SIDEBAR_KEY="pm-desktop-sidebar-expanded";
 const INTERFACE_KEY="pm-interface-mode";
 const INTERFACE_MODES=new Set(["auto","mobile","desktop"]);
 
+const DESKTOP_FEATURED_MEDIA=[
+  "./featured/image-builder-example.PNG?v=16410",
+  "./featured/portrait-example-real.jpg?v=16410",
+  "./featured/architecture-example-real.jpg?v=16410",
+  "./featured/fashion-editorial-example.jpg?v=16410",
+  "./featured/logo-concept-real.jpg?v=16410",
+  "./featured/seedance-arrival-example.mp4?v=16410"
+];
+let desktopFeaturedPreloadStarted=false;
+
+function preloadDesktopFeaturedMedia(){
+  if(desktopFeaturedPreloadStarted||!desktop())return;
+  desktopFeaturedPreloadStarted=true;
+  const start=()=>{
+    for(const url of DESKTOP_FEATURED_MEDIA){
+      if(/\.mp4(?:\?|$)/i.test(url)){
+        const video=document.createElement("video");
+        video.preload="auto";
+        video.muted=true;
+        video.playsInline=true;
+        video.src=url;
+        video.load();
+      }else{
+        const image=new Image();
+        image.decoding="async";
+        image.loading="eager";
+        image.src=url;
+      }
+    }
+  };
+  if("requestIdleCallback" in window)requestIdleCallback(start,{timeout:1200});
+  else setTimeout(start,150);
+}
+
+function syncAuthenticatedFeaturedPreload(){
+  const gate=document.getElementById("authGate");
+  if(gate?.hidden)preloadDesktopFeaturedMedia();
+}
+
 function interfaceMode(){
   const value=localStorage.getItem(INTERFACE_KEY)||"auto";
   return INTERFACE_MODES.has(value)?value:"auto";
@@ -28,6 +67,7 @@ function applyInterfaceMode(mode=interfaceMode(),{persist=false}={}){
   syncInterfaceControls();
   applySidebarPreference();
   syncSidebarA11y();
+  syncAuthenticatedFeaturedPreload();
 }
 
 function syncCompactDesktopRail(){
@@ -225,11 +265,46 @@ async function initAuthBackdrop(){
     console.warn("Prompt Manager login backdrop unavailable",error);
   }
 }
+function bindDesktopNavigationBehavior(){
+  const nav=document.querySelector(".bottom-nav");
+  if(nav&&!nav.dataset.pmCollapseBound){
+    nav.dataset.pmCollapseBound="1";
+    nav.addEventListener("click",event=>{
+      if(!event.target.closest("[data-nav]"))return;
+      if(desktop()&&interfaceMode()!=="mobile"){
+        setSidebarState(false,{persist:true});
+        syncSidebarA11y();
+      }
+    },true);
+  }
+
+  const back=document.getElementById("exploreBack");
+  if(back&&!back.dataset.pmFeaturedBackBound){
+    back.dataset.pmFeaturedBackBound="1";
+    back.addEventListener("click",event=>{
+      if(!document.querySelector("#exploreList .pm-featured-grid"))return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      document.querySelector('.bottom-nav [data-nav="explore"]')?.click();
+    },true);
+  }
+}
+
+function bindAuthenticatedFeaturedPreload(){
+  const gate=document.getElementById("authGate");
+  if(!gate||gate.dataset.pmFeaturedPreloadBound==="1")return;
+  gate.dataset.pmFeaturedPreloadBound="1";
+  new MutationObserver(syncAuthenticatedFeaturedPreload).observe(gate,{attributes:true,attributeFilter:["hidden"]});
+  syncAuthenticatedFeaturedPreload();
+}
+
 function init(){
   applyInterfaceMode();
   enhanceSettings();
   syncCompactDesktopRail();
   applySidebarPreference();
+  bindDesktopNavigationBehavior();
+  bindAuthenticatedFeaturedPreload();
   const brand=document.querySelector(".brand");
   if(brand){
     brand.setAttribute("role","button");
