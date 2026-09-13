@@ -1,36 +1,45 @@
-# Prompt Manager M1.6.6.23
+# Prompt Manager M1.6.6.24
 
 ## Commit
-`M1.6.6.23 — Fix Featured Freeze & Enable Offline Library`
+`M1.6.6.24 — Secure Offline Session UX & Reconnect Sync`
+
+## Requires
+Apply after M1.6.6.23.
 
 ## Replace
-- `m1.6.6.22.js`
-- `sw.js`
 - `index.html`
+- `sw.js`
 
 ## Add
-None.
+- `m1.6.6.24.css`
+- `m1.6.6.24.js`
 
 ## Delete
 None.
 
-## Changes
-- Fixes the Featured freeze caused by a self-triggering MutationObserver.
-- Caches the Supabase browser SDK so persisted auth can initialize offline.
-- Adds an offline navigation fallback to cached `index.html`.
-- Keeps the existing IndexedDB Library available without internet.
-- Existing local-first queued changes continue syncing when connectivity returns.
-- Public Share and other cloud-only actions still require internet.
-
-## Important
-Open this release once while online so the new service worker and SDK are cached. After that, the installed PWA can launch offline and access the local Library.
-
 ## SQL
 None.
 
+## Changes
+- Discreet persistent status while offline:
+  - EN: `Offline · Local library`
+  - ES: `Sin internet · Biblioteca local`
+  - SR: `Bez interneta · Lokalna biblioteka`
+- Brief `Back online · Syncing…` state on reconnect.
+- Offline access still depends on the persisted Supabase session restored by the existing auth layer. This release does not bypass the auth gate.
+- Google/email sign-in is blocked offline with a clear message.
+- Share actions are blocked offline with a clear message.
+- On reconnect, the persisted session is revalidated using `auth.getUser()` before cloud sync.
+- If Supabase confirms that the session is invalid, local auth is cleared and the login gate is restored.
+- Transport/network failure during reconnect does not erase the local session; sync is simply deferred.
+- Existing IndexedDB local-first Library and sync queue remain unchanged.
+
+## Security model
+Offline mode is device-local access for a previously authenticated user, not an authentication bypass. Cloud operations remain protected by Supabase/RLS and require connectivity. IndexedDB is not encrypted by Prompt Manager; device/OS access control remains the protection for the local cache in this MVP.
+
 ## QA
-- JavaScript syntax checked.
-- Service worker syntax checked.
-- Featured observer guard verified.
-- Supabase SDK added to cache.
-- Offline navigation fallback verified.
+- `node --check m1.6.6.24.js` passed.
+- `node --check sw.js` passed.
+- New CSS/JS load after existing M1.6.6.22 layer.
+- New assets included in service-worker app shell.
+- Cache bumped to `pm-m1.6.6.24-v1`.

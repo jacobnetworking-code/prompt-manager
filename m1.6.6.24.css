@@ -1,0 +1,65 @@
+/* Prompt Manager M1.6.6.24 — discreet connectivity state */
+
+#pmConnectivity {
+  position: fixed;
+  z-index: 10050;
+  top: max(10px, env(safe-area-inset-top));
+  left: 50%;
+  transform: translateX(-50%) translateY(-8px);
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  max-width: calc(100vw - 28px);
+  padding: 7px 11px;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 999px;
+  background: rgba(20,20,20,.88);
+  color: rgba(255,255,255,.82);
+  box-shadow: 0 8px 28px rgba(0,0,0,.24);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -.01em;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .18s ease, transform .18s ease;
+}
+
+#pmConnectivity::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: .72;
+  flex: 0 0 auto;
+}
+
+#pmConnectivity[data-visible="true"] {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+#pmConnectivity[data-state="offline"] {
+  color: rgba(255,255,255,.72);
+}
+
+#pmConnectivity[data-state="online"] {
+  color: #d4ae63;
+}
+
+html[data-pm-offline="true"] [data-pm-explore-share],
+html[data-pm-offline="true"] [data-pm-share],
+html[data-pm-offline="true"] #pmUseShare {
+  opacity: .48;
+}
+
+@media (max-width: 700px) {
+  #pmConnectivity {
+    top: max(8px, env(safe-area-inset-top));
+    font-size: 11px;
+    padding: 7px 10px;
+  }
+}
