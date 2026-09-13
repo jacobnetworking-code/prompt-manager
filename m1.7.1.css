@@ -1,0 +1,25 @@
+/* M1.7.1 — Library import shortcut */
+.pm-library-head-actions .pm-library-import{
+  width:44px;
+  height:44px;
+  flex:0 0 44px;
+  border-radius:13px;
+  display:inline-grid;
+  place-items:center;
+  padding:0;
+  border:1px solid var(--border);
+  background:var(--surface2);
+  color:var(--text);
+}
+.pm-library-head-actions .pm-library-import svg{
+  width:19px;
+  height:19px;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:1.8;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+.pm-library-head-actions .pm-library-import:hover{
+  border-color:rgba(200,164,93,.42);
+}

@@ -1,10 +1,26 @@
-# Prompt Manager M1.7.0
-Commit: `M1.7.0 — Add Bulk Prompt Import`
+# Prompt Manager M1.7.1
 
-Replace: `index.html`, `sw.js`
-Add: `m1.7.0.css`, `m1.7.0.js`
-Delete: none
-SQL: none
+Commit: `M1.7.1 — Fix Data Menu Labels & Add Library Import Shortcut`
 
-Settings → Data → Import Prompts.
-CSV/JSON, max 500 prompts / 5 MB, automatic + manual field mapping, preview, deterministic title/category generation, duplicate skipping, private Library only, existing local-first sync pipeline.
+## Replace
+- index.html
+- sw.js
+
+## Add
+- m1.7.1.css
+- m1.7.1.js
+
+## Delete
+None.
+
+## SQL
+None.
+
+## Changes
+- Corrects Settings → Data labels:
+  1. Import Prompts
+  2. Backup & Restore
+  3. Storage Diagnostics
+- Adds an import icon button in the Library header between Select and +.
+- Import shortcut opens the existing bulk-import flow.
+- Labels/tooltips follow EN / ES / SR.

@@ -1,7 +1,7 @@
-const CACHE="pm-m1.7.0-v1";
+const CACHE="pm-m1.7.1-v1";
 const CORE=[
   "./","./index.html","./styles.css","./ui-refine.css","./desktop-v1.css","./desktop-v1.js","./m1.6.6.18.css","./m1.6.6.18.js","./app.js","./ui-refine.js",
-  "./m1.6.6.19.css","./m1.6.6.19.js","./m1.6.6.20.css","./m1.6.6.20.js","./m1.6.6.21.css","./m1.6.6.21.js","./m1.6.6.22.js","./m1.6.6.24.css","./m1.6.6.24.js","./m1.6.6.25.css","./m1.6.6.25.js","./m1.7.0.css","./m1.7.0.js","https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2","./manifest.webmanifest","./apple-touch-icon.png","./icon-192.png","./icon-512.png","./catalog.json","./prompt/","./prompt/share.css","./prompt/share-m1.6.6.18.css","./prompt/share.js"
+  "./m1.6.6.19.css","./m1.6.6.19.js","./m1.6.6.20.css","./m1.6.6.20.js","./m1.6.6.21.css","./m1.6.6.21.js","./m1.6.6.22.js","./m1.6.6.24.css","./m1.6.6.24.js","./m1.6.6.25.css","./m1.6.6.25.js","./m1.7.0.css","./m1.7.0.js","./m1.7.1.css","./m1.7.1.js","https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2","./manifest.webmanifest","./apple-touch-icon.png","./icon-192.png","./icon-512.png","./catalog.json","./prompt/","./prompt/share.css","./prompt/share-m1.6.6.18.css","./prompt/share.js"
 ];
 
 self.addEventListener("install",event=>{
