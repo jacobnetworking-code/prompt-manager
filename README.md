@@ -1,9 +1,19 @@
-# Prompt Manager M1.6.6.9 — Unified Responsive Settings
+# Prompt Manager M1.6.6.10 — Responsive Desktop Mode
 
-Incremental update built on the pushed M1.6.6.8 baseline (`3a3cc018c4359719194cd13888811e84adeba972`).
+Incremental update over M1.6.6.9.
+
+## User-facing change
+- Forced Desktop on iPhone/iPad no longer requests a fake 1180px viewport.
+- Desktop mode now keeps the real device viewport and adapts the desktop UI to available width.
+- Compact screens use a narrow desktop rail, fluid content width, responsive cards and compact spacing.
+- Landscape phones progressively gain denser two-column desktop layouts where space allows.
+- Expanded desktop navigation overlays on compact screens instead of pushing the workspace off-screen.
+- Settings remains centered when Desktop mode is forced on a phone.
+- Horizontal app overflow is explicitly prevented.
 
 ## Replace
 - `desktop-v1.css`
+- `desktop-v1.js`
 - `sw.js`
 
 ## Add
@@ -15,21 +25,16 @@ None.
 ## SQL
 None.
 
-## User-facing change
-- Settings now uses the same information architecture on mobile and desktop: Profile, Appearance, Interface, Data and Sign out.
-- Desktop keeps the centered macOS/iOS-style window introduced in M1.6.6.8.
-- Mobile/tablet uses the same Settings content in an iOS-style high bottom sheet with touch-friendly controls and safe-area spacing.
-- Interface selection remains Auto / Mobile / Desktop and continues to persist locally.
-- No Explore, Library, data model or authentication behavior changed in this release.
-
-## What’s New
-No separate entry. This is a consistency refinement of the M1.6.6 experience.
+## What's New
+No separate entry. This fixes/refines the existing Interface mode introduced in M1.6.6.8–9.
 
 ## Commit title
-`M1.6.6.9 — Unify Responsive Settings`
+`M1.6.6.10 — Make Desktop Mode Fully Responsive`
 
 ## QA
-- CSS braces balanced.
-- Service worker cache bumped to `pm-m1.6.6.9-v1`.
-- Settings mobile rules are scoped below 1024px and do not alter the desktop modal.
-- Existing M1.6.6.8 Settings logic and persisted interface preference are reused; no duplicate settings implementation was added.
+- `node --check desktop-v1.js`
+- `node --check sw.js`
+- CSS brace balance = 0
+- Forced desktop no longer writes `width=1180` to the viewport meta tag.
+- Compact desktop CSS covers portrait and landscape widths below 1024px.
+- Service worker cache: `pm-m1.6.6.10-v1`

@@ -18,13 +18,11 @@ function applyInterfaceMode(mode=interfaceMode(),{persist=false}={}){
   document.body.classList.toggle("pm-interface-desktop",mode==="desktop");
   document.body.dataset.interfaceMode=mode;
 
-  // On phones/tablets, desktop mode requests a desktop-sized layout viewport.
-  // Returning to Auto/Mobile restores the original responsive viewport.
+  // Keep the real device viewport in every mode. Forced desktop is now a
+  // responsive desktop layout, not a fake 1180px viewport that can overflow.
   const viewport=document.querySelector('meta[name="viewport"]');
   if(viewport){
-    const normal="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover";
-    const forcedDesktop="width=1180,initial-scale=1,user-scalable=yes,viewport-fit=cover";
-    viewport.setAttribute("content",mode==="desktop"?forcedDesktop:normal);
+    viewport.setAttribute("content","width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover");
   }
   syncInterfaceControls();
   applySidebarPreference();

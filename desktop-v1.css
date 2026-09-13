@@ -1594,3 +1594,377 @@
     min-height:70px!important;
   }
 }
+
+/* M1.6.6.10 — Responsive forced Desktop on compact screens
+   Desktop is a layout mode, not a fake wide viewport. It must always fit the real device width. */
+@media (max-width:1023px){
+  html:has(body.pm-interface-desktop),
+  body.pm-interface-desktop{
+    width:100%;
+    max-width:100%;
+    overflow-x:hidden!important;
+  }
+
+  body.pm-interface-desktop{
+    --pm-compact-rail:58px;
+    --pm-compact-gutter:12px;
+  }
+
+  body.pm-interface-desktop .app{
+    box-sizing:border-box!important;
+    width:calc(100% - var(--pm-compact-rail))!important;
+    max-width:none!important;
+    min-width:0!important;
+    margin:0 0 0 var(--pm-compact-rail)!important;
+    padding:max(12px,env(safe-area-inset-top)) var(--pm-compact-gutter) max(24px,env(safe-area-inset-bottom))!important;
+    overflow:visible!important;
+  }
+  body.pm-interface-desktop main,
+  body.pm-interface-desktop #homeView,
+  body.pm-interface-desktop #exploreView,
+  body.pm-interface-desktop #libraryView,
+  body.pm-interface-desktop .explore,
+  body.pm-interface-desktop .library{
+    min-width:0!important;
+    max-width:100%!important;
+  }
+
+  /* Compact desktop rail. Expanded state overlays instead of pushing content off-screen. */
+  body.pm-interface-desktop header{
+    height:0!important;
+    min-height:0!important;
+    margin:0!important;
+    padding:0!important;
+    border:0!important;
+  }
+  body.pm-interface-desktop .brand{
+    position:fixed!important;
+    z-index:42!important;
+    left:8px!important;
+    top:max(10px,env(safe-area-inset-top))!important;
+    width:42px!important;
+    min-width:42px!important;
+    height:42px!important;
+    padding:0!important;
+    gap:10px!important;
+    display:flex!important;
+    align-items:center!important;
+  }
+  body.pm-interface-desktop .mark{
+    width:42px!important;
+    height:42px!important;
+    min-width:42px!important;
+    flex:0 0 42px!important;
+    border-radius:13px!important;
+  }
+  body.pm-interface-desktop .brand-title-row{
+    display:none!important;
+  }
+  body.pm-interface-desktop .bottom-nav,
+  body.pm-interface-desktop:has(.bottom-nav:hover) .bottom-nav,
+  body.pm-interface-desktop:has(.brand:hover) .bottom-nav,
+  body.pm-interface-desktop:has(#profileBtn:hover) .bottom-nav{
+    position:fixed!important;
+    z-index:40!important;
+    left:6px!important;
+    top:62px!important;
+    bottom:64px!important;
+    transform:none!important;
+    width:46px!important;
+    height:auto!important;
+    padding:5px!important;
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:stretch!important;
+    justify-content:flex-start!important;
+    gap:5px!important;
+    border:1px solid var(--border)!important;
+    border-radius:16px!important;
+    background:color-mix(in srgb,var(--bg) 95%,transparent)!important;
+    -webkit-backdrop-filter:blur(18px);
+    backdrop-filter:blur(18px);
+  }
+  body.pm-interface-desktop .bottom-nav button{
+    box-sizing:border-box!important;
+    width:36px!important;
+    min-width:36px!important;
+    height:40px!important;
+    min-height:40px!important;
+    padding:0!important;
+    display:grid!important;
+    place-items:center!important;
+    grid-template-columns:1fr!important;
+    gap:0!important;
+    border-radius:11px!important;
+    transform:none!important;
+  }
+  body.pm-interface-desktop .bottom-nav button>span,
+  body.pm-interface-desktop .bottom-nav button .pm-nav-icon{
+    width:19px!important;
+    height:19px!important;
+    display:grid!important;
+    place-items:center!important;
+  }
+  body.pm-interface-desktop .bottom-nav button small{
+    display:none!important;
+  }
+  body.pm-interface-desktop #profileBtn{
+    position:fixed!important;
+    z-index:42!important;
+    left:10px!important;
+    bottom:max(10px,env(safe-area-inset-bottom))!important;
+    width:38px!important;
+    height:38px!important;
+    border-radius:12px!important;
+  }
+
+  body.pm-interface-desktop.pm-sidebar-expanded .bottom-nav,
+  body.pm-interface-desktop.pm-sidebar-expanded:has(.bottom-nav:hover) .bottom-nav{
+    width:min(184px,calc(100vw - 18px))!important;
+    padding:7px!important;
+    align-items:stretch!important;
+    box-shadow:0 18px 50px rgba(0,0,0,.34)!important;
+  }
+  body.pm-interface-desktop.pm-sidebar-expanded .bottom-nav button{
+    width:100%!important;
+    grid-template-columns:24px minmax(0,1fr)!important;
+    justify-content:start!important;
+    padding:0 10px!important;
+    gap:9px!important;
+  }
+  body.pm-interface-desktop.pm-sidebar-expanded .bottom-nav button small{
+    display:block!important;
+    min-width:0!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+    white-space:nowrap!important;
+    text-align:left!important;
+    font-size:11px!important;
+  }
+  body.pm-interface-desktop.pm-sidebar-expanded .brand{
+    width:min(184px,calc(100vw - 18px))!important;
+    padding-right:8px!important;
+  }
+  body.pm-interface-desktop.pm-sidebar-expanded .brand-title-row{
+    display:block!important;
+    min-width:0!important;
+  }
+  body.pm-interface-desktop.pm-sidebar-expanded .brand-title-row h1{
+    font-size:14px!important;
+    white-space:nowrap!important;
+  }
+  body.pm-interface-desktop.pm-sidebar-expanded .alpha-badge{
+    display:inline-flex!important;
+    font-size:7px!important;
+  }
+
+  /* Desktop hierarchy, fluid enough for portrait and landscape phones. */
+  body.pm-interface-desktop #homeView{
+    display:block!important;
+    min-height:0!important;
+  }
+  body.pm-interface-desktop #homeView[hidden],
+  body.pm-interface-desktop #exploreView[hidden],
+  body.pm-interface-desktop #libraryView[hidden]{display:none!important}
+
+  body.pm-interface-desktop #homeView .hero{
+    max-width:100%!important;
+    padding:34px 0 24px!important;
+  }
+  body.pm-interface-desktop #homeView .hero h2{
+    max-width:100%!important;
+    font-size:clamp(42px,12vw,68px)!important;
+    line-height:.91!important;
+    letter-spacing:-3px!important;
+  }
+  body.pm-interface-desktop #homeView .hero p{
+    max-width:540px!important;
+    margin-top:14px!important;
+    font-size:13px!important;
+    line-height:1.45!important;
+  }
+  body.pm-interface-desktop #homeView .hero .primary{
+    margin-top:18px!important;
+    min-height:42px!important;
+    padding:0 16px!important;
+  }
+  body.pm-interface-desktop #homeView .home-actions{
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:8px!important;
+    margin:0!important;
+  }
+  body.pm-interface-desktop #homeView .home-actions button{
+    min-width:0!important;
+    min-height:86px!important;
+    padding:14px!important;
+    border-radius:16px!important;
+  }
+  body.pm-interface-desktop #homeView .pm-whats-new{
+    margin:16px 0 0!important;
+    padding:14px 0 0!important;
+  }
+
+  body.pm-interface-desktop .pagehead,
+  body.pm-interface-desktop #exploreView>.pagehead,
+  body.pm-interface-desktop #libraryView>.pagehead{
+    max-width:100%!important;
+    padding:22px 0 14px!important;
+  }
+  body.pm-interface-desktop .pagehead h2{
+    max-width:100%!important;
+    font-size:clamp(34px,9vw,50px)!important;
+    line-height:.96!important;
+    letter-spacing:-2px!important;
+  }
+  body.pm-interface-desktop .pagehead p{
+    max-width:100%!important;
+    font-size:12px!important;
+    line-height:1.45!important;
+  }
+
+  body.pm-interface-desktop #exploreView{
+    display:block!important;
+  }
+  body.pm-interface-desktop #exploreView .explore-search{
+    position:static!important;
+    width:100%!important;
+    max-width:100%!important;
+    margin:0 0 10px!important;
+  }
+  body.pm-interface-desktop .pm-featured{
+    width:100%!important;
+    max-width:100%!important;
+  }
+  body.pm-interface-desktop .pm-featured-grid,
+  body.pm-interface-desktop #exploreList:not(:has(.pm-featured-grid)){
+    display:grid!important;
+    grid-template-columns:1fr!important;
+    gap:9px!important;
+  }
+  body.pm-interface-desktop #exploreView .explore-categories{
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:8px!important;
+  }
+  body.pm-interface-desktop #exploreView .explore-categories button{
+    min-width:0!important;
+    min-height:78px!important;
+    height:auto!important;
+    padding:12px!important;
+    border-radius:14px!important;
+  }
+
+  body.pm-interface-desktop .library-head,
+  body.pm-interface-desktop .library-title-grid,
+  body.pm-interface-desktop .library,
+  body.pm-interface-desktop #libraryOriginFilters,
+  body.pm-interface-desktop #categoryFilters,
+  body.pm-interface-desktop .search-filter-row{
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+  }
+  body.pm-interface-desktop .search-filter-row{
+    grid-template-columns:minmax(0,1fr) auto!important;
+    gap:8px!important;
+  }
+  body.pm-interface-desktop #list{
+    display:grid!important;
+    grid-template-columns:1fr!important;
+    gap:9px!important;
+    min-width:0!important;
+  }
+  body.pm-interface-desktop #list>.card{
+    min-width:0!important;
+    width:100%!important;
+    margin:0!important;
+  }
+
+  body.pm-interface-desktop .pm-selection-bar{
+    left:calc(var(--pm-compact-rail) + (100vw - var(--pm-compact-rail))/2)!important;
+    width:min(520px,calc(100vw - var(--pm-compact-rail) - 20px))!important;
+    max-width:calc(100vw - var(--pm-compact-rail) - 20px)!important;
+    bottom:max(12px,env(safe-area-inset-bottom))!important;
+  }
+
+  /* Desktop-mode dialogs also fit the true screen instead of inheriting the mobile sheet. */
+  body.pm-interface-desktop #settingsDialog{
+    inset:0!important;
+    width:100vw!important;
+    height:100dvh!important;
+    max-width:none!important;
+    max-height:none!important;
+    margin:0!important;
+    padding:12px!important;
+    place-items:center!important;
+  }
+  body.pm-interface-desktop #settingsDialog[open]{
+    display:grid!important;
+    place-items:center!important;
+  }
+  body.pm-interface-desktop #settingsDialog .pm-settings-window{
+    width:min(500px,calc(100vw - 24px))!important;
+    max-width:calc(100vw - 24px)!important;
+    max-height:calc(100dvh - 24px)!important;
+    margin:auto!important;
+    padding:18px!important;
+    border:1px solid var(--border)!important;
+    border-radius:22px!important;
+    box-shadow:0 24px 70px rgba(0,0,0,.4)!important;
+  }
+  body.pm-interface-desktop #settingsDialog .sheethead{
+    top:-18px!important;
+    margin:-18px -18px 0!important;
+    padding:18px 18px 14px!important;
+  }
+  body.pm-interface-desktop #useDialog>.sheet{
+    width:min(620px,calc(100vw - var(--pm-compact-rail) - 18px))!important;
+    max-width:calc(100vw - var(--pm-compact-rail) - 18px)!important;
+    margin:auto!important;
+  }
+
+  body.pm-interface-desktop #fab{display:none!important}
+
+  /* Defensive overflow constraints for long prompt content and controls. */
+  body.pm-interface-desktop input,
+  body.pm-interface-desktop textarea,
+  body.pm-interface-desktop select,
+  body.pm-interface-desktop button,
+  body.pm-interface-desktop .card,
+  body.pm-interface-desktop .pm-featured-card{
+    max-width:100%;
+  }
+  body.pm-interface-desktop pre,
+  body.pm-interface-desktop code,
+  body.pm-interface-desktop .prompt-text{
+    overflow-wrap:anywhere;
+    word-break:break-word;
+  }
+}
+
+/* Landscape phones / compact tablets: progressively use desktop density without overflow. */
+@media (min-width:700px) and (max-width:1023px){
+  body.pm-interface-desktop{
+    --pm-compact-rail:66px;
+    --pm-compact-gutter:18px;
+  }
+  body.pm-interface-desktop #homeView{
+    display:grid!important;
+    grid-template-columns:minmax(0,1.25fr) minmax(220px,.75fr)!important;
+    grid-template-areas:"hero actions" "hero news"!important;
+    column-gap:22px!important;
+    align-items:start!important;
+  }
+  body.pm-interface-desktop #homeView .hero{grid-area:hero!important;padding-top:44px!important}
+  body.pm-interface-desktop #homeView .home-actions{grid-area:actions!important;grid-template-columns:1fr!important;margin-top:36px!important}
+  body.pm-interface-desktop #homeView .pm-whats-new{grid-area:news!important;margin-top:8px!important}
+  body.pm-interface-desktop .pm-featured-grid,
+  body.pm-interface-desktop #exploreList:not(:has(.pm-featured-grid)),
+  body.pm-interface-desktop #list{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+  body.pm-interface-desktop #exploreView .explore-categories{
+    grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  }
+}
