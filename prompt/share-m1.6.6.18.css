@@ -1,0 +1,67 @@
+/* Prompt Manager M1.6.6.18 — share header language + compact brand */
+.pm-share-brand{
+  justify-content:space-between!important;
+}
+.pm-share-brand-left{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  min-width:0;
+}
+.pm-share-brand-left .mark{flex:0 0 42px}
+.pm-share-brand-left strong{white-space:nowrap}
+.pm-share-brand .alpha-badge{
+  margin-left:0!important;
+}
+.pm-share-language{
+  position:relative;
+  margin-left:auto;
+}
+.pm-share-language-button{
+  width:42px;
+  height:42px;
+  padding:0;
+  border:1px solid #303030;
+  border-radius:13px;
+  background:#151515;
+  color:#fff;
+  display:grid;
+  place-items:center;
+  font-size:21px;
+}
+.pm-share-language-menu{
+  position:absolute;
+  right:0;
+  top:49px;
+  z-index:20;
+  display:grid;
+  gap:4px;
+  padding:5px;
+  border:1px solid #303030;
+  border-radius:14px;
+  background:#151515;
+  box-shadow:0 16px 44px rgba(0,0,0,.38);
+}
+.pm-share-language-menu[hidden]{display:none!important}
+.pm-share-language-menu button{
+  width:40px;
+  height:38px;
+  padding:0;
+  border:0;
+  border-radius:10px;
+  background:transparent;
+  color:#fff;
+  display:grid;
+  place-items:center;
+  font-size:21px;
+}
+.pm-share-language-menu button:hover,
+.pm-share-language-menu button:focus-visible{
+  background:#222;
+}
+@media(max-width:520px){
+  .pm-share-brand-left{gap:8px}
+  .pm-share-brand-left strong{font-size:17px}
+  .pm-share-brand .alpha-badge{font-size:7px!important;padding:4px 7px!important}
+  .pm-share-language-button{width:40px;height:40px}
+}
