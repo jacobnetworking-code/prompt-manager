@@ -1,32 +1,35 @@
-# Prompt Manager M1.6.6.18 — Language & Brand Polish
+# Prompt Manager M1.6.6.19
 
-Commit: `M1.6.6.18 — Refine Language UX & Share Header`
+## Commit
+`M1.6.6.19 — Restore Language Flags & Eliminate Desktop Load Flash`
 
 ## Replace
 - `index.html`
 - `sw.js`
-- `prompt/index.html`
-- `prompt/share.js`
 
 ## Add
-- `m1.6.6.18.css`
-- `m1.6.6.18.js`
-- `prompt/share-m1.6.6.18.css`
+- `m1.6.6.19.css`
+- `m1.6.6.19.js`
 
 ## Delete
-None.
+- `m1.6.6.18.css`
+- `m1.6.6.18.js`
+
+Do not delete the M1.6.6.18 files inside `/prompt/`; the Share page still uses those intentionally.
+
+## What changed
+- Settings language selector keeps the compact dropdown but restores the visible flag next to each language.
+- `desktop-v1.css` is now loaded synchronously in `<head>` instead of waiting for `ui-refine.js` to inject it. This removes the unstyled/intermediate desktop frame that could expose prompt content for a moment during startup.
+- Expanded desktop navigation continues to show `Prompt Manager` beside the `{ }` logo.
+- Share-page language/header behavior from M1.6.6.18 is unchanged.
+- Service-worker cache bumped to `pm-m1.6.6.19-v1`.
 
 ## SQL
 None.
 
-## Changes
-- Settings language control is now a single dropdown showing the current language.
-- Shared prompt header keeps ALPHA beside Prompt Manager and adds a flag-only language menu on the right.
-- Shared prompt UI translates between English, Spanish and Serbian and shares the same `pm-language` preference.
-- Compact desktop sidebar shows Prompt Manager branding beside the logo while expanded.
-- Service-worker cache bumped to `pm-m1.6.6.18-v1`.
-
 ## QA
-- JS syntax checked for `m1.6.6.18.js`, `prompt/share.js`, and `sw.js`.
-- Main index loads the new polish CSS/JS after existing desktop assets.
-- Share header has accessible language controls.
+- JavaScript syntax checked.
+- Service-worker syntax checked.
+- Confirmed `desktop-v1.css` is present in `<head>` with `data-pm-desktop-v1`.
+- Confirmed Settings options contain 🇬🇧 / 🇪🇸 / 🇷🇸.
+- Confirmed M1.6.6.19 assets are pre-cached.
