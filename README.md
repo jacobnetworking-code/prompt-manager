@@ -1,35 +1,33 @@
-# Prompt Manager M1.7.5
+# Prompt Manager M1.7.6
 
-Pre-launch Library correctness pass.
+Pre-launch friction polish for Library.
 
 ## Replace
-- `product-ui.js`
 - `product-ui.css`
+- `product-ui.js`
 - `sw.js`
 
 ## Add
-- None
+None.
 
 ## Delete
-- None
+None.
 
 ## SQL
-- None
+None.
 
 ## Changes
-- Replaces the Library `…` text glyph with a geometrically centered SVG icon.
-- Adds `Imported` as a distinct Library origin while keeping legacy bulk imports compatible through the existing `Bulk import` provenance marker.
-- Adds a subtle Imported badge to imported prompt cards.
-- Bulk Import now creates a missing category before assigning imported prompts to it.
-- Adds deterministic prompt-text duplicate detection. Exact/near matches at 90%+ trigger a review proposing `Delete newest` or `Keep both`; nothing is deleted automatically.
-- Existing exact duplicate skipping in Bulk Import remains in place. Similarity warnings generated during bulk import are queued until the import sheet closes.
+- Keeps `All · Added · Saved · Imported` on a single row on mobile, resizing the four origin controls to fit the available width.
+- Adds an `Import prompts` action directly inside the `No prompts found` empty state.
+- The empty-state import action opens the existing Bulk Import flow, so there is no duplicate import implementation or new data path.
+- Localized in English, Spanish and Serbian.
+- No schema, storage or data migration changes.
 
 ## QA
-- `node --check product-ui.js`
-- `node --check sw.js`
-- Verify Library origin tabs: All / Added / Saved / Imported.
-- Verify legacy Bulk import prompts appear only under Imported, not Added.
-- Import a prompt with a new category and verify the category is created.
-- Add an exact duplicate and a >90% near duplicate; verify review dialog and Delete newest.
-- Add two genuinely related but materially different prompts; verify no false warning below threshold.
-- Verify Library More icon centering and anchored menu on mobile and desktop.
+- iPhone/mobile: confirm all four origin controls stay on one line without horizontal scrolling or wrapping.
+- Check narrow mobile widths (~375px) and larger iPhones.
+- Select `Imported` with no imported prompts and confirm `Import prompts` appears below the empty-state copy.
+- Tap `Import prompts` and confirm the existing JSON/CSV Bulk Import dialog opens.
+- Verify the CTA also behaves correctly when another search/filter combination returns no results.
+- Change language EN/ES/SR and confirm CTA copy updates.
+- Desktop: confirm origin filters and Library layout remain unchanged apart from the empty-state CTA.

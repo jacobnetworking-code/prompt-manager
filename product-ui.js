@@ -1377,3 +1377,39 @@ document.addEventListener("change",e=>{if(e.target?.id==="pmLanguageSelect")setT
 window.addEventListener("storage",decorateLibrary);
 decorateLibrary();
 })();
+
+/* ===== M1.7.6 ===== */
+(()=>{"use strict";
+/* Keep Library origins compact on mobile and expose import directly from the no-results state. */
+const IMPORT_ICON=`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12"></path><path d="m7.5 10.5 4.5 4.5 4.5-4.5"></path><path d="M5 19h14"></path></svg>`;
+function language(){const x=(localStorage.getItem("pm-language")||document.documentElement.lang||"en").toLowerCase();return x.startsWith("es")?"es":x.startsWith("sr")?"sr":"en"}
+function copy(){return {
+  en:{title:"Import prompts",sub:"Upload a JSON or CSV file",aria:"Import prompts from a file"},
+  es:{title:"Importar prompts",sub:"Sube un archivo JSON o CSV",aria:"Importar prompts desde un archivo"},
+  sr:{title:"Uvezi promptove",sub:"Otpremi JSON ili CSV fajl",aria:"Uvezi promptove iz fajla"}
+}[language()]}
+function ensureEmptyImport(){
+  const empty=document.getElementById("noresults");
+  if(!empty)return;
+  let button=empty.querySelector(".pm-empty-import");
+  if(!button){
+    button=document.createElement("button");
+    button.type="button";
+    button.className="pm-empty-import";
+    button.addEventListener("click",event=>{
+      event.preventDefault();
+      event.stopPropagation();
+      document.getElementById("openBulkImport")?.click();
+    });
+    empty.appendChild(button);
+  }
+  const t=copy();
+  button.setAttribute("aria-label",t.aria);
+  button.innerHTML=`<span class="pm-empty-import-icon">${IMPORT_ICON}</span><span class="pm-empty-import-copy"><strong>${t.title}</strong><small>${t.sub}</small></span><span class="pm-empty-import-chevron" aria-hidden="true">›</span>`;
+}
+ensureEmptyImport();
+const noresults=document.getElementById("noresults");
+if(noresults)new MutationObserver(ensureEmptyImport).observe(noresults,{childList:true,subtree:false});
+document.addEventListener("change",event=>{if(event.target?.id==="pmLanguageSelect")setTimeout(ensureEmptyImport,0)},true);
+window.addEventListener("storage",ensureEmptyImport);
+})();
