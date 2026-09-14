@@ -1,32 +1,35 @@
-# Prompt Manager M1.7.4
+# Prompt Manager M1.7.5
 
-Commit: `M1.7.4 — Polish Library Menu & Refresh What's New`
+Pre-launch Library correctness pass.
 
 ## Replace
-- `product-ui.css`
 - `product-ui.js`
+- `product-ui.css`
 - `sw.js`
 
 ## Add
-None.
+- None
 
 ## Delete
-None.
+- None
 
 ## SQL
-None.
+- None
 
 ## Changes
-- Centers the three-dot Library button horizontally and vertically.
-- On mobile, the Library overflow menu now opens directly below and aligned to the three-dot button instead of at the bottom of the screen.
-- Refreshes What's New to V1.7 with user-visible features only:
-  - Bulk Import
-  - Category Management
-  - Offline Library
-- What's New copy localized in EN / ES / SR.
+- Replaces the Library `…` text glyph with a geometrically centered SVG icon.
+- Adds `Imported` as a distinct Library origin while keeping legacy bulk imports compatible through the existing `Bulk import` provenance marker.
+- Adds a subtle Imported badge to imported prompt cards.
+- Bulk Import now creates a missing category before assigning imported prompts to it.
+- Adds deterministic prompt-text duplicate detection. Exact/near matches at 90%+ trigger a review proposing `Delete newest` or `Keep both`; nothing is deleted automatically.
+- Existing exact duplicate skipping in Bulk Import remains in place. Similarity warnings generated during bulk import are queued until the import sheet closes.
 
 ## QA
-- Stable runtime filenames preserved.
-- JS syntax checked.
-- Service worker syntax checked.
-- Cache bumped to `pm-m1.7.4-v1`.
+- `node --check product-ui.js`
+- `node --check sw.js`
+- Verify Library origin tabs: All / Added / Saved / Imported.
+- Verify legacy Bulk import prompts appear only under Imported, not Added.
+- Import a prompt with a new category and verify the category is created.
+- Add an exact duplicate and a >90% near duplicate; verify review dialog and Delete newest.
+- Add two genuinely related but materially different prompts; verify no false warning below threshold.
+- Verify Library More icon centering and anchored menu on mobile and desktop.

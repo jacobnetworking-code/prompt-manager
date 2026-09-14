@@ -872,7 +872,7 @@ function normalized(){let old=new Set;try{for(let p of prompts||[])old.add(n(p.c
 function mapping(){let F=[["prompt","Prompt text *"],["title","Title"],["category","Category"],["platform","Platform"],["source","Source URL"]];q("importMapping").innerHTML=F.map(([f,l])=>`<label class="pm-import-field"><span>${l}</span><select data-map="${f}"><option value="">${f=="prompt"?"Select column":"Auto / none"}</option>${heads.map(h=>`<option value="${eh(h)}"${map[f]==h?" selected":""}>${eh(h)}</option>`).join("")}</select></label>`).join("")}
 function preview(){let a=normalized(),ok=a.filter(x=>x.valid&&!x.dup),du=a.filter(x=>x.dup).length,bad=a.filter(x=>!x.valid).length;q("importCount").textContent=`${rows.length} prompt${rows.length==1?"":"s"} detected`;q("importName").textContent=file?.name||"";q("importRows").innerHTML=a.slice(0,30).map(x=>`<div class="pm-import-row" data-state="${x.dup?"duplicate":x.valid?"ready":"error"}"><div><strong>${eh(x.title||"Untitled")}</strong><small>${eh(x.content||"Missing prompt text")}</small></div><em>${x.dup?"Duplicate":x.valid?eh(x.category):"Error"}</em></div>`).join("");q("importHint").textContent=`${ok.length} ready${du?` · ${du} duplicate${du==1?"":"s"} skipped`:""}${bad?` · ${bad} error${bad==1?"":"s"}`:""}.`;q("importConfirm").disabled=!map.prompt||!ok.length}
 async function load(f){if(!f)return;if(f.size>5e6){toast("Maximum file size is 5 MB");return}try{let t=await f.text();rows=f.name.toLowerCase().endsWith(".json")?fromJSON(t):fromCSV(t);if(!rows.length)throw Error("No prompts found");if(rows.length>M)throw Error(`Maximum is ${M} prompts per file`);file=f;automap();q("importPick").hidden=true;q("importPreview").hidden=false;mapping();preview()}catch(e){console.error(e);toast(e.message||"Could not read file")}}
-async function run(){let a=normalized().filter(x=>x.valid&&!x.dup),b=q("importConfirm"),done=0,fail=0;b.disabled=true;b.textContent="Importing…";for(let x of a)try{let cid="general";try{cid=(categories||[]).find(c=>String(c.name||c.id).toLowerCase()==x.category.toLowerCase())?.id||slug(x.category)||"general"}catch{}await add("prompts",{title:x.title,content:x.content,source:x.source,categoryId:cid,createdAt:Date.now(),platforms:[x.platform],useCount:0,lastUsedAt:null,acquisitionType:"manual",sourceName:"Bulk import",externalId:null});done++}catch(e){console.error(e);fail++}await refresh();q("importPreview").hidden=true;q("importResult").hidden=false;q("importResultText").textContent=`${done} imported${rows.length-done-fail?` · ${rows.length-done-fail} skipped`:""}${fail?` · ${fail} failed`:""}.`;b.disabled=false;b.textContent="Import to Library"}
+async function run(){let a=normalized().filter(x=>x.valid&&!x.dup),b=q("importConfirm"),done=0,fail=0;b.disabled=true;b.textContent="Importing…";for(let x of a)try{let cid="general";try{const existing=(categories||[]).find(c=>String(c.name||c.id).toLowerCase()==x.category.toLowerCase());cid=existing?.id||slug(x.category)||"general";if(!existing&&cid!=="general"){const category={id:cid,name:x.category.slice(0,40),createdAt:Date.now(),system:false};await put("categories",category);categories.push(category)}}catch{}await add("prompts",{title:x.title,content:x.content,source:x.source,categoryId:cid,createdAt:Date.now(),platforms:[x.platform],useCount:0,lastUsedAt:null,acquisitionType:"manual",sourceName:"Bulk import",externalId:null});done++}catch(e){console.error(e);fail++}await refresh();q("importPreview").hidden=true;q("importResult").hidden=false;q("importResultText").textContent=`${done} imported${rows.length-done-fail?` · ${rows.length-done-fail} skipped`:""}${fail?` · ${fail} failed`:""}.`;b.disabled=false;b.textContent="Import to Library"}
 q("openBulkImport")?.addEventListener("click",()=>{reset();q("settingsDialog")?.close();q("profileMenu")?.close();q("bulkImportDialog")?.showModal()});q("bulkImportClose")?.addEventListener("click",()=>q("bulkImportDialog").close());q("importDone")?.addEventListener("click",()=>q("bulkImportDialog").close());q("importReset")?.addEventListener("click",reset);q("bulkImportFile")?.addEventListener("change",e=>load(e.target.files?.[0]));q("importMapping")?.addEventListener("change",e=>{if(e.target?.dataset?.map){map[e.target.dataset.map]=e.target.value;preview()}});q("importConfirm")?.addEventListener("click",run)})();
 
 
@@ -1278,4 +1278,102 @@ document.addEventListener("change",event=>{
   if(event.target?.id==="pmLanguageSelect")setTimeout(updateWhatsNew,0);
 },true);
 window.addEventListener("storage",updateWhatsNew);
+})();
+
+
+/* ===== M1.7.5 ===== */
+(()=>{"use strict";
+/* Pre-launch correctness pass: origin provenance, duplicate guard and icon geometry. */
+const MORE_ICON=`<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.6"></circle><circle cx="12" cy="12" r="1.6"></circle><circle cx="19" cy="12" r="1.6"></circle></svg>`;
+const DUPLICATE_THRESHOLD=.90;
+const duplicateQueue=[];
+let duplicateOpen=false;
+
+function language(){const x=(localStorage.getItem("pm-language")||document.documentElement.lang||"en").toLowerCase();return x.startsWith("es")?"es":x.startsWith("sr")?"sr":"en"}
+function copy(){return {
+ en:{imported:"Imported",possible:"Possible duplicate",match:"match",body:"This prompt is very similar to one already in your Library.",existing:"Existing",newest:"Newest",keep:"Keep both",remove:"Delete newest"},
+ es:{imported:"Importado",possible:"Posible duplicado",match:"coincidencia",body:"Este prompt es muy parecido a otro que ya existe en tu Biblioteca.",existing:"Existente",newest:"Más reciente",keep:"Conservar ambos",remove:"Borrar el más reciente"},
+ sr:{imported:"Uvezeno",possible:"Mogući duplikat",match:"podudaranje",body:"Ovaj prompt je veoma sličan promptu koji već postoji u Biblioteci.",existing:"Postojeći",newest:"Najnoviji",keep:"Zadrži oba",remove:"Obriši najnoviji"}
+ }[language()]}
+function isImported(p){return p?.acquisitionType==="imported"||String(p?.sourceName||"").toLowerCase()==="bulk import"}
+function normalizeText(value){return String(value||"").normalize("NFKC").toLowerCase().replace(/[“”„‟]/g,'"').replace(/[‘’]/g,"'").replace(/\s+/g," ").trim()}
+function shingles(value,size=3){const words=normalizeText(value).split(/\s+/).filter(Boolean);if(!words.length)return new Set; if(words.length<size)return new Set([words.join(" ")]);const out=new Set;for(let i=0;i<=words.length-size;i++)out.add(words.slice(i,i+size).join(" "));return out}
+function similarity(a,b){const A=normalizeText(a),B=normalizeText(b);if(!A||!B)return 0;if(A===B)return 1;const lengthRatio=Math.min(A.length,B.length)/Math.max(A.length,B.length);if(lengthRatio<.72)return 0;const X=shingles(A),Y=shingles(B);let intersection=0;for(const x of X)if(Y.has(x))intersection++;const union=X.size+Y.size-intersection;return union?intersection/union:0}
+function bestDuplicate(record,existing){let best=null,score=0;for(const p of existing){if(!p?.content)continue;const s=similarity(record.content,p.content);if(s>score){score=s;best=p}}return score>=DUPLICATE_THRESHOLD?{existing:best,newest:record,score}:null}
+
+function ensureImportedFilter(){const wrap=document.getElementById("libraryOriginFilters");if(!wrap||wrap.querySelector('[data-origin="imported"]'))return;const b=document.createElement("button");b.type="button";b.dataset.origin="imported";b.textContent=copy().imported;wrap.appendChild(b)}
+
+/* Extend the authoritative Library filter without changing the cloud schema.
+   Legacy and new bulk imports are identified by their durable source marker. */
+if(typeof filtered==="function"&&!filtered.pm175){
+ const base=filtered;
+ const enhanced=function(){
+   if(activeOrigin!=="imported"&&activeOrigin!=="added")return base();
+   const q=document.getElementById("search")?.value.trim().toLowerCase()||"";
+   return (prompts||[]).filter(p=>{
+     const originOK=activeOrigin==="imported"?isImported(p):((!p.acquisitionType||p.acquisitionType==="manual")&&!isImported(p));
+     const catOK=activeCategory==="all"||categoryId(p)===activeCategory;
+     const platformOK=activePlatform==="any"||platformsOf(p).includes(activePlatform);
+     const searchOK=!q||(p.title||"").toLowerCase().includes(q)||(p.content||"").toLowerCase().includes(q)||(p.source||"").toLowerCase().includes(q)||catName(categoryId(p)).toLowerCase().includes(q);
+     return originOK&&catOK&&platformOK&&searchOK;
+   }).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+ };
+ enhanced.pm175=true;filtered=enhanced;
+}
+
+function decorateLibrary(){
+ ensureImportedFilter();
+ const t=copy();
+ document.querySelectorAll("#list .card[data-use]").forEach(card=>{
+   const p=(prompts||[]).find(x=>String(x.id)===String(card.dataset.use));
+   let badge=card.querySelector(".pm-origin-badge");
+   if(isImported(p)){
+     if(!badge){badge=document.createElement("span");badge.className="pm-origin-badge";card.querySelector(".meta")?.appendChild(badge)}
+     if(badge)badge.textContent=t.imported;
+   }else badge?.remove();
+ });
+ const more=document.getElementById("pmLibraryMore");
+ if(more&&more.dataset.pmSvg!=="1"){more.innerHTML=MORE_ICON;more.dataset.pmSvg="1"}
+}
+
+function ensureDuplicateDialog(){
+ let d=document.getElementById("pmDuplicateDialog");if(d)return d;
+ d=document.createElement("dialog");d.id="pmDuplicateDialog";d.className="sheet pm-duplicate-dialog";
+ document.body.appendChild(d);return d;
+}
+function escText(s){return String(s||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]))}
+function nextDuplicate(){
+ if(duplicateOpen||!duplicateQueue.length)return;
+ if(document.getElementById("bulkImportDialog")?.open)return;
+ const item=duplicateQueue.shift(),d=ensureDuplicateDialog(),t=copy();duplicateOpen=true;
+ d.innerHTML=`<div class="sheethead"><div><small>${t.possible.toUpperCase()}</small><h3>${Math.round(item.score*100)}% ${t.match}</h3></div></div><p class="sheetcopy">${t.body}</p><div class="pm-duplicate-pair"><div><small>${t.existing}</small><strong>${escText(item.existing.title||"Untitled")}</strong><p>${escText(String(item.existing.content||"").slice(0,180))}</p></div><div><small>${t.newest}</small><strong>${escText(item.newest.title||"Untitled")}</strong><p>${escText(String(item.newest.content||"").slice(0,180))}</p></div></div><div class="pm-duplicate-actions"><button type="button" data-duplicate-keep>${t.keep}</button><button type="button" class="danger-row" data-duplicate-delete>${t.remove}</button></div>`;
+ const close=()=>{try{d.close()}catch{}duplicateOpen=false;setTimeout(nextDuplicate,0)};
+ d.querySelector("[data-duplicate-keep]")?.addEventListener("click",close,{once:true});
+ d.querySelector("[data-duplicate-delete]")?.addEventListener("click",async()=>{try{await del("prompts",item.newest.id);await refresh()}catch(e){console.error("Duplicate delete failed",e)}close()},{once:true});
+ d.addEventListener("cancel",e=>{e.preventDefault();close()},{once:true});
+ try{d.showModal()}catch{duplicateOpen=false}
+}
+
+/* Observe every path that adds a prompt (manual, catalog, import) and suggest removal
+   only after a >=90% text match. Nothing is deleted automatically. */
+if(typeof add==="function"&&!add.pm175){
+ const baseAdd=add;
+ const enhancedAdd=async function(store,record){
+   if(store!=="prompts")return baseAdd(store,record);
+   let before=[];try{before=await localAll("prompts")}catch{}
+   const id=await baseAdd(store,record);
+   const newest={...record,id};
+   const match=bestDuplicate(newest,before);
+   if(match){duplicateQueue.push(match);setTimeout(nextDuplicate,0)}
+   return id;
+ };
+ enhancedAdd.pm175=true;add=enhancedAdd;
+}
+
+document.getElementById("bulkImportDialog")?.addEventListener("close",()=>setTimeout(nextDuplicate,0));
+const list=document.getElementById("list");if(list)new MutationObserver(decorateLibrary).observe(list,{childList:true,subtree:true});
+const origins=document.getElementById("libraryOriginFilters");if(origins)new MutationObserver(decorateLibrary).observe(origins,{childList:true});
+document.addEventListener("change",e=>{if(e.target?.id==="pmLanguageSelect")setTimeout(decorateLibrary,0)},true);
+window.addEventListener("storage",decorateLibrary);
+decorateLibrary();
 })();
