@@ -633,3 +633,17 @@ html[data-theme="light"] #pmCatalogUseActions .pm-detail-icon{border-color:rgba(
 /* ===== M1.7.9 ===== */
 /* Legacy detail actions were superseded by #pmCatalogUseActions. */
 #pmUseActions{display:none!important}
+
+/* ===== M1.7.10 — Auth loading experience ===== */
+body.pm-auth-pending #authGate{visibility:hidden}
+.pm-auth-loading{position:fixed;inset:0;z-index:10000;display:grid;place-items:center;background:#0d0d0d;color:#f4f1e8}
+.pm-auth-loading[hidden]{display:none!important}
+.pm-auth-loading-inner{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;min-height:180px;text-align:center}
+.pm-auth-loading-mark{display:grid;place-items:center;width:72px;height:72px;color:#d7b56d;font-size:32px;font-weight:650;letter-spacing:-4px;line-height:1}
+.pm-auth-loading-copy{min-height:22px;font-size:14px;font-weight:500;letter-spacing:.01em;color:rgba(244,241,232,.72)}
+.pm-auth-loading-dots{display:inline-flex;width:18px;text-align:left}
+.pm-auth-loading-dots i{font-style:normal;opacity:.2;animation:pmAuthDot 1.2s infinite}
+.pm-auth-loading-dots i:nth-child(2){animation-delay:.2s}.pm-auth-loading-dots i:nth-child(3){animation-delay:.4s}
+@keyframes pmAuthDot{0%,20%{opacity:.2}40%{opacity:1}60%,100%{opacity:.2}}
+#pmAuthLoadingRetry{margin-top:2px;min-height:38px;padding:0 16px;border:1px solid rgba(255,255,255,.14);border-radius:10px;background:rgba(255,255,255,.06);color:#f4f1e8}
+@media (prefers-reduced-motion:reduce){.pm-auth-loading-dots i{animation:none;opacity:.75}}

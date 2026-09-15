@@ -1503,3 +1503,39 @@ syncOriginSelection();
 setTimeout(()=>{syncOriginSelection();decorateFeaturedProvenance()},0);
 window.addEventListener("storage",()=>setTimeout(()=>{syncOriginSelection();decorateFeaturedProvenance()},0));
 })();
+
+/* ===== M1.7.10 — Auth loading experience ===== */
+(()=>{"use strict";
+const root=document.body,loader=document.getElementById("pmAuthLoading"),textEl=document.getElementById("pmAuthLoadingText"),retry=document.getElementById("pmAuthLoadingRetry"),gate=document.getElementById("authGate");
+if(!root||!loader||!gate)return;
+const GOOGLE_KEY="pm-google-oauth-pending";
+let revealTimer=null,timeoutTimer=null,settled=false,googleReturn=sessionStorage.getItem(GOOGLE_KEY)==="1";
+function language(){const x=(localStorage.getItem("pm-language")||document.documentElement.lang||"en").toLowerCase();return x.startsWith("es")?"es":x.startsWith("sr")?"sr":"en"}
+function copy(key){const t={en:{loading:"Loading your library",google:"Signing in with Google",slow:"Taking longer than expected",retry:"Retry"},es:{loading:"Cargando tu biblioteca",google:"Iniciando sesión con Google",slow:"Está tardando más de lo esperado",retry:"Reintentar"},sr:{loading:"Učitavanje biblioteke",google:"Prijavljivanje putem Google-a",slow:"Traje duže nego očekivano",retry:"Pokušaj ponovo"}};return t[language()][key]}
+function setMessage(key){if(textEl)textEl.textContent=copy(key);if(retry)retry.textContent=copy("retry")}
+function show(){if(settled)return;setMessage(googleReturn?"google":"loading");loader.hidden=false}
+function finish({showLogin=false}={}){settled=true;clearTimeout(revealTimer);clearTimeout(timeoutTimer);loader.hidden=true;root.classList.remove("pm-auth-pending");if(showLogin)gate.hidden=false;if(googleReturn)sessionStorage.removeItem(GOOGLE_KEY)}
+function armTimeout(){clearTimeout(timeoutTimer);timeoutTimer=setTimeout(()=>{if(settled)return;loader.hidden=false;setMessage("slow");retry.hidden=false},12000)}
+document.addEventListener("click",e=>{if(e.target.closest("#googleSignIn"))sessionStorage.setItem(GOOGLE_KEY,"1")},true);
+retry?.addEventListener("click",()=>location.reload());
+async function bootstrap(){
+  revealTimer=setTimeout(show,300);armTimeout();
+  if(typeof supabaseClient==="undefined"||!supabaseClient?.auth){finish({showLogin:true});return}
+  try{
+    const result=await Promise.race([supabaseClient.auth.getSession(),new Promise((_,reject)=>setTimeout(()=>reject(new Error("auth-bootstrap-timeout")),10000))]);
+    const session=result?.data?.session||null;
+    if(!session){finish({showLogin:true});return}
+    show();
+    if(gate.hidden){finish();return}
+    const observer=new MutationObserver(()=>{if(gate.hidden){observer.disconnect();finish()}});
+    observer.observe(gate,{attributes:true,attributeFilter:["hidden"]});
+    clearTimeout(timeoutTimer);
+    timeoutTimer=setTimeout(()=>{if(settled)return;setMessage("slow");retry.hidden=false},12000);
+  }catch(err){
+    console.warn("Auth bootstrap UI timed out",err);
+    loader.hidden=false;setMessage("slow");retry.hidden=false;root.classList.remove("pm-auth-pending");
+  }
+}
+bootstrap();
+document.addEventListener("change",e=>{if(e.target?.id==="pmLanguageSelect"&&!settled)setMessage(googleReturn?"google":"loading")},true);
+})();
