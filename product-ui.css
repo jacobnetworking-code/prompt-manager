@@ -647,3 +647,18 @@ body.pm-auth-pending #authGate{visibility:hidden}
 @keyframes pmAuthDot{0%,20%{opacity:.2}40%{opacity:1}60%,100%{opacity:.2}}
 #pmAuthLoadingRetry{margin-top:2px;min-height:38px;padding:0 16px;border:1px solid rgba(255,255,255,.14);border-radius:10px;background:rgba(255,255,255,.06);color:#f4f1e8}
 @media (prefers-reduced-motion:reduce){.pm-auth-loading-dots i{animation:none;opacity:.75}}
+
+/* ===== M1.7.10.1 — Auth loading brand mark ===== */
+.pm-auth-loading-mark{
+  width:86px!important;height:86px!important;
+  border:1px solid rgba(212,174,99,.46);border-radius:22px;
+  background:linear-gradient(145deg,rgba(212,174,99,.08),rgba(255,255,255,.015));
+  box-shadow:0 12px 36px rgba(0,0,0,.34),inset 0 0 0 1px rgba(255,255,255,.025);
+  color:#d4ae63!important;letter-spacing:0!important;
+}
+.pm-auth-loading-mark svg{width:62px;height:62px;display:block;overflow:visible}
+.pm-auth-loading-mark svg text{
+  fill:currentColor;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;
+  font-size:19px;font-weight:700;letter-spacing:-1.5px;
+}
+.pm-auth-loading-inner{gap:20px!important}
