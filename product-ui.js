@@ -292,153 +292,6 @@ new MutationObserver(()=>{
 })();
 
 
-/* ===== M1.6.6.21 ===== */
-(()=>{"use strict";
-/* Prompt Manager M1.6.6.21 — Featured "View" + compact detail actions */
-
-const SAVE_ICON=`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4.8A1.8 1.8 0 0 1 7.8 3h8.4A1.8 1.8 0 0 1 18 4.8V21l-6-3.8L6 21V4.8Z"></path></svg>`;
-const SHARE_ICON=`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V3"></path><path d="m8 7 4-4 4 4"></path><path d="M7 10H5a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2h-2"></path></svg>`;
-
-let openedCatalogId=null;
-
-const language=()=>localStorage.getItem("pm-language")||"en";
-const labels=()=> {
-  const l=language();
-  if(l==="es") return {view:"Ver",save:"Guardar en Biblioteca",saved:"Guardado",share:"Compartir"};
-  if(l==="sr") return {view:"Otvori",save:"Sačuvaj u Biblioteku",saved:"Sačuvano",share:"Podeli"};
-  return {view:"View",save:"Save to Library",saved:"Saved",share:"Share"};
-};
-
-function getCatalog(id){
-  if(id==null)return null;
-  if(typeof catalogItem==="function")return catalogItem(id);
-  return Array.isArray(window.catalog)?window.catalog.find(x=>String(x.id)===String(id)):null;
-}
-
-function isCatalogSaved(x){
-  if(!x)return false;
-  if(typeof catalogSaved==="function")return catalogSaved(x);
-  return false;
-}
-
-function decorateFeaturedView(){
-  const l=labels();
-  document.querySelectorAll("#exploreList .pm-featured-card [data-explore-open]").forEach(b=>{
-    // Avoid mutating the button when the label is already correct.
-    // This function is called by a childList MutationObserver on #exploreList;
-    // assigning textContent unconditionally creates another childList mutation
-    // and can trap Featured in a self-triggering observer loop.
-    if(b.textContent!==l.view)b.textContent=l.view;
-  });
-}
-
-function ensureDetailActions(){
-  const dialog=document.getElementById("useDialog");
-  const head=dialog?.querySelector(".sheethead");
-  const close=document.getElementById("useClose");
-  if(!dialog||!head||!close)return null;
-
-  let actions=document.getElementById("pmUseActions");
-  if(actions)return actions;
-
-  actions=document.createElement("div");
-  actions.id="pmUseActions";
-  actions.className="pm-use-actions";
-  actions.innerHTML=`
-    <button type="button" id="pmUseSave" class="pm-use-icon-action" aria-label="Save" title="Save">${SAVE_ICON}</button>
-    <button type="button" id="pmUseShare" class="pm-use-icon-action" aria-label="Share" title="Share">${SHARE_ICON}</button>
-  `;
-  close.parentNode.insertBefore(actions,close);
-  return actions;
-}
-
-function currentLibraryPrompt(){
-  if(openedCatalogId!=null)return null;
-  if(typeof currentPrompt!=="undefined" && currentPrompt?.id!=null)return currentPrompt;
-  return null;
-}
-
-function syncDetailActions(){
-  ensureDetailActions();
-  const save=document.getElementById("pmUseSave");
-  const share=document.getElementById("pmUseShare");
-  if(!save||!share)return;
-
-  const l=labels();
-  const x=getCatalog(openedCatalogId);
-  const libraryPrompt=currentLibraryPrompt();
-
-  const saved = x ? isCatalogSaved(x) : !!libraryPrompt;
-  save.classList.toggle("is-saved",saved);
-  save.disabled=saved;
-  save.setAttribute("aria-label",saved?l.saved:l.save);
-  save.title=saved?l.saved:l.save;
-  share.setAttribute("aria-label",l.share);
-  share.title=l.share;
-}
-
-async function saveOpenedCatalog(){
-  const x=getCatalog(openedCatalogId);
-  if(!x||typeof saveCatalog!=="function")return;
-  await saveCatalog(x);
-  syncDetailActions();
-}
-
-function shareOpenedPrompt(){
-  if(openedCatalogId!=null){
-    const b=document.querySelector(`#exploreList [data-pm-explore-share="${CSS.escape(String(openedCatalogId))}"]`);
-    if(b){ b.click(); return; }
-  }
-
-  const p=currentLibraryPrompt();
-  if(p?.id!=null){
-    const b=document.querySelector(`#list [data-pm-share="${CSS.escape(String(p.id))}"]`);
-    if(b){ b.click(); return; }
-  }
-}
-
-const exploreList=document.getElementById("exploreList");
-if(exploreList){
-  exploreList.addEventListener("click",e=>{
-    const open=e.target.closest("[data-explore-open]");
-    if(open)openedCatalogId=String(open.dataset.exploreOpen);
-  },true);
-
-  new MutationObserver(()=>{
-    decorateFeaturedView();
-    if(document.getElementById("useDialog")?.open)syncDetailActions();
-  }).observe(exploreList,{childList:true,subtree:true});
-
-  decorateFeaturedView();
-}
-
-document.getElementById("list")?.addEventListener("click",e=>{
-  if(e.target.closest("[data-use]"))openedCatalogId=null;
-},true);
-
-const useDialog=document.getElementById("useDialog");
-if(useDialog){
-  ensureDetailActions();
-  new MutationObserver(()=>{
-    if(useDialog.open)syncDetailActions();
-  }).observe(useDialog,{attributes:true,attributeFilter:["open"]});
-}
-
-document.getElementById("pmUseSave")?.addEventListener("click",e=>{
-  e.preventDefault();
-  e.stopPropagation();
-  void saveOpenedCatalog();
-});
-document.getElementById("pmUseShare")?.addEventListener("click",e=>{
-  e.preventDefault();
-  e.stopPropagation();
-  shareOpenedPrompt();
-});
-
-window.addEventListener("storage",()=>{decorateFeaturedView();syncDetailActions()});
-})();
-
-
 /* ===== M1.6.6.22 fixed in M1.6.6.23 ===== */
 (()=>{"use strict";
 /* Prompt Manager M1.6.6.22 — editorial Featured descriptions.
@@ -1264,11 +1117,12 @@ function updateWhatsNew(){
   const copy=card.querySelector("[data-pm-whats-copy]");
   const list=card.querySelector("ul");
 
-  if(kicker)kicker.textContent=c.kicker;
-  if(version)version.textContent="V1.7";
-  if(title)title.textContent=c.title;
-  if(copy)copy.textContent=c.copy;
-  if(list)list.innerHTML=c.highlights.map(x=>`<li>${x}</li>`).join("");
+  if(kicker&&kicker.textContent!==c.kicker)kicker.textContent=c.kicker;
+  if(version&&version.textContent!=="V1.7")version.textContent="V1.7";
+  if(title&&title.textContent!==c.title)title.textContent=c.title;
+  if(copy&&copy.textContent!==c.copy)copy.textContent=c.copy;
+  const highlightsHtml=c.highlights.map(x=>`<li>${x}</li>`).join("");
+  if(list&&list.innerHTML!==highlightsHtml)list.innerHTML=highlightsHtml;
 }
 
 updateWhatsNew();
@@ -1333,7 +1187,7 @@ function decorateLibrary(){
    let badge=card.querySelector(".pm-origin-badge");
    if(isImported(p)){
      if(!badge){badge=document.createElement("span");badge.className="pm-origin-badge";card.querySelector(".meta")?.appendChild(badge)}
-     if(badge)badge.textContent=t.imported;
+     if(badge&&badge.textContent!==t.imported)badge.textContent=t.imported;
    }else badge?.remove();
  });
  const more=document.getElementById("pmLibraryMore");
@@ -1506,35 +1360,6 @@ trimLibraryMenu();
 const libraryMenu=document.getElementById("pmLibraryMenu");
 if(libraryMenu)new MutationObserver(trimLibraryMenu).observe(libraryMenu,{childList:true});
 
-/* Account interaction hardening. The legacy target listener rewrites profile
-   content before opening the dialog; on iOS this can combine badly with the
-   accumulated observer stack. Open the existing account dialog from capture
-   phase and only mutate values when they actually changed. */
-document.addEventListener("click",e=>{
-  const button=e.target.closest("#profileBtn");
-  if(!button)return;
-  e.preventDefault();
-  e.stopImmediatePropagation();
-
-  const menu=document.getElementById("profileMenu");
-  if(!menu)return;
-  const name=(localStorage.getItem("pm-display-name")||"").trim();
-  const heading=document.getElementById("profileMenuName");
-  const next=name||"Prompt Manager";
-  if(heading&&heading.textContent!==next)heading.textContent=next;
-
-  const input=document.getElementById("displayName");
-  if(input&&input.value!==name)input.value=name;
-
-  const theme=localStorage.getItem("pm-theme")||"system";
-  document.querySelectorAll("[data-quick-theme]").forEach(b=>{
-    const active=b.dataset.quickTheme===theme;
-    if(b.classList.contains("active")!==active)b.classList.toggle("active",active);
-  });
-
-  if(!menu.open)menu.showModal();
-},true);
-
 /* Defensive cleanup: historical decorators use MutationObservers. Keep the
    high-frequency surfaces idempotent so opening dialogs cannot cascade into
    avoidable DOM mutation loops. */
@@ -1551,4 +1376,130 @@ document.addEventListener("change",e=>{
   }
 },true);
 window.addEventListener("storage",()=>{translateAddMenu();trimLibraryMenu();stabilizeImportedBadges()});
+})();
+
+
+/* ===== M1.7.9 ===== */
+(()=>{"use strict";
+/* Stabilization pass: keep one authoritative interaction path per surface. */
+const FEATURED_IDS=new Set(["pc-017","pc-021","pc-019","pm-056","pm-059","pm-055"]);
+const FEATURED_SOURCE="Prompt Manager featured catalog";
+
+function profileName(){
+  const custom=(localStorage.getItem("pm-display-name")||"").trim();
+  if(custom)return custom;
+  try{
+    const meta=authUser?.user_metadata||{};
+    return String(meta.full_name||meta.name||meta.user_name||authUser?.email||"Prompt Manager").trim();
+  }catch{return "Prompt Manager"}
+}
+
+/* Profile rendering must only render Profile. Older ui-refine code called the
+   full language redraw from here, which rebuilt unrelated Home content and fed
+   MutationObservers while a profile control was being tapped. */
+if(typeof renderProfileUI==="function"){
+  renderProfileUI=function(){
+    const name=profileName();
+    const heading=document.getElementById("profileMenuName");
+    if(heading&&heading.textContent!==name)heading.textContent=name;
+    const input=document.getElementById("displayName");
+    if(input&&input.value!==name)input.value=name;
+    const theme=localStorage.getItem("pm-theme")||"system";
+    document.querySelectorAll("[data-quick-theme]").forEach(button=>{
+      const active=button.dataset.quickTheme===theme;
+      if(button.classList.contains("active")!==active)button.classList.toggle("active",active);
+    });
+  };
+}
+
+/* Catalog identity is externalId, not the human-readable source label. */
+if(typeof catalogSaved==="function"&&!catalogSaved.pm179){
+  const saved=function(x){
+    if(!x)return false;
+    try{
+      return (prompts||[]).some(p=>p.acquisitionType==="catalog"&&String(p.externalId)===String(x.id));
+    }catch{return false}
+  };
+  saved.pm179=true;
+  catalogSaved=saved;
+}
+
+/* Featured is a distinct acquisition context. New Featured saves retain that
+   provenance without adding a new schema field or acquisition enum. */
+if(typeof saveCatalog==="function"&&!saveCatalog.pm179){
+  const baseSaveCatalog=saveCatalog;
+  const enhancedSaveCatalog=async function(x){
+    const featured=!!document.querySelector("#exploreList .pm-featured-grid")&&FEATURED_IDS.has(String(x?.id||""));
+    if(!featured)return baseSaveCatalog(x);
+    if(!x||catalogSaved(x))return;
+    const category=String(x.category||"General");
+    const item={
+      title:x.title||x.act||"Prompt",
+      content:x.prompt||x.content||x.description||"",
+      source:"",
+      categoryId:(categories||[]).some(c=>c.id===slug(category))?slug(category):"general",
+      createdAt:Date.now(),
+      platforms:["general"],
+      useCount:0,
+      lastUsedAt:null,
+      acquisitionType:"catalog",
+      sourceName:FEATURED_SOURCE,
+      externalId:String(x.id)
+    };
+    await add("prompts",item);
+    await refresh();
+    renderExplore();
+    toast("Saved to Library");
+  };
+  enhancedSaveCatalog.pm179=true;
+  saveCatalog=enhancedSaveCatalog;
+}
+
+function syncOriginSelection(){
+  try{
+    document.querySelectorAll("#libraryOriginFilters [data-origin]").forEach(button=>{
+      const selected=button.dataset.origin===activeOrigin;
+      if(button.classList.contains("selected")!==selected)button.classList.toggle("selected",selected);
+      button.setAttribute("aria-pressed",String(selected));
+    });
+  }catch{}
+}
+
+/* Existing Featured saves used the old generic seed label. Correct the visible
+   provenance without silently rewriting stored/cloud records in this hotfix. */
+function decorateFeaturedProvenance(){
+  let list=[];
+  try{list=prompts||[]}catch{return}
+  document.querySelectorAll("#list .card[data-use]").forEach(card=>{
+    const p=list.find(x=>String(x.id)===String(card.dataset.use));
+    if(!p||p.acquisitionType!=="catalog"||!FEATURED_IDS.has(String(p.externalId||"")))return;
+    const meta=card.querySelector(".meta");
+    if(!meta)return;
+    const candidates=[...meta.querySelectorAll("span")];
+    const source=candidates.find(el=>/^Saved from |^Guardado desde |^Sačuvano iz /.test(el.textContent||""));
+    if(!source)return;
+    const language=(localStorage.getItem("pm-language")||document.documentElement.lang||"en").toLowerCase();
+    const prefix=language.startsWith("es")?"Guardado desde ":language.startsWith("sr")?"Sačuvano iz ":"Saved from ";
+    const next=prefix+FEATURED_SOURCE;
+    if(source.textContent!==next)source.textContent=next;
+  });
+}
+
+if(typeof render==="function"&&!render.pm179){
+  const baseRender=render;
+  const stableRender=function(){
+    const result=baseRender();
+    syncOriginSelection();
+    decorateFeaturedProvenance();
+    return result;
+  };
+  stableRender.pm179=true;
+  render=stableRender;
+}
+
+/* One final cleanup protects mixed service-worker/browser cache states. */
+document.getElementById("pmUseActions")?.remove();
+syncOriginSelection();
+setTimeout(()=>{syncOriginSelection();decorateFeaturedProvenance()},0);
+window.addEventListener("storage",()=>setTimeout(()=>{syncOriginSelection();decorateFeaturedProvenance()},0));
 })();

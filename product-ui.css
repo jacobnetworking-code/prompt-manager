@@ -628,3 +628,8 @@ html[data-theme="light"] #pmCatalogUseActions .pm-detail-icon{border-color:rgba(
 .pm-add-menu-options>button small{font-size:12px;color:var(--muted)}
 .pm-add-menu-options>button>b{font-size:22px;font-weight:400;color:var(--muted)}
 #pmLibraryMenu [data-pm-library-action="import"]{display:none!important}
+
+
+/* ===== M1.7.9 ===== */
+/* Legacy detail actions were superseded by #pmCatalogUseActions. */
+#pmUseActions{display:none!important}
