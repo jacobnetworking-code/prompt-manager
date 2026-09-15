@@ -1,25 +1,18 @@
-# Prompt Manager M1.7.7 — Featured freeze fix
+# Prompt Manager M1.7.8
 
-## Replace
-- `product-ui.js`
-- `sw.js`
+Pre-launch interaction hardening and Library acquisition UX.
 
-## Add
-- None
+Replace:
+- product-ui.js
+- product-ui.css
+- sw.js
 
-## Delete
-- None
+Changes:
+- Hardens Account/Profile opening against the accumulated observer stack.
+- Library + now opens one acquisition sheet: Add prompt / Import prompts.
+- Removes Import prompts from the Library overflow management menu.
+- Keeps Import in Settings and the contextual empty-state shortcut.
+- Bumps the service-worker cache to pm-m1.7.8-v1.
 
-## SQL
-- None
-
-## Fix
-Prevents the legacy Featured View label decorator from writing `textContent` on every MutationObserver callback. That unconditional write generated another child-list mutation and could create a self-triggering loop when Featured cards were rendered, making the app appear frozen.
-
-## QA
-- Open Explore → Featured.
-- Featured grid renders and remains responsive.
-- Tap a Featured card and its View button; prompt detail opens.
-- Close detail and open another Featured prompt.
-- Save/Share actions remain responsive.
-- Explore search/categories and Library still work.
+SQL: none.
+Delete: none.

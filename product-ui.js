@@ -1417,3 +1417,138 @@ if(noresults)new MutationObserver(ensureEmptyImport).observe(noresults,{childLis
 document.addEventListener("change",event=>{if(event.target?.id==="pmLanguageSelect")setTimeout(ensureEmptyImport,0)},true);
 window.addEventListener("storage",ensureEmptyImport);
 })();
+
+
+/* ===== M1.7.8 ===== */
+(()=>{"use strict";
+/* Pre-launch interaction hardening + unified Library add entry point. */
+
+const ADD_ICON=`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>`;
+const IMPORT_ICON=`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12"></path><path d="m7.5 10.5 4.5 4.5 4.5-4.5"></path><path d="M5 19h14"></path></svg>`;
+
+function lang(){
+  const x=(localStorage.getItem("pm-language")||document.documentElement.lang||"en").toLowerCase();
+  return x.startsWith("es")?"es":x.startsWith("sr")?"sr":"en";
+}
+function tx(){
+  return {
+    en:{title:"Add to Library",manual:"Add prompt",manualSub:"Create or paste one prompt",import:"Import prompts",importSub:"Upload a JSON or CSV file",profile:"Profile"},
+    es:{title:"Añadir a Biblioteca",manual:"Añadir prompt",manualSub:"Crea o pega un prompt",import:"Importar prompts",importSub:"Sube un archivo JSON o CSV",profile:"Perfil"},
+    sr:{title:"Dodaj u Biblioteku",manual:"Dodaj prompt",manualSub:"Kreiraj ili nalepi jedan prompt",import:"Uvezi promptove",importSub:"Otpremi JSON ili CSV fajl",profile:"Profil"}
+  }[lang()];
+}
+
+function ensureAddMenu(){
+  let d=document.getElementById("pmAddMenuDialog");
+  if(d)return d;
+  d=document.createElement("dialog");
+  d.id="pmAddMenuDialog";
+  d.className="sheet pm-add-menu-dialog";
+  d.innerHTML=`<div class="sheethead"><div><small>LIBRARY</small><h3></h3></div><button type="button" class="x" data-pm-add-close>×</button></div>
+    <div class="pm-add-menu-options">
+      <button type="button" data-pm-add-manual>${ADD_ICON}<span><strong></strong><small></small></span><b>›</b></button>
+      <button type="button" data-pm-add-import>${IMPORT_ICON}<span><strong></strong><small></small></span><b>›</b></button>
+    </div>`;
+  document.body.appendChild(d);
+  d.addEventListener("click",e=>{
+    if(e.target.closest("[data-pm-add-close]"))d.close();
+    if(e.target.closest("[data-pm-add-manual]")){
+      d.close();
+      const form=document.getElementById("form");
+      form?.reset();
+      try{renderCategorySelect()}catch{}
+      const platform=document.getElementById("platform");
+      if(platform)platform.value="general";
+      document.getElementById("dialog")?.showModal();
+    }
+    if(e.target.closest("[data-pm-add-import]")){
+      d.close();
+      document.getElementById("openBulkImport")?.click();
+    }
+  });
+  return d;
+}
+function translateAddMenu(){
+  const d=ensureAddMenu(),t=tx();
+  const h=d.querySelector(".sheethead h3"); if(h&&h.textContent!==t.title)h.textContent=t.title;
+  const m=d.querySelector("[data-pm-add-manual]");
+  const i=d.querySelector("[data-pm-add-import]");
+  if(m){
+    const strong=m.querySelector("strong"),small=m.querySelector("small");
+    if(strong&&strong.textContent!==t.manual)strong.textContent=t.manual;
+    if(small&&small.textContent!==t.manualSub)small.textContent=t.manualSub;
+  }
+  if(i){
+    const strong=i.querySelector("strong"),small=i.querySelector("small");
+    if(strong&&strong.textContent!==t.import)strong.textContent=t.import;
+    if(small&&small.textContent!==t.importSub)small.textContent=t.importSub;
+  }
+}
+
+/* Library + is the canonical acquisition entry point. Capture phase bypasses
+   the legacy direct-open handler without changing Home/FAB behavior. */
+document.addEventListener("click",e=>{
+  const add=e.target.closest("#libraryAdd");
+  if(!add)return;
+  e.preventDefault();
+  e.stopImmediatePropagation();
+  translateAddMenu();
+  const d=ensureAddMenu();
+  if(!d.open)d.showModal();
+},true);
+
+/* Import is acquisition, not Library management: remove it from the overflow
+   menu while keeping Settings and the contextual empty-state shortcut. */
+function trimLibraryMenu(){
+  document.querySelector('#pmLibraryMenu [data-pm-library-action="import"]')?.remove();
+}
+trimLibraryMenu();
+const libraryMenu=document.getElementById("pmLibraryMenu");
+if(libraryMenu)new MutationObserver(trimLibraryMenu).observe(libraryMenu,{childList:true});
+
+/* Account interaction hardening. The legacy target listener rewrites profile
+   content before opening the dialog; on iOS this can combine badly with the
+   accumulated observer stack. Open the existing account dialog from capture
+   phase and only mutate values when they actually changed. */
+document.addEventListener("click",e=>{
+  const button=e.target.closest("#profileBtn");
+  if(!button)return;
+  e.preventDefault();
+  e.stopImmediatePropagation();
+
+  const menu=document.getElementById("profileMenu");
+  if(!menu)return;
+  const name=(localStorage.getItem("pm-display-name")||"").trim();
+  const heading=document.getElementById("profileMenuName");
+  const next=name||"Prompt Manager";
+  if(heading&&heading.textContent!==next)heading.textContent=next;
+
+  const input=document.getElementById("displayName");
+  if(input&&input.value!==name)input.value=name;
+
+  const theme=localStorage.getItem("pm-theme")||"system";
+  document.querySelectorAll("[data-quick-theme]").forEach(b=>{
+    const active=b.dataset.quickTheme===theme;
+    if(b.classList.contains("active")!==active)b.classList.toggle("active",active);
+  });
+
+  if(!menu.open)menu.showModal();
+},true);
+
+/* Defensive cleanup: historical decorators use MutationObservers. Keep the
+   high-frequency surfaces idempotent so opening dialogs cannot cascade into
+   avoidable DOM mutation loops. */
+function stabilizeImportedBadges(){
+  const label=lang()==="es"?"Importado":lang()==="sr"?"Uvezeno":"Imported";
+  document.querySelectorAll("#list .pm-origin-badge").forEach(b=>{
+    if(b.textContent!==label)b.textContent=label;
+  });
+}
+
+document.addEventListener("change",e=>{
+  if(e.target?.id==="pmLanguageSelect"){
+    setTimeout(()=>{translateAddMenu();trimLibraryMenu();stabilizeImportedBadges()},0);
+  }
+},true);
+window.addEventListener("storage",()=>{translateAddMenu();trimLibraryMenu();stabilizeImportedBadges()});
+})();
