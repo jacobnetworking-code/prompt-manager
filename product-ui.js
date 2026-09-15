@@ -324,7 +324,11 @@ function isCatalogSaved(x){
 function decorateFeaturedView(){
   const l=labels();
   document.querySelectorAll("#exploreList .pm-featured-card [data-explore-open]").forEach(b=>{
-    b.textContent=l.view;
+    // Avoid mutating the button when the label is already correct.
+    // This function is called by a childList MutationObserver on #exploreList;
+    // assigning textContent unconditionally creates another childList mutation
+    // and can trap Featured in a self-triggering observer loop.
+    if(b.textContent!==l.view)b.textContent=l.view;
   });
 }
 
