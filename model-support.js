@@ -21,8 +21,21 @@ function parseModels(value){
 function displayModel(v){return String(v).toLowerCase()==="multimodel"?"Multimodel":v}
 function availableModels(){
   const map=new Map;
-  for(const p of prompts||[])for(const m of modelsOfPrompt(p)){const k=m.toLowerCase();if(!map.has(k))map.set(k,m)}
+  for(const p of prompts||[]){
+    if(activePlatform!=="any"&&!platformsOf(p).includes(activePlatform))continue;
+    for(const m of modelsOfPrompt(p)){const k=m.toLowerCase();if(!map.has(k))map.set(k,m)}
+  }
   return [...map.values()].sort((a,b)=>displayModel(a).localeCompare(displayModel(b)));
+}
+function resetLibraryFilters(){
+  activeCategory="all"; activePlatform="any"; activeOrigin="all"; activeModel="any";
+  const search=q("search"); if(search)search.value="";
+  document.querySelectorAll("[data-origin]").forEach(x=>x.classList.toggle("selected",x.dataset.origin==="all"));
+  if(typeof render==="function")render();
+}
+function modelCompatibleWithPlatform(model,platform){
+  if(!model||model==="any"||platform==="any")return true;
+  return (prompts||[]).some(p=>platformsOf(p).includes(platform)&&modelsOfPrompt(p).some(m=>m.toLowerCase()===model.toLowerCase()));
 }
 function modelMatches(p){return activeModel==="any"||modelsOfPrompt(p).some(x=>x.toLowerCase()===activeModel.toLowerCase())}
 function modelBadges(p){return modelsOfPrompt(p).map(x=>`<span class="modelbadge">${esc(displayModel(x))}</span>`).join("")}
@@ -120,7 +133,8 @@ q("form")?.addEventListener("submit",async event=>{
 },true);
 
 function renderModelOptions(){
-  const options=[["any","Any"],["multimodel","Multimodel"],...availableModels().filter(x=>x.toLowerCase()!=="multimodel").map(x=>[x,x])];
+  const values=availableModels();
+  const options=[["any","Model"],...values.map(x=>[x,x])];
   q("modelOptions").innerHTML=options.map(([id,name])=>`<button data-model-filter="${esc(id)}"><span>${esc(displayModel(name))}</span><b>${activeModel.toLowerCase()===String(id).toLowerCase()?"✓":""}</b></button>`).join("");
 }
 q("modelFilterButton")?.addEventListener("click",()=>{renderModelOptions();q("modelDialog").showModal()});
@@ -150,5 +164,29 @@ if(typeof restore==="function"){
   };
 }
 
-window.pmModelSupport={modelsOf:modelsOfPrompt,parse:parseModels,matches:modelMatches};
+/* M1.7.11.1 — filter semantics: labels are reset actions; Platform scopes Model. */
+function installFilterSemantics(){
+  const pb=q("platformFilterButton"), po=q("platformOptions");
+  if(pb)pb.onclick=()=>{
+    po.innerHTML=[["any","Platform"],...Object.entries(PLATFORMS)].map(([id,name])=>`<button data-platform-filter="${esc(id)}"><span>${esc(name)}</span><b>${activePlatform===id?"✓":""}</b></button>`).join("");
+    q("platformDialog").showModal();
+  };
+  if(po)po.onclick=e=>{
+    const b=e.target.closest("[data-platform-filter]"); if(!b)return;
+    const next=b.dataset.platformFilter;
+    activePlatform=next;
+    if(!modelCompatibleWithPlatform(activeModel,next))activeModel="any";
+    q("platformDialog").close(); render();
+  };
+}
+queueMicrotask(installFilterSemantics);
+
+/* Filters are ephemeral session state: reset on app termination naturally, and explicitly on sign-out. */
+if(typeof signOutPM==="function"){
+  const baseSignOut=signOutPM;
+  signOutPM=async function(){resetLibraryFilters();return baseSignOut.apply(this,arguments)};
+}
+window.addEventListener("pagehide",()=>{ activeCategory="all"; activePlatform="any"; activeOrigin="all"; activeModel="any"; });
+
+window.pmModelSupport={modelsOf:modelsOfPrompt,parse:parseModels,matches:modelMatches,resetFilters:resetLibraryFilters,availableModels};
 })();
