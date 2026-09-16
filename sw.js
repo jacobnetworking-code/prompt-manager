@@ -1,6 +1,6 @@
-const CACHE="pm-m1.7.11.1-v1";
+const CACHE="pm-m1.7.11.3-v1";
 const CORE=[
-  "./","./index.html","./styles.css","./ui-refine.css","./desktop-v1.css","./desktop-v1.js","./app.js","./model-support.js","./sync-stabilizer.js","./ui-refine.js","./product-ui.css","./product-ui.js",
+  "./","./index.html","./styles.css","./ui-refine.css","./desktop-v1.css","./desktop-v1.js","./app.js","./model-registry.js","./model-support.js","./sync-stabilizer.js","./ui-refine.js","./product-ui.css","./product-ui.js",
   "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2","./manifest.webmanifest","./apple-touch-icon.png","./icon-192.png","./icon-512.png","./catalog.json","./prompt/","./prompt/share.css","./prompt/share-m1.6.6.18.css","./prompt/share.js"
 ];
 

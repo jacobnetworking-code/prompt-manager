@@ -21,11 +21,17 @@ function parseModels(value){
 function displayModel(v){return String(v).toLowerCase()==="multimodel"?"Multimodel":v}
 function availableModels(){
   const map=new Map;
+  const add=value=>{const v=cleanModel(value);if(!v)return;const k=v.toLowerCase();if(!map.has(k))map.set(k,k==="multimodel"?"multimodel":v)};
+  if(activePlatform==="any"){
+    for(const values of Object.values(window.PM_MODEL_REGISTRY||{}))for(const m of values)add(m);
+  }else{
+    for(const m of (window.PM_MODEL_REGISTRY?.[activePlatform]||[]))add(m);
+  }
   for(const p of prompts||[]){
     if(activePlatform!=="any"&&!platformsOf(p).includes(activePlatform))continue;
-    for(const m of modelsOfPrompt(p)){const k=m.toLowerCase();if(!map.has(k))map.set(k,m)}
+    for(const m of modelsOfPrompt(p))add(m);
   }
-  return [...map.values()].sort((a,b)=>displayModel(a).localeCompare(displayModel(b)));
+  return [...map.values()];
 }
 function resetLibraryFilters(){
   activeCategory="all"; activePlatform="any"; activeOrigin="all"; activeModel="any";
@@ -137,9 +143,9 @@ function renderModelOptions(){
   const options=[["any","Model"],...values.map(x=>[x,x])];
   q("modelOptions").innerHTML=options.map(([id,name])=>`<button data-model-filter="${esc(id)}"><span>${esc(displayModel(name))}</span><b>${activeModel.toLowerCase()===String(id).toLowerCase()?"✓":""}</b></button>`).join("");
 }
-q("modelFilterButton")?.addEventListener("click",()=>{renderModelOptions();q("modelDialog").showModal()});
+q("modelFilterButton")?.addEventListener("click",event=>{event.preventDefault();event.stopImmediatePropagation();renderModelOptions();q("modelDialog").showModal()},true);
 q("modelClose")?.addEventListener("click",()=>q("modelDialog").close());
-q("modelOptions")?.addEventListener("click",event=>{const b=event.target.closest("[data-model-filter]");if(!b)return;activeModel=b.dataset.modelFilter;q("modelDialog").close();render()});
+q("modelOptions")?.addEventListener("click",event=>{const b=event.target.closest("[data-model-filter]");if(!b)return;event.preventDefault();event.stopImmediatePropagation();activeModel=b.dataset.modelFilter;q("modelDialog").close();render()},true);
 
 /* Catalog/discovery metadata is preserved when a source supplies `model` or `models`. */
 if(typeof saveCatalog==="function"){
@@ -167,19 +173,21 @@ if(typeof restore==="function"){
 /* M1.7.11.1 — filter semantics: labels are reset actions; Platform scopes Model. */
 function installFilterSemantics(){
   const pb=q("platformFilterButton"), po=q("platformOptions");
-  if(pb)pb.onclick=()=>{
+  if(pb)pb.addEventListener("click",event=>{
+    event.preventDefault(); event.stopImmediatePropagation();
     po.innerHTML=[["any","Platform"],...Object.entries(PLATFORMS)].map(([id,name])=>`<button data-platform-filter="${esc(id)}"><span>${esc(name)}</span><b>${activePlatform===id?"✓":""}</b></button>`).join("");
     q("platformDialog").showModal();
-  };
-  if(po)po.onclick=e=>{
-    const b=e.target.closest("[data-platform-filter]"); if(!b)return;
+  },true);
+  if(po)po.addEventListener("click",event=>{
+    const b=event.target.closest("[data-platform-filter]"); if(!b)return;
+    event.preventDefault(); event.stopImmediatePropagation();
     const next=b.dataset.platformFilter;
     activePlatform=next;
     if(!modelCompatibleWithPlatform(activeModel,next))activeModel="any";
     q("platformDialog").close(); render();
-  };
+  },true);
 }
-queueMicrotask(installFilterSemantics);
+installFilterSemantics();
 
 /* Filters are ephemeral session state: reset on app termination naturally, and explicitly on sign-out. */
 if(typeof signOutPM==="function"){
