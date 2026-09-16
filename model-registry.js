@@ -10,33 +10,49 @@ window.PM_MODEL_REGISTRY=Object.freeze({
  other:["Multimodel"]
 });
 
-/* M1.7.12.9 — Add/Edit uses the same model registry as Library filters.
-   This controller deliberately does not decorate Library cards; model-support.js
-   owns card rendering so there is no post-render MutationObserver loop. */
+/* M1.7.12.9.1 — Add/Edit model selector aligned with Library filters. */
 (()=>{
   "use strict";
-
   const registry=window.PM_MODEL_REGISTRY||{};
   const q=id=>document.getElementById(id);
-  const clean=value=>String(value??"").trim().replace(/\s+/g," ").slice(0,60);
-  const label=value=>clean(value).toLowerCase()==="multimodel"?"Multimodel":clean(value);
+  const clean=v=>String(v??"").trim().replace(/\s+/g," ").slice(0,60);
+  const display=v=>clean(v).toLowerCase()==="multimodel"?"Multimodel":clean(v);
 
-  function modelsForPlatform(platform){
-    const values=registry[platform]||registry.other||[];
+  function unique(values){
     const seen=new Set();
-    return values.filter(value=>{
-      const key=clean(value).toLowerCase();
-      if(!key||seen.has(key))return false;
-      seen.add(key);
-      return true;
+    return values.filter(v=>{
+      const k=clean(v).toLowerCase();
+      if(!k||seen.has(k))return false;
+      seen.add(k); return true;
     });
   }
 
-  function ensureModelSelect(){
+  function allModels(){
+    return unique(Object.values(registry).flat());
+  }
+
+  function modelsFor(platform){
+    /* Library's reset Platform state exposes every registered model.
+       Add Prompt visually starts on Multiplatform, so give it the same browse
+       experience instead of reducing Model to Multimodel only. */
+    if(!platform||platform==="general"||platform==="other")return allModels();
+    return unique(registry[platform]||[]);
+  }
+
+  function platformForModel(model){
+    const key=clean(model).toLowerCase();
+    if(!key||key==="multimodel")return null;
+    for(const [platform,values] of Object.entries(registry)){
+      if(platform==="general"||platform==="other")continue;
+      if(values.some(v=>clean(v).toLowerCase()===key))return platform;
+    }
+    return null;
+  }
+
+  function ensureSelect(){
     const current=q("models");
     if(!current)return null;
     if(current.tagName==="SELECT")return current;
-
     const select=document.createElement("select");
     select.id="models";
     select.name=current.name||"models";
@@ -45,63 +61,56 @@ window.PM_MODEL_REGISTRY=Object.freeze({
     return select;
   }
 
-  function syncModelSelect({preserve=true}={}){
-    const select=ensureModelSelect();
-    const platform=q("platform");
+  function render({preserve=true}={}){
+    const select=ensureSelect(), platform=q("platform");
     if(!select||!platform)return;
-
     const previous=preserve?clean(select.value):"";
-    const values=modelsForPlatform(platform.value||"general");
+    const values=modelsFor(platform.value);
 
     select.replaceChildren();
+    const empty=document.createElement("option");
+    empty.value=""; empty.textContent="Model";
+    select.appendChild(empty);
 
-    const placeholder=document.createElement("option");
-    placeholder.value="";
-    placeholder.textContent="Model";
-    select.appendChild(placeholder);
-
-    values.forEach(value=>{
+    values.forEach(v=>{
       const option=document.createElement("option");
-      option.value=value;
-      option.textContent=label(value);
+      option.value=v; option.textContent=display(v);
       select.appendChild(option);
     });
 
     if(previous){
-      const exact=[...select.options].find(
-        option=>option.value.toLowerCase()===previous.toLowerCase()
-      );
-      if(exact){
-        select.value=exact.value;
-      }else{
-        /* Preserve unknown/imported model metadata when editing an older prompt. */
-        const option=document.createElement("option");
-        option.value=previous;
-        option.textContent=label(previous);
+      let option=[...select.options].find(x=>x.value.toLowerCase()===previous.toLowerCase());
+      if(!option){
+        option=document.createElement("option");
+        option.value=previous; option.textContent=display(previous);
         option.dataset.pmLegacyModel="true";
         select.appendChild(option);
-        select.value=previous;
       }
+      select.value=option.value;
     }
   }
 
   function init(){
-    const platform=q("platform");
-    const dialog=q("dialog");
-    if(!platform||!dialog||!q("models"))return;
+    const platform=q("platform"), dialog=q("dialog");
+    const select=ensureSelect();
+    if(!platform||!dialog||!select)return;
 
-    ensureModelSelect();
-    syncModelSelect({preserve:false});
+    render({preserve:false});
 
-    platform.addEventListener("change",()=>{
-      /* A platform change invalidates the previous model choice. */
-      syncModelSelect({preserve:false});
+    platform.addEventListener("change",()=>render({preserve:false}));
+
+    select.addEventListener("change",()=>{
+      const owner=platformForModel(select.value);
+      /* When browsing from Multiplatform, choosing a platform-specific model
+         makes the metadata internally consistent automatically. */
+      if(platform.value==="general"&&owner){
+        platform.value=owner;
+        render({preserve:true});
+      }
     });
 
-    /* showModal() adds the open attribute after Edit has populated platform/model.
-       Observe only the dialog attribute; descendant writes cannot retrigger it. */
     new MutationObserver(()=>{
-      if(dialog.open)queueMicrotask(()=>syncModelSelect({preserve:true}));
+      if(dialog.open)queueMicrotask(()=>render({preserve:true}));
     }).observe(dialog,{attributes:true,attributeFilter:["open"]});
   }
 
