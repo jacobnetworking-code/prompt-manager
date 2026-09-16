@@ -688,3 +688,41 @@ body.pm-auth-pending #authGate{visibility:hidden}
   .search-filter-row .filterbutton{padding-left:7px!important;padding-right:7px!important;font-size:11px!important}
   .modelbadge{max-width:120px}
 }
+
+
+/* M1.7.11.5 — Library filter sizing and chevron parity */
+#libraryView .search-row{
+  grid-template-columns:minmax(0,1fr) minmax(112px,auto) minmax(104px,auto);
+}
+#platformFilterButton,
+#modelFilterButton{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  min-width:0;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:clip;
+}
+#platformFilterButton{min-width:112px;padding-left:12px;padding-right:12px}
+#modelFilterButton{min-width:104px;padding-left:12px;padding-right:12px}
+#platformFilterButton::after,
+#modelFilterButton::after{
+  content:"▾";
+  display:inline-block;
+  flex:0 0 auto;
+  margin:0;
+  font-size:11px;
+  line-height:1;
+  font-weight:700;
+  opacity:.72;
+}
+@media (max-width:520px){
+  #libraryView .search-row{
+    grid-template-columns:minmax(0,1fr) minmax(112px,auto) minmax(104px,auto);
+    gap:7px;
+  }
+  #platformFilterButton{min-width:112px}
+  #modelFilterButton{min-width:104px}
+}

@@ -145,7 +145,7 @@ function renderModelOptions(){
 }
 q("modelFilterButton")?.addEventListener("click",event=>{event.preventDefault();event.stopImmediatePropagation();renderModelOptions();q("modelDialog").showModal()},true);
 q("modelClose")?.addEventListener("click",()=>q("modelDialog").close());
-q("modelOptions")?.addEventListener("click",event=>{const b=event.target.closest("[data-model-filter]");if(!b)return;event.preventDefault();event.stopImmediatePropagation();activeModel=b.dataset.modelFilter;q("modelDialog").close();render()},true);
+q("modelOptions")?.addEventListener("click",event=>{const b=event.target.closest("[data-model-filter]");if(!b)return;event.preventDefault();event.stopImmediatePropagation();activeModel=b.dataset.modelFilter;q("modelDialog").close();render();normalizeFilterButtons()},true);
 
 /* Catalog/discovery metadata is preserved when a source supplies `model` or `models`. */
 if(typeof saveCatalog==="function"){
@@ -171,6 +171,11 @@ if(typeof restore==="function"){
 }
 
 /* M1.7.11.1 — filter semantics: labels are reset actions; Platform scopes Model. */
+function normalizeFilterButtons(){
+  const pb=q("platformFilterButton"), mb=q("modelFilterButton");
+  if(pb)pb.textContent=activePlatform==="any"?"Platform":(PLATFORMS[activePlatform]||activePlatform);
+  if(mb)mb.textContent=activeModel==="any"?"Model":displayModel(activeModel);
+}
 function normalizePlatformButton(){
   const pb=q("platformFilterButton");
   if(!pb)return;
@@ -191,10 +196,10 @@ function installFilterSemantics(){
     const next=b.dataset.platformFilter;
     activePlatform=next;
     if(!modelCompatibleWithPlatform(activeModel,next))activeModel="any";
-    q("platformDialog").close(); render(); normalizePlatformButton();
+    q("platformDialog").close(); render(); normalizeFilterButtons();
   },true);
 }
-installFilterSemantics(); normalizePlatformButton();
+installFilterSemantics(); normalizeFilterButtons();
 
 /* Filters are ephemeral session state: reset on app termination naturally, and explicitly on sign-out. */
 if(typeof signOutPM==="function"){
