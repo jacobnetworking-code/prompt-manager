@@ -1569,10 +1569,13 @@ function decorateLibraryModels(){
   document.querySelectorAll("#list .card[data-use]").forEach(card=>{
     const p=(window.prompts||prompts||[]).find(x=>String(x.id)===String(card.dataset.use));
     const badges=card.querySelector(".badges");if(!p||!badges)return;
-    const models=modelsFor(p);
-    badges.querySelectorAll(".modelbadge").forEach(x=>x.remove());
-    models.forEach(model=>{
-      const badge=document.createElement("span");badge.className="modelbadge";badge.textContent=modelLabel(model);badges.appendChild(badge);
+    const models=modelsFor(p).map(modelLabel).filter(Boolean);
+    const existing=[...badges.querySelectorAll(".modelbadge")];
+    const current=existing.map(x=>x.textContent||"");
+    if(current.length===models.length&&current.every((value,index)=>value===models[index]))return;
+    existing.forEach(x=>x.remove());
+    models.forEach(label=>{
+      const badge=document.createElement("span");badge.className="modelbadge";badge.textContent=label;badges.appendChild(badge);
     });
   });
 }
