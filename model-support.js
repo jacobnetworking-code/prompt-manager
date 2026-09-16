@@ -171,9 +171,16 @@ if(typeof restore==="function"){
 }
 
 /* M1.7.11.1 — filter semantics: labels are reset actions; Platform scopes Model. */
+function normalizePlatformButton(){
+  const pb=q("platformFilterButton");
+  if(!pb)return;
+  pb.textContent=activePlatform==="any"?"Platform":(PLATFORMS[activePlatform]||activePlatform);
+  pb.setAttribute("aria-label",activePlatform==="any"?"Platform":(PLATFORMS[activePlatform]||activePlatform));
+}
 function installFilterSemantics(){
   const pb=q("platformFilterButton"), po=q("platformOptions");
   if(pb)pb.addEventListener("click",event=>{
+    pb.textContent=activePlatform==="any"?"Platform":(PLATFORMS[activePlatform]||activePlatform);
     event.preventDefault(); event.stopImmediatePropagation();
     po.innerHTML=[["any","Platform"],...Object.entries(PLATFORMS)].map(([id,name])=>`<button data-platform-filter="${esc(id)}"><span>${esc(name)}</span><b>${activePlatform===id?"✓":""}</b></button>`).join("");
     q("platformDialog").showModal();
@@ -184,10 +191,10 @@ function installFilterSemantics(){
     const next=b.dataset.platformFilter;
     activePlatform=next;
     if(!modelCompatibleWithPlatform(activeModel,next))activeModel="any";
-    q("platformDialog").close(); render();
+    q("platformDialog").close(); render(); normalizePlatformButton();
   },true);
 }
-installFilterSemantics();
+installFilterSemantics(); normalizePlatformButton();
 
 /* Filters are ephemeral session state: reset on app termination naturally, and explicitly on sign-out. */
 if(typeof signOutPM==="function"){
