@@ -691,7 +691,7 @@ body.pm-auth-pending #authGate{visibility:hidden}
 
 
 /* M1.7.11.5 — Library filter sizing and chevron parity */
-#libraryView .search-row{
+#libraryView .search-filter-row{
   grid-template-columns:minmax(0,1fr) minmax(112px,auto) minmax(104px,auto);
 }
 #platformFilterButton,
@@ -719,7 +719,7 @@ body.pm-auth-pending #authGate{visibility:hidden}
   opacity:.72;
 }
 @media (max-width:520px){
-  #libraryView .search-row{
+  #libraryView .search-filter-row{
     grid-template-columns:minmax(0,1fr) minmax(112px,auto) minmax(104px,auto);
     gap:7px;
   }

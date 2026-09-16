@@ -201,6 +201,22 @@ function installFilterSemantics(){
 }
 installFilterSemantics(); normalizeFilterButtons();
 
+/* M1.7.11.6 — legacy app renderFilters may redraw these controls after this
+   module initializes. Keep the two labels canonical and idempotent. */
+function canonicalFilterLabel(button,label){
+  if(!button)return;
+  if(button.textContent!==label)button.textContent=label;
+}
+function enforceCanonicalFilterLabels(){
+  canonicalFilterLabel(q("platformFilterButton"),activePlatform==="any"?"Platform":(PLATFORMS[activePlatform]||activePlatform));
+  canonicalFilterLabel(q("modelFilterButton"),activeModel==="any"?"Model":displayModel(activeModel));
+}
+const filterLabelObserver=new MutationObserver(enforceCanonicalFilterLabels);
+[q("platformFilterButton"),q("modelFilterButton")].forEach(button=>{
+  if(button)filterLabelObserver.observe(button,{childList:true,characterData:true,subtree:true});
+});
+enforceCanonicalFilterLabels();
+
 /* Filters are ephemeral session state: reset on app termination naturally, and explicitly on sign-out. */
 if(typeof signOutPM==="function"){
   const baseSignOut=signOutPM;
