@@ -2,7 +2,7 @@
 
 Prompt Manager is a personal workspace for discovering, collecting, organizing, filtering, personalizing, and using high-quality AI prompts.
 
-**Current Alpha:** M1.7.12.3
+**Current Alpha:** M1.7.12.5
 
 ## Product direction
 
