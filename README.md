@@ -2,7 +2,7 @@
 
 Prompt Manager is a personal workspace for discovering, collecting, organizing, filtering, personalizing, and using high-quality AI prompts.
 
-**Current Alpha:** M1.7.12.7
+**Current Alpha:** M1.8
 
 ## Product direction
 
@@ -33,6 +33,24 @@ The current PWA includes:
 - Offline-aware PWA behavior.
 - MCP integration for external AI clients.
 - Responsive mobile and desktop experiences.
+
+### Catalog expansion
+
+M1.8 introduces a reproducible multi-source catalog builder instead of padding Explore with generated prompts.
+
+The builder:
+
+- acquires candidates from multiple permissively licensed upstream prompt sources;
+- keeps source and license provenance per imported prompt;
+- rejects obvious jailbreak, unsafe/high-risk, novelty, malformed, and low-quality candidates;
+- normalizes prompts into Prompt Manager's existing categories;
+- deduplicates against the existing catalog and near-duplicates within the candidate set;
+- balances useful categories rather than allowing one source or topic to dominate;
+- targets 850 catalog prompts and fails rather than padding the catalog if fewer than 750 pass the quality gate.
+
+The catalog remains a local Prompt Manager asset. External prompt services are acquisition sources, not runtime dependencies.
+
+Featured remains editorially curated and is not populated automatically by this pipeline.
 
 ### Library controls
 
