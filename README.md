@@ -2,7 +2,7 @@
 
 Prompt Manager is a personal workspace for discovering, collecting, organizing, filtering, personalizing, and using high-quality AI prompts.
 
-**Current Alpha:** M1.7.12.2
+**Current Alpha:** M1.7.12.3
 
 ## Product direction
 
@@ -41,7 +41,7 @@ Library currently provides:
 - Persistent **Filters expanded/collapsed** UI state.
 - Filter controls for origin, category, platform, and model.
 - A dedicated **Quick Search** control.
-- Quick Search is transient: it opens an independent Library search field, focuses it immediately for typing, filters Library prompts in real time, and clears when dismissed or when leaving the Library/app session.
+- Quick Search is transient: it opens an independent Library search field, invokes the keyboard immediately on iOS, filters Library prompts live while typing, and clears when dismissed or when leaving the Library/app session.
 - Search text and selected filter values are not persisted between app sessions.
 
 ## Architecture
