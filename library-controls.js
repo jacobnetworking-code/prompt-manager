@@ -1,4 +1,4 @@
-/* Prompt Manager M1.7.12.6 — Library compact controls */
+/* Prompt Manager M1.7.12.7 — Library search viewport */
 (()=>{"use strict";
 const PREF_KEY="pm-library-filters-expanded";
 const $=id=>document.getElementById(id);
@@ -47,7 +47,6 @@ function ensureQuickSearch(){
   input.addEventListener("blur",()=>{
     setTimeout(()=>{if(overlay.dataset.open==="true"&&document.activeElement!==input)closeQuickSearch()},0);
   });
-  overlay.addEventListener("pointerdown",e=>{if(e.target===overlay){e.preventDefault();closeQuickSearch()}});
   return overlay;
 }
 function openQuickSearch(){
@@ -119,7 +118,15 @@ function build(){
   return true;
 }
 
+function installSearchViewport(){
+  const view=$("libraryView"),canonical=$("search");
+  if(!view||!canonical)return;
+  canonical.addEventListener("focus",()=>view.classList.add("pm-library-filter-searching"));
+  canonical.addEventListener("blur",()=>view.classList.remove("pm-library-filter-searching"));
+}
+
 function init(){
+  installSearchViewport();
   if(!build()){
     let n=0,t=setInterval(()=>{if(build()||++n>40)clearInterval(t)},50);
   }
@@ -127,6 +134,12 @@ function init(){
     if(b.dataset.nav!=="library")resetTransientSearch();
   }));
   window.addEventListener("pagehide",resetTransientSearch);
+  document.addEventListener("pointerdown",e=>{
+    const overlay=$("pmLibraryQuickSearchOverlay");
+    if(!overlay||overlay.dataset.open!=="true")return;
+    if(e.target.closest?.(".pm-library-quick-search-box,#pmLibraryQuickSearch"))return;
+    closeQuickSearch();
+  },true);
 }
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});else init();
 
