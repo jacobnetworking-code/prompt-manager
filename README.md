@@ -28,6 +28,9 @@ The current PWA includes:
 - Prompt ratings.
 - Public prompt sharing.
 - Featured/Explore prompt catalog.
+- Multi-source curated catalog expansion with quality filtering and deduplication.
+- Library cards show model labels whenever model metadata is available.
+- What's New is release-versioned and only surfaces relevant user-facing changes.
 - English, Spanish, and Serbian interface support.
 - Google OAuth and email magic-link authentication.
 - Offline-aware PWA behavior.
