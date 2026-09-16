@@ -1,4 +1,4 @@
-/* Prompt Manager M1.7.12.3 — Library compact controls */
+/* Prompt Manager M1.7.12.6 — Library compact controls */
 (()=>{"use strict";
 const PREF_KEY="pm-library-filters-expanded";
 const $=id=>document.getElementById(id);
@@ -29,9 +29,6 @@ function applyLibraryQuery(value){
   if(!canonical)return;
   canonical.value=value;
   canonical.dispatchEvent(new Event("input",{bubbles:true}));
-  // app.js render() is the canonical Library renderer. Calling it directly
-  // guarantees live results even when no legacy input listener is attached.
-  if(typeof window.render==="function")window.render();
 }
 
 function ensureQuickSearch(){
@@ -46,15 +43,11 @@ function ensureQuickSearch(){
   document.body.appendChild(overlay);
   const input=$("pmLibraryQuickSearchInput");
   input.addEventListener("input",()=>applyLibraryQuery(input.value));
-  input.addEventListener("keydown",e=>{
-    if(e.key==="Escape"){e.preventDefault();closeQuickSearch()}
-  });
+  input.addEventListener("keydown",e=>{if(e.key==="Escape"){e.preventDefault();closeQuickSearch()}});
   input.addEventListener("blur",()=>{
     setTimeout(()=>{if(overlay.dataset.open==="true"&&document.activeElement!==input)closeQuickSearch()},0);
   });
-  overlay.addEventListener("pointerdown",e=>{
-    if(e.target===overlay){e.preventDefault();closeQuickSearch()}
-  });
+  overlay.addEventListener("pointerdown",e=>{if(e.target===overlay){e.preventDefault();closeQuickSearch()}});
   return overlay;
 }
 function openQuickSearch(){
@@ -65,7 +58,6 @@ function openQuickSearch(){
   overlay.hidden=false;
   overlay.dataset.open="true";
   overlay.setAttribute("aria-hidden","false");
-  // Keep focus in the original tap call stack so iOS treats it as a user gesture.
   input.focus({preventScroll:true});
   input.setSelectionRange(0,0);
 }
@@ -121,7 +113,7 @@ function build(){
   }
   if(count.parentElement!==upper)upper.appendChild(count);
 
-  ensureQuickSearch(); // created before taps so iOS focus is synchronous
+  ensureQuickSearch();
   grid.dataset.pmCompactControls="true";
   applyExpanded(pref());
   return true;
