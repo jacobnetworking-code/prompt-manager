@@ -1,140 +1,242 @@
 #!/usr/bin/env python3
-import csv, io, json, re, hashlib, urllib.request
+"""Build Prompt Manager V1.8 catalog from permissively licensed upstream sources.
+
+The runtime never depends on these sources. This script is an acquisition/build step.
+It preserves provenance per record, applies deterministic quality/safety gates, dedupes,
+balances categories, and refuses to publish fewer than 750 prompts.
+"""
+from __future__ import annotations
+
+import csv
+import io
+import json
+import re
+import sys
+import urllib.request
+from collections import defaultdict, deque
 from pathlib import Path
-from difflib import SequenceMatcher
 
 ROOT=Path(__file__).resolve().parents[1]
-OUT=ROOT/'catalog.json'
+CATALOG=ROOT/"catalog.json"
+PRODUCT_UI=ROOT/"product-ui.js"
+SW=ROOT/"sw.js"
 TARGET=850
-ALLOWED={'Coding','Writing','Marketing','Research','Image','Video','Productivity','Learning','Business'}
+MINIMUM=750
 
-SOURCES=[
- ('promptcompanion-business','https://raw.githubusercontent.com/SysAdminDoc/PromptCompanion/main/data/prompts/business.jsonl','jsonl'),
- ('promptcompanion-creative','https://raw.githubusercontent.com/SysAdminDoc/PromptCompanion/main/data/prompts/creative.jsonl','jsonl'),
- ('promptcompanion-development','https://raw.githubusercontent.com/SysAdminDoc/PromptCompanion/main/data/prompts/development.jsonl','jsonl'),
- ('promptcompanion-productivity','https://raw.githubusercontent.com/SysAdminDoc/PromptCompanion/main/data/prompts/productivity.jsonl','jsonl'),
- ('promptcompanion-research','https://raw.githubusercontent.com/SysAdminDoc/PromptCompanion/main/data/prompts/research.jsonl','jsonl'),
- ('promptcompanion-specialized','https://raw.githubusercontent.com/SysAdminDoc/PromptCompanion/main/data/prompts/specialized.jsonl','jsonl'),
- ('promptcompanion-translation','https://raw.githubusercontent.com/SysAdminDoc/PromptCompanion/main/data/prompts/translation.jsonl','jsonl'),
- ('promptcompanion-writing','https://raw.githubusercontent.com/SysAdminDoc/PromptCompanion/main/data/prompts/writing.jsonl','jsonl'),
- ('prompts-chat','https://raw.githubusercontent.com/f/prompts.chat/main/prompts.csv','csv'),
-]
+PC_FILES=("business","creative","development","productivity","research","specialized","translation","writing")
+PC_BASE="https://raw.githubusercontent.com/SysAdminDoc/PromptCompanion/main/data/prompts/"
+AI_LIB="https://raw.githubusercontent.com/itseffi/AI-prompt-library/main/prompts.json"
 
-BAD=re.compile(r'jailbreak|ignore (all|previous) instructions|dan mode|developer mode|bypass|unfiltered|malware|phishing|credential|exploit|weapon|diagnos(e|is)|doctor|therapist|weight loss',re.I)
-VISUAL=re.compile(r'image|photo|portrait|logo|poster|render|cinematic|camera|lighting|midjourney|stable diffusion|flux|illustration|visual',re.I)
-VIDEO=re.compile(r'video|shot list|storyboard|scene|film|reel|tiktok|youtube short|animation',re.I)
-CODE=re.compile(r'code|developer|program|software|api|sql|javascript|python|typescript|react|debug|test|security|database|frontend|backend|devops|git',re.I)
-MARKETING=re.compile(r'market|seo|campaign|brand|copywrit|advertis|social media|linkedin|sales|landing page|positioning|customer|content strategy',re.I)
-RESEARCH=re.compile(r'research|analy[sz]|fact.?check|literature|source|compare|data|evidence|study|survey|interview',re.I)
-LEARN=re.compile(r'tutor|teacher|learn|lesson|study|quiz|explain|language|education|coach me',re.I)
-BUSINESS=re.compile(r'business|startup|product manager|strategy|finance|pricing|operations|entrepreneur|mvp|roadmap|kpi|churn',re.I)
-WRITE=re.compile(r'write|writer|edit|proofread|email|essay|story|resume|cover letter|summary|translate|grammar|headline',re.I)
-PROD=re.compile(r'productiv|plan|meeting|task|schedule|organize|decision|workflow|prioriti|notes',re.I)
+BLOCK_RE=re.compile(
+    r"\b(jailbreak|bypass safety|ignore previous instructions|ignore all previous|"
+    r"malware|ransomware|credential theft|phishing kit|steal password|keylogger|"
+    r"suicide method|self[- ]harm method|anorexia coach|purge calories|"
+    r"stake\.us|casino strategy|gambling strategy|martingale|sports betting|"
+    r"porn|explicit sex|nonconsensual|sexualize minor|child sexual)\b", re.I
+)
+WS=re.compile(r"\s+")
+NONWORD=re.compile(r"[^a-z0-9]+")
 
-def get(url):
-    req=urllib.request.Request(url,headers={'User-Agent':'PromptManagerCatalogBuilder/1.0'})
-    with urllib.request.urlopen(req,timeout=60) as r:return r.read().decode('utf-8','replace')
+def fetch(url:str)->str:
+    req=urllib.request.Request(url,headers={"User-Agent":"PromptManager-CatalogBuilder/1.8"})
+    with urllib.request.urlopen(req,timeout=45) as r:
+        return r.read().decode("utf-8")
 
-def norm(s):return re.sub(r'\s+',' ',(s or '').strip()).lower()
-def keytext(s):return re.sub(r'[^a-z0-9 ]','',norm(s))[:1600]
+def norm(text:str)->str:
+    return WS.sub(" ",str(text or "").strip())
 
-def category(title,body,hint=''):
-    s=f'{title} {body[:1200]} {hint}'
-    # video before image because cinematography overlaps
-    if VIDEO.search(s): return 'Video'
-    if VISUAL.search(s): return 'Image'
-    if CODE.search(s): return 'Coding'
-    if MARKETING.search(s): return 'Marketing'
-    if RESEARCH.search(s): return 'Research'
-    if LEARN.search(s): return 'Learning'
-    if BUSINESS.search(s): return 'Business'
-    if WRITE.search(s): return 'Writing'
-    if PROD.search(s): return 'Productivity'
-    return 'Productivity'
+def fingerprint(text:str)->str:
+    return NONWORD.sub(" ",norm(text).lower()).strip()
 
-def useful(title,body,quality=50):
-    t=norm(title); b=(body or '').strip()
-    if not t or len(b)<90 or len(b)>12000:return False
-    if BAD.search(t+' '+b[:1800]):return False
-    if quality is not None and quality<50:return False
-    # reject obvious pure persona/novelty prompts unless they have actionable structure
-    if re.search(r'act as (a|an|the) (magician|rapper|comedian|character|celebrity|fortune teller|dream interpreter)',b[:180],re.I):return False
+def slug(text:str)->str:
+    return NONWORD.sub("-",norm(text).lower()).strip("-")[:70] or "prompt"
+
+def safe_candidate(title:str,body:str,quality:int|None=None)->bool:
+    t=norm(title); b=norm(body)
+    if len(t)<3 or len(b)<120 or len(b)>12000:return False
+    if quality is not None and quality<60:return False
+    if BLOCK_RE.search(t+"\n"+b):return False
+    # Reject obvious fragments, data dumps and prompts whose main purpose is hidden reasoning.
+    low=b.lower()
+    if low.count("http://")+low.count("https://")>8:return False
+    if "<thinking>" in low and ("show" in low or "output" in low):return False
     return True
 
-def load_current():
-    if not OUT.exists():return []
-    try:return json.loads(OUT.read_text())['prompts']
-    except:return []
+def category_for(title:str,body:str,source_cat:str="",tags=None)->str:
+    text=(" ".join([title,source_cat," ".join(tags or [])])+" "+body[:1200]).lower()
+    rules=[
+      ("Coding",("code","coding","developer","software","api","sql","database","debug","frontend","backend","architecture","security","devops","programming")),
+      ("Image",("image","photo","photograph","portrait","logo","visual","midjourney","illustration","diorama","render")),
+      ("Video",("video","shot list","cinematic","film","reel","tiktok script","storyboard")),
+      ("Marketing",("marketing","seo","campaign","brand","copywriting","ad copy","social media","content strategy","positioning","growth","aso")),
+      ("Research",("research","analysis","investigation","literature","evidence","source","fact-check","market research","synthesize")),
+      ("Writing",("writing","writer","rewrite","edit","email","essay","story","proofread","headline","translation","translate","cv","resume","cover letter")),
+      ("Productivity",("productivity","meeting","planner","plan","task","workflow","project management","decision","priorit","time management")),
+      ("Learning",("teacher","tutor","learn","education","quiz","study","student","course","coach","explain")),
+      ("Business",("business","sales","startup","product manager","product strategy","customer","stakeholder","revenue","finance","operations","strategy","gtm")),
+    ]
+    scores={cat:sum(text.count(k) for k in keys) for cat,keys in rules}
+    best=max(scores,key=scores.get)
+    return best if scores[best]>0 else "General"
 
-def candidates():
-    out=[]
-    for name,url,kind in SOURCES:
-        print('fetch',name)
-        raw=get(url)
-        if kind=='jsonl':
-            rows=[]
-            for line in raw.splitlines():
-                try: rows.append(json.loads(line))
-                except: pass
-            for r in rows:
-                body=r.get('body',''); title=r.get('title',''); q=r.get('quality',50)
-                if not useful(title,body,q):continue
-                out.append({'title':title.strip()[:100],'prompt':body.strip(),'category':category(title,body,r.get('category','')),
-                    '_score':int(q or 50),'_source':r.get('source') or url,'_license':r.get('license') or 'MIT/CC0 upstream','_sid':r.get('id') or ''})
-        else:
-            for r in csv.DictReader(io.StringIO(raw)):
-                title=(r.get('act') or r.get('title') or '').strip(); body=(r.get('prompt') or '').strip()
-                if not useful(title,body,54):continue
-                out.append({'title':title[:100],'prompt':body,'category':category(title,body),'_score':54,
-                    '_source':'https://github.com/f/prompts.chat','_license':'CC0-1.0','_sid':hashlib.sha1((title+body).encode()).hexdigest()[:12]})
+def record(*,sid,title,body,category,source,source_url,license,author="",tags=None,quality=None):
+    out={
+      "id":sid,
+      "title":norm(title)[:120],
+      "category":category,
+      "prompt":norm(body),
+      "platform":"general",
+      "models":["multimodel"],
+      "source":source,
+      "source_url":source_url,
+      "source_id":sid,
+      "source_license":license,
+      "source_author":norm(author)[:120],
+      "tags":list(tags or [])[:12],
+    }
+    if quality is not None:out["quality"]=quality
     return out
 
-def dedupe(items,current):
-    seen=set(keytext(x.get('prompt','')) for x in current)
-    titles=set(norm(x.get('title','')) for x in current)
-    kept=[]
-    for x in sorted(items,key=lambda z:(z['_score'],len(z['prompt'])),reverse=True):
-        k=keytext(x['prompt']); t=norm(x['title'])
-        if k in seen or t in titles:continue
-        # bounded near-dupe check within same category, title-first for speed
-        duplicate=False
-        for y in kept[-250:]:
-            if y['category']!=x['category']:continue
-            if SequenceMatcher(None,t,norm(y['title'])).ratio()>=.88:
-                if SequenceMatcher(None,k[:700],keytext(y['prompt'])[:700]).ratio()>=.78:
-                    duplicate=True;break
-        if duplicate:continue
-        seen.add(k);titles.add(t);kept.append(x)
-    return kept
+def load_existing():
+    data=json.loads(CATALOG.read_text(encoding="utf-8"))
+    out=[]
+    for p in data.get("prompts",[]):
+        if not isinstance(p,dict):continue
+        q=dict(p)
+        q.setdefault("source","Prompt Manager")
+        q.setdefault("source_url","")
+        q.setdefault("source_id",str(q.get("id","")))
+        q.setdefault("source_license","PM original")
+        q.setdefault("source_author","Prompt Manager")
+        out.append(q)
+    return out
 
-def select(items,current):
-    need=max(0,TARGET-len(current)); buckets={c:[] for c in ALLOWED}
-    for x in items:buckets[x['category']].append(x)
-    # balanced target, then fill with highest quality remaining
-    desired={'Coding':130,'Writing':100,'Marketing':100,'Research':100,'Image':90,'Video':60,'Productivity':90,'Learning':80,'Business':100}
-    chosen=[]; used=set()
-    current_counts={c:sum(1 for p in current if p.get('category')==c) for c in ALLOWED}
-    for c,want in desired.items():
-        take=max(0,want-current_counts.get(c,0))
-        for x in buckets[c][:take]:chosen.append(x);used.add(id(x))
-    if len(chosen)<need:
-        rest=[x for x in items if id(x) not in used]
-        rest.sort(key=lambda z:(z['_score'],len(z['prompt'])),reverse=True)
-        chosen.extend(rest[:need-len(chosen)])
-    return chosen[:need]
+def load_promptcompanion():
+    out=[]
+    for name in PC_FILES:
+        raw=fetch(f"{PC_BASE}{name}.jsonl")
+        for line in raw.splitlines():
+            if not line.strip():continue
+            try:r=json.loads(line)
+            except json.JSONDecodeError:continue
+            title=norm(r.get("title")); body=norm(r.get("body"))
+            quality=int(r.get("quality") or 0)
+            license=norm(r.get("license"))
+            if license not in {"CC0-1.0","MIT"}:continue
+            if str(r.get("language","en")).lower()!="en":continue
+            if not safe_candidate(title,body,quality):continue
+            source_url=norm(r.get("source"))
+            rid=norm(r.get("id")) or slug(title)
+            cat=category_for(title,body,name,r.get("tags"))
+            out.append(record(
+              sid=f"pc-{rid}",title=title,body=body,category=cat,
+              source="PromptCompanion / upstream",source_url=source_url,
+              license=license,author=r.get("author",""),tags=r.get("tags"),quality=quality
+            ))
+    return out
+
+def load_ai_library():
+    data=json.loads(fetch(AI_LIB))
+    out=[]
+    for i,r in enumerate(data.get("prompts",[]),1):
+        title=norm(r.get("title"));body=norm(r.get("content"))
+        if not safe_candidate(title,body,70):continue
+        path=norm(r.get("path"))
+        sid=f"aipm-{slug(path or title)}"
+        cat=category_for(title,body,r.get("category",""),r.get("tags"))
+        out.append(record(
+          sid=sid,title=title,body=body,category=cat,
+          source="itseffi/AI-prompt-library",
+          source_url="https://github.com/itseffi/AI-prompt-library",
+          license="MIT",author="itseffi",tags=r.get("tags"),quality=80
+        ))
+    return out
+
+def dedupe(records):
+    seen_body=set();seen_ids=set();out=[]
+    for r in records:
+        fp=fingerprint(r.get("prompt",""))
+        rid=str(r.get("id",""))
+        if len(fp)<80 or fp in seen_body or rid in seen_ids:continue
+        seen_body.add(fp);seen_ids.add(rid);out.append(r)
+    return out
+
+def balanced(existing,candidates):
+    # Existing editorial/seed prompts are retained first. New records are selected
+    # round-robin by PM category, with quality as the within-category priority.
+    base=dedupe(existing)
+    used={fingerprint(x.get("prompt","")) for x in base}
+    groups=defaultdict(list)
+    for r in dedupe(candidates):
+        if fingerprint(r["prompt"]) in used:continue
+        groups[r["category"]].append(r)
+    for values in groups.values():
+        values.sort(key=lambda x:(-int(x.get("quality",0)),x["title"].lower()))
+    queues={k:deque(v) for k,v in groups.items()}
+    order=("Coding","Marketing","Writing","Research","Productivity","Business","Learning","Image","Video","General")
+    out=list(base)
+    while len(out)<TARGET and any(queues.values()):
+        progressed=False
+        for cat in order:
+            q=queues.get(cat)
+            if q:
+                r=q.popleft(); fp=fingerprint(r["prompt"])
+                if fp not in used:
+                    out.append(r);used.add(fp);progressed=True
+                    if len(out)>=TARGET:break
+        if not progressed:break
+    return out
+
+def patch_whats_new():
+    text=PRODUCT_UI.read_text(encoding="utf-8")
+    replacements={
+      'title:"Your library, more flexible."':'title:"A much bigger prompt catalog."',
+      'highlights:["Bulk Import","Category Management","Offline Library"]':'highlights:["750+ Curated Prompts","Platform + Model UX","Multi-source Catalog"]',
+      'title:"Tu biblioteca, más flexible."':'title:"Un catálogo de prompts mucho mayor."',
+      'copy:"Importa colecciones de prompts de golpe, gestiona tus categorías directamente desde Biblioteca y accede a tus prompts locales incluso sin conexión."':'copy:"Explora cientos de prompts útiles de varias fuentes seleccionadas, con mejores controles de Plataforma y Modelo en Biblioteca y al editar prompts."',
+      'highlights:["Importación masiva","Gestión de categorías","Biblioteca offline"]':'highlights:["750+ prompts seleccionados","Plataforma + Modelo","Catálogo multifuente"]',
+      'title:"Fleksibilnija biblioteka."':'title:"Mnogo veći katalog promptova."',
+      'copy:"Uvezi kolekcije promptova odjednom, upravljaj kategorijama direktno iz Biblioteke i pristupi lokalnim promptovima čak i bez interneta."':'copy:"Istraži stotine korisnih promptova iz više odabranih izvora, uz bolje kontrole Platforme i Modela u Biblioteci i uređivanju promptova."',
+      'highlights:["Masovni uvoz","Upravljanje kategorijama","Offline biblioteka"]':'highlights:["750+ odabranih promptova","Platforma + Model","Katalog iz više izvora"]',
+      'if(version&&version.textContent!=="V1.7")version.textContent="V1.7";':'if(version&&version.textContent!=="V1.8")version.textContent="V1.8";',
+    }
+    missing=[old for old in replacements if old not in text]
+    if missing:
+        raise RuntimeError("What’s New canonical block changed; refusing blind patch: "+repr(missing[:2]))
+    for old,new in replacements.items():text=text.replace(old,new,1)
+    old_en="Import prompt collections in bulk, manage your categories directly from Library, and keep access to your local prompts when you're offline."
+    new_en="Explore hundreds of useful prompts from multiple curated sources, with stronger Platform and Model controls across Library and prompt editing."
+    if old_en not in text:
+        raise RuntimeError("What’s New English copy changed; refusing blind patch.")
+    text=text.replace(old_en,new_en,1)
+    PRODUCT_UI.write_text(text,encoding="utf-8")
+
+def bump_sw():
+    text=SW.read_text(encoding="utf-8")
+    text=re.sub(r'const CACHE="[^"]+";', 'const CACHE="pm-runtime-v18";', text, count=1)
+    SW.write_text(text,encoding="utf-8")
 
 def main():
-    current=load_current()
-    raw=candidates(); clean=dedupe(raw,current); chosen=select(clean,current)
-    prompts=list(current)
-    start=1
-    ids={str(x.get('id')) for x in prompts}
-    for x in chosen:
-        while f'agg-{start:04d}' in ids:start+=1
-        prompts.append({'id':f'agg-{start:04d}','title':x['title'],'category':x['category'],'prompt':x['prompt'],
-            'provenance':{'source':x['_source'],'source_id':x['_sid'],'license':x['_license']}});start+=1
-    doc={'source':'Prompt Manager curated multi-source catalog','license':'Mixed permissive; see per-prompt provenance','version':4,'prompts':prompts}
-    OUT.write_text(json.dumps(doc,ensure_ascii=False,separators=(',',':'))+'\n')
-    print(f'candidates={len(raw)} deduped={len(clean)} added={len(chosen)} total={len(prompts)}')
-    if len(prompts)<750:raise SystemExit('Quality gate produced fewer than 750 prompts; add sources or review thresholds instead of padding.')
-if __name__=='__main__':main()
+    existing=load_existing()
+    candidates=load_promptcompanion()+load_ai_library()
+    final=balanced(existing,candidates)
+    if len(final)<MINIMUM:
+        raise RuntimeError(f"Quality gate produced only {len(final)} prompts; minimum is {MINIMUM}.")
+    payload={
+      "source":"Prompt Manager multi-source catalog",
+      "license":"Mixed permissive licenses; see per-prompt provenance",
+      "version":4,
+      "prompt_count":len(final),
+      "build_policy":"deterministic quality gate + provenance + deduplication + category balancing",
+      "prompts":final
+    }
+    CATALOG.write_text(json.dumps(payload,ensure_ascii=False,separators=(",",":")),encoding="utf-8")
+    patch_whats_new()
+    bump_sw()
+    print(f"V1.8 catalog built: {len(final)} prompts from {len(candidates)} accepted candidates.")
+    counts=defaultdict(int)
+    for p in final:counts[p.get("category","General")]+=1
+    print("Categories:",dict(sorted(counts.items())))
+
+if __name__=="__main__":
+    main()
