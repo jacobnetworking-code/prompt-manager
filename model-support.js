@@ -224,5 +224,21 @@ if(typeof signOutPM==="function"){
 }
 window.addEventListener("pagehide",()=>{ activeCategory="all"; activePlatform="any"; activeOrigin="all"; activeModel="any"; });
 
+/* M1.8.1 — ui-refine.js loads after this module and owns the canonical Library
+   renderer, so the earlier render wrapper is replaced during startup. Re-attach
+   the model decoration once all deferred scripts have initialized. This is a
+   render hook, not a DOM observer: every Library render finishes by adding the
+   existing model badges from prompt metadata. */
+function installFinalLibraryModelRenderHook(){
+  if(typeof render!=="function"||render.pmModelBadgesFinal)return;
+  const base=render;
+  const wrapped=function(){base.apply(this,arguments);decorateCards()};
+  wrapped.pmModelBadgesFinal=true;
+  render=wrapped;
+  decorateCards();
+}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",installFinalLibraryModelRenderHook,{once:true});
+else queueMicrotask(installFinalLibraryModelRenderHook);
+
 window.pmModelSupport={modelsOf:modelsOfPrompt,parse:parseModels,matches:modelMatches,resetFilters:resetLibraryFilters,availableModels};
 })();
