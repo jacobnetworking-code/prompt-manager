@@ -3,13 +3,25 @@
 const q=id=>document.getElementById(id);
 let activeModel="any";
 let editingId=null;
+const catalogModelsById=new Map();
 
 function cleanModel(value){return String(value??"").trim().replace(/\s+/g," ").slice(0,60)}
-function modelsOfPrompt(p){
-  if(!Array.isArray(p?.models))return [];
+function normalizedModels(values){
+  if(!Array.isArray(values))return [];
   const seen=new Set,out=[];
-  for(const raw of p.models){const v=cleanModel(raw);if(!v)continue;const k=v.toLowerCase();if(seen.has(k))continue;seen.add(k);out.push(k==="multimodel"?"multimodel":v)}
+  for(const raw of values){const v=cleanModel(raw);if(!v)continue;const k=v.toLowerCase();if(seen.has(k))continue;seen.add(k);out.push(k==="multimodel"?"multimodel":v)}
   return out;
+}
+function modelsOfPrompt(p){
+  const direct=normalizedModels(p?.models);
+  if(direct.length)return direct;
+  /* Catalog prompts saved before model metadata was persisted still have a stable
+     externalId. Resolve their model from the canonical catalog instead of
+     inventing metadata or requiring a destructive migration. */
+  if(p?.acquisitionType==="catalog"&&p?.externalId!=null){
+    return catalogModelsById.get(String(p.externalId))||[];
+  }
+  return [];
 }
 function parseModels(value){
   const raw=String(value??"").split(",").map(cleanModel).filter(Boolean);
@@ -45,6 +57,24 @@ function modelCompatibleWithPlatform(model,platform){
 }
 function modelMatches(p){return activeModel==="any"||modelsOfPrompt(p).some(x=>x.toLowerCase()===activeModel.toLowerCase())}
 function modelBadges(p){return modelsOfPrompt(p).map(x=>`<span class="modelbadge">${esc(displayModel(x))}</span>`).join("")}
+
+async function loadCatalogModelIndex(){
+  try{
+    const response=await fetch("./catalog.json",{cache:"no-store"});
+    if(!response.ok)return;
+    const data=await response.json();
+    const items=Array.isArray(data?.prompts)?data.prompts:[];
+    catalogModelsById.clear();
+    for(const item of items){
+      const values=normalizedModels(Array.isArray(item?.models)?item.models:(item?.model?[item.model]:[]));
+      if(values.length&&item?.id!=null)catalogModelsById.set(String(item.id),values);
+    }
+    if(typeof render==="function")render();
+  }catch(err){
+    console.warn("Catalog model index unavailable",err);
+  }
+}
+void loadCatalogModelIndex();
 
 /* Cloud persistence: additive `models text[]` column introduced by M1.7.11 SQL. */
 if(typeof toCloudPrompt==="function"){
