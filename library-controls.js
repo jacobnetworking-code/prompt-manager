@@ -5,6 +5,50 @@ const $=id=>document.getElementById(id);
 const ICON_SEARCH=`<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="5.8"></circle><path d="m15.2 15.2 4.3 4.3"></path></svg>`;
 const ICON_FILTER=`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16"></path><path d="M7 12h10"></path><path d="M10 17h4"></path></svg>`;
 
+const metadataModels=p=>{
+  if(window.pmModelSupport?.modelsOf)return window.pmModelSupport.modelsOf(p)||[];
+  return Array.isArray(p?.models)?p.models.filter(Boolean):[];
+};
+const metadataModelName=value=>String(value).toLowerCase()==="multimodel"?"Multimodel":String(value);
+
+function renderPromptMetadata(target,prompt){
+  if(!target||!prompt)return;
+  const category=typeof catName==="function"&&typeof categoryId==="function"?catName(categoryId(prompt)):"General";
+  const platforms=typeof platformsOf==="function"?platformsOf(prompt):["general"];
+  const models=metadataModels(prompt);
+  const safe=typeof esc==="function"?esc:(v=>String(v));
+  target.innerHTML=
+    `<span class="categorybadge">${safe(category)}</span>`+
+    platforms.map(id=>`<span class="platformbadge">${safe(typeof platformName==="function"?platformName(id):id)}</span>`).join("")+
+    models.map(model=>`<span class="modelbadge">${safe(metadataModelName(model))}</span>`).join("");
+}
+
+function renderAllLibraryMetadata(){
+  document.querySelectorAll("#list .card[data-use]").forEach(card=>{
+    const prompt=(typeof prompts!=="undefined"?prompts:[]).find(p=>String(p.id)===String(card.dataset.use));
+    renderPromptMetadata(card.querySelector(".badges"),prompt);
+  });
+}
+
+function installCanonicalMetadataRenderer(){
+  if(typeof render==="function"&&!render.pmCanonicalMetadata){
+    const base=render;
+    const wrapped=function(){base.apply(this,arguments);renderAllLibraryMetadata()};
+    wrapped.pmCanonicalMetadata=true;
+    render=wrapped;
+  }
+  if(typeof openUse==="function"&&!openUse.pmCanonicalMetadata){
+    const baseOpen=openUse;
+    const wrappedOpen=function(prompt){
+      baseOpen.apply(this,arguments);
+      renderPromptMetadata($("useBadges"),prompt);
+    };
+    wrappedOpen.pmCanonicalMetadata=true;
+    openUse=wrappedOpen;
+  }
+  renderAllLibraryMetadata();
+}
+
 function pref(){const v=localStorage.getItem(PREF_KEY);return v===null?true:v==="1"}
 function setPref(v){localStorage.setItem(PREF_KEY,v?"1":"0")}
 function filterRegion(){
@@ -126,6 +170,7 @@ function installSearchViewport(){
 }
 
 function init(){
+  installCanonicalMetadataRenderer();
   installSearchViewport();
   if(!build()){
     let n=0,t=setInterval(()=>{if(build()||++n>40)clearInterval(t)},50);

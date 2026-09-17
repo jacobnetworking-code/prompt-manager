@@ -840,3 +840,17 @@ body:has(#pmLibraryQuickSearchOverlay[data-open="true"]) #libraryView{filter:non
     background:var(--bg)!important;padding-bottom:8px!important;margin-bottom:8px!important
   }
 }
+
+/* V1.8.1 — canonical prompt metadata */
+.modelbadge{
+  font-size:9px;
+  text-transform:none;
+  letter-spacing:.35px;
+  color:var(--muted);
+  font-weight:780;
+  background:var(--surface2);
+  padding:4px 7px;
+  border-radius:999px;
+  white-space:nowrap;
+}
+
