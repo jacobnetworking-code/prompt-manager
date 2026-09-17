@@ -192,8 +192,7 @@ new MutationObserver(()=>{if(!$("pmLibraryFilterToggle")||!$("pmLibraryQuickSear
 .observe(document.body,{childList:true,subtree:true});
 })();
 
-
-/* ===== V1.9 — What's New History ===== */
+/* ===== V1.9 — What's New inline timeline ===== */
 (()=>{
 "use strict";
 
@@ -242,58 +241,46 @@ function wnLang(){
 }
 function wnCopy(){
  return {
-  en:{kicker:"WHAT'S NEW",title:"What's new",intro:"The meaningful changes that shaped Prompt Manager.",open:"Open update history",close:"Close"},
-  es:{kicker:"NOVEDADES",title:"Novedades",intro:"Los cambios relevantes que han dado forma a Prompt Manager.",open:"Abrir historial de novedades",close:"Cerrar"},
-  sr:{kicker:"NOVO",title:"Novosti",intro:"Važne promene koje su oblikovale Prompt Manager.",open:"Otvori istoriju novosti",close:"Zatvori"}
+  en:{kicker:"WHAT'S NEW",show:"View update history",hide:"Hide update history",current:"CURRENT"},
+  es:{kicker:"NOVEDADES",show:"Ver historial de novedades",hide:"Ocultar historial de novedades",current:"ACTUAL"},
+  sr:{kicker:"NOVO",show:"Prikaži istoriju novosti",hide:"Sakrij istoriju novosti",current:"TRENUTNO"}
  }[wnLang()];
 }
-function ensureHistoryDialog(){
- let d=document.getElementById("pmWhatsNewHistory");
- if(d)return d;
- d=document.createElement("dialog");
- d.id="pmWhatsNewHistory";
- d.className="pm-whats-history-dialog";
- document.body.appendChild(d);
- d.addEventListener("click",e=>{
-   if(e.target===d||e.target.closest("[data-pm-whats-close]"))d.close();
- });
- d.addEventListener("cancel",()=>{});
- return d;
-}
-function renderHistory(){
- const d=ensureHistoryDialog(),c=wnCopy(),items=RELEASES[wnLang()];
- d.innerHTML=`<section class="pm-whats-history-sheet">
-  <header class="pm-whats-history-head">
-   <div><small>${c.kicker}</small><h2>${c.title}</h2><p>${c.intro}</p></div>
-   <button type="button" data-pm-whats-close aria-label="${c.close}" title="${c.close}">×</button>
-  </header>
-  <div class="pm-whats-history-list">${items.map(([version,title,points],i)=>`
-   <article class="pm-whats-release${i===0?" is-current":""}">
-    <div class="pm-whats-release-version">${version}${i===0?`<span>${wnLang()==="es"?"ACTUAL":wnLang()==="sr"?"TRENUTNO":"CURRENT"}</span>`:""}</div>
-    <div class="pm-whats-release-body"><h3>${title}</h3><ul>${points.map(p=>`<li>${p}</li>`).join("")}</ul></div>
-   </article>`).join("")}</div>
- </section>`;
+function timelineMarkup(){
+ const c=wnCopy();
+ return `<div class="pm-whats-timeline">${RELEASES[wnLang()].map(([version,title,points],i)=>`
+  <article class="pm-whats-release${i===0?" is-current":""}">
+   <div class="pm-whats-node" aria-hidden="true"></div>
+   <div class="pm-whats-release-version">${version}${i===0?`<span>${c.current}</span>`:""}</div>
+   <div class="pm-whats-release-body"><h3>${title}</h3><ul>${points.map(p=>`<li>${p}</li>`).join("")}</ul></div>
+  </article>`).join("")}</div>`;
 }
 function upgradeWhatsNewCard(){
  const card=document.querySelector(".pm-whats-new,.pm-whats-history-card");
  if(!card)return;
  card.classList.remove("pm-whats-new");
  card.classList.add("pm-whats-history-card");
- card.setAttribute("role","button");
- card.setAttribute("tabindex","0");
- const c=wnCopy();
- card.setAttribute("aria-label",c.open);
+ card.removeAttribute("role");
+ card.removeAttribute("tabindex");
+ card.removeAttribute("aria-label");
+ const c=wnCopy(),first=RELEASES[wnLang()][0];
  card.innerHTML=`<div class="pm-whats-history-card-top"><span>${c.kicker}</span><b>V1.9</b></div>
-  <h3>${RELEASES[wnLang()][0][1]}</h3>
-  <p>${RELEASES[wnLang()][0][2][0]}</p>
-  <div class="pm-whats-history-card-cta">${c.open}<span aria-hidden="true">→</span></div>`;
- if(card.dataset.pmWhatsHistoryBound!=="1"){
-  card.dataset.pmWhatsHistoryBound="1";
-  card.addEventListener("click",()=>{renderHistory();ensureHistoryDialog().showModal()});
-  card.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();card.click()}});
- }
+  <h3>${first[1]}</h3>
+  <p>${first[2][0]}</p>
+  <button type="button" class="pm-whats-expand" aria-expanded="false">
+   <span>${c.show}</span><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 7.5 5 5 5-5"></path></svg>
+  </button>
+  <div class="pm-whats-inline-history" hidden>${timelineMarkup()}</div>`;
+ const toggle=card.querySelector(".pm-whats-expand");
+ const history=card.querySelector(".pm-whats-inline-history");
+ toggle.addEventListener("click",()=>{
+  const open=toggle.getAttribute("aria-expanded")!=="true";
+  toggle.setAttribute("aria-expanded",String(open));
+  toggle.querySelector("span").textContent=open?c.hide:c.show;
+  history.hidden=!open;
+ });
 }
-function syncWhatsHistory(){upgradeWhatsNewCard();if(document.getElementById("pmWhatsNewHistory")?.open)renderHistory()}
+function syncWhatsHistory(){upgradeWhatsNewCard()}
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",syncWhatsHistory,{once:true});else syncWhatsHistory();
 document.addEventListener("change",e=>{if(e.target?.id==="pmLanguageSelect")setTimeout(syncWhatsHistory,0)},true);
 window.addEventListener("storage",syncWhatsHistory);
