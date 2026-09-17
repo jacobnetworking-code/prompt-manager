@@ -1082,21 +1082,21 @@ translateMenu();
 const COPY={
   en:{
     kicker:"WHAT'S NEW",
-    title:"Your library, more flexible.",
-    copy:"Import prompt collections in bulk, manage your categories directly from Library, and keep access to your local prompts when you're offline.",
-    highlights:["Bulk Import","Category Management","Offline Library"]
+    title:"A much bigger prompt catalog.",
+    copy:"Explore hundreds of useful prompts from multiple curated sources, with stronger Platform and Model controls across Library and prompt editing.",
+    highlights:["750+ Curated Prompts","Platform + Model UX","Multi-source Catalog"]
   },
   es:{
     kicker:"NOVEDADES",
-    title:"Tu biblioteca, más flexible.",
-    copy:"Importa colecciones de prompts de golpe, gestiona tus categorías directamente desde Biblioteca y accede a tus prompts locales incluso sin conexión.",
-    highlights:["Importación masiva","Gestión de categorías","Biblioteca offline"]
+    title:"Un catálogo de prompts mucho mayor.",
+    copy:"Explora cientos de prompts útiles de varias fuentes seleccionadas, con mejores controles de Plataforma y Modelo en Biblioteca y al editar prompts.",
+    highlights:["750+ prompts seleccionados","Plataforma + Modelo","Catálogo multifuente"]
   },
   sr:{
     kicker:"NOVO",
-    title:"Fleksibilnija biblioteka.",
-    copy:"Uvezi kolekcije promptova odjednom, upravljaj kategorijama direktno iz Biblioteke i pristupi lokalnim promptovima čak i bez interneta.",
-    highlights:["Masovni uvoz","Upravljanje kategorijama","Offline biblioteka"]
+    title:"Mnogo veći katalog promptova.",
+    copy:"Istraži stotine korisnih promptova iz više odabranih izvora, uz bolje kontrole Platforme i Modela u Biblioteci i uređivanju promptova.",
+    highlights:["750+ odabranih promptova","Platforma + Model","Katalog iz više izvora"]
   }
 };
 
@@ -1118,7 +1118,7 @@ function updateWhatsNew(){
   const list=card.querySelector("ul");
 
   if(kicker&&kicker.textContent!==c.kicker)kicker.textContent=c.kicker;
-  if(version&&version.textContent!=="V1.7")version.textContent="V1.7";
+  if(version&&version.textContent!=="V1.8")version.textContent="V1.8";
   if(title&&title.textContent!==c.title)title.textContent=c.title;
   if(copy&&copy.textContent!==c.copy)copy.textContent=c.copy;
   const highlightsHtml=c.highlights.map(x=>`<li>${x}</li>`).join("");
