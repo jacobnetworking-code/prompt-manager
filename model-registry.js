@@ -9,111 +9,16 @@ window.PM_MODEL_REGISTRY=Object.freeze({
  seedance:["Seedance 2.5","Seedance 2.0"],
  other:["Multimodel"]
 });
-
-/* M1.7.12.9.1 — Add/Edit model selector aligned with Library filters. */
-(()=>{
-  "use strict";
-  const registry=window.PM_MODEL_REGISTRY||{};
-  const q=id=>document.getElementById(id);
-  const clean=v=>String(v??"").trim().replace(/\s+/g," ").slice(0,60);
-  const display=v=>clean(v).toLowerCase()==="multimodel"?"Multimodel":clean(v);
-
-  function unique(values){
-    const seen=new Set();
-    return values.filter(v=>{
-      const k=clean(v).toLowerCase();
-      if(!k||seen.has(k))return false;
-      seen.add(k); return true;
-    });
-  }
-
-  function allModels(){
-    return unique(Object.values(registry).flat());
-  }
-
-  function modelsFor(platform){
-    /* Library's reset Platform state exposes every registered model.
-       Add Prompt visually starts on Multiplatform, so give it the same browse
-       experience instead of reducing Model to Multimodel only. */
-    if(!platform||platform==="general"||platform==="other")return allModels();
-    return unique(registry[platform]||[]);
-  }
-
-  function platformForModel(model){
-    const key=clean(model).toLowerCase();
-    if(!key||key==="multimodel")return null;
-    for(const [platform,values] of Object.entries(registry)){
-      if(platform==="general"||platform==="other")continue;
-      if(values.some(v=>clean(v).toLowerCase()===key))return platform;
-    }
-    return null;
-  }
-
-  function ensureSelect(){
-    const current=q("models");
-    if(!current)return null;
-    if(current.tagName==="SELECT")return current;
-    const select=document.createElement("select");
-    select.id="models";
-    select.name=current.name||"models";
-    select.setAttribute("aria-label","Model");
-    current.replaceWith(select);
-    return select;
-  }
-
-  function render({preserve=true}={}){
-    const select=ensureSelect(), platform=q("platform");
-    if(!select||!platform)return;
-    const previous=preserve?clean(select.value):"";
-    const values=modelsFor(platform.value);
-
-    select.replaceChildren();
-    const empty=document.createElement("option");
-    empty.value=""; empty.textContent="Model";
-    select.appendChild(empty);
-
-    values.forEach(v=>{
-      const option=document.createElement("option");
-      option.value=v; option.textContent=display(v);
-      select.appendChild(option);
-    });
-
-    if(previous){
-      let option=[...select.options].find(x=>x.value.toLowerCase()===previous.toLowerCase());
-      if(!option){
-        option=document.createElement("option");
-        option.value=previous; option.textContent=display(previous);
-        option.dataset.pmLegacyModel="true";
-        select.appendChild(option);
-      }
-      select.value=option.value;
-    }
-  }
-
-  function init(){
-    const platform=q("platform"), dialog=q("dialog");
-    const select=ensureSelect();
-    if(!platform||!dialog||!select)return;
-
-    render({preserve:false});
-
-    platform.addEventListener("change",()=>render({preserve:false}));
-
-    select.addEventListener("change",()=>{
-      const owner=platformForModel(select.value);
-      /* When browsing from Multiplatform, choosing a platform-specific model
-         makes the metadata internally consistent automatically. */
-      if(platform.value==="general"&&owner){
-        platform.value=owner;
-        render({preserve:true});
-      }
-    });
-
-    new MutationObserver(()=>{
-      if(dialog.open)queueMicrotask(()=>render({preserve:true}));
-    }).observe(dialog,{attributes:true,attributeFilter:["open"]});
-  }
-
-  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});
-  else init();
+(()=>{"use strict";
+const registry=window.PM_MODEL_REGISTRY||{},q=id=>document.getElementById(id),clean=v=>String(v??"").trim().replace(/\s+/g," ").slice(0,60),display=v=>clean(v).toLowerCase()==="multimodel"?"Multimodel":clean(v);
+function unique(values){const seen=new Set();return values.filter(v=>{const k=clean(v).toLowerCase();if(!k||seen.has(k))return false;seen.add(k);return true})}
+function allModels(){return unique(Object.values(registry).flat())}
+function modelsFor(platform){if(!platform||platform==="general"||platform==="other")return allModels();return unique(registry[platform]||[])}
+function platformForModel(model){const key=clean(model).toLowerCase();if(!key||key==="multimodel")return null;for(const [platform,values] of Object.entries(registry)){if(platform==="general"||platform==="other")continue;if(values.some(v=>clean(v).toLowerCase()===key))return platform}return null}
+function ensureSelect(){const current=q("models");if(!current)return null;if(current.tagName==="SELECT")return current;const select=document.createElement("select");select.id="models";select.name=current.name||"models";select.setAttribute("aria-label","Model");current.replaceWith(select);return select}
+function render({preserve=true}={}){const select=ensureSelect(),platform=q("platform");if(!select||!platform)return;const previous=preserve?clean(select.value):"",values=modelsFor(platform.value);select.replaceChildren();const empty=document.createElement("option");empty.value="";empty.textContent="Model";select.appendChild(empty);values.forEach(v=>{const option=document.createElement("option");option.value=v;option.textContent=display(v);select.appendChild(option)});if(previous){let option=[...select.options].find(x=>x.value.toLowerCase()===previous.toLowerCase());if(!option){option=document.createElement("option");option.value=previous;option.textContent=display(previous);option.dataset.pmLegacyModel="true";select.appendChild(option)}select.value=option.value}}
+function init(){const platform=q("platform"),dialog=q("dialog"),select=ensureSelect();if(!platform||!dialog||!select)return;render({preserve:false});platform.addEventListener("change",()=>render({preserve:false}));select.addEventListener("change",()=>{const owner=platformForModel(select.value);if(platform.value==="general"&&owner){platform.value=owner;render({preserve:true})}});new MutationObserver(()=>{if(dialog.open)queueMicrotask(()=>render({preserve:true}))}).observe(dialog,{attributes:true,attributeFilter:["open"]})}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});else init();
 })();
+/* V1.8.1 loader: classic script preserves access to the existing global app state. */
+(()=>{const s=document.createElement("script");s.src="./catalog-consistency.js";s.async=false;document.head.appendChild(s)})();
