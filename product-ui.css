@@ -908,3 +908,46 @@ body.pm-auth-pending > #pmAuthLoading[hidden]{
 }
 @media(prefers-reduced-motion:reduce){.pm-whats-expand svg{transition:none}}
 
+
+
+/* ===== V1.9 — What's New final layout polish ===== */
+.pm-whats-history-card{
+  margin-top:28px!important;
+}
+.pm-whats-history-card-top{
+  justify-content:flex-start!important;
+  margin-bottom:12px!important;
+}
+.pm-whats-title-row{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  min-width:0;
+  margin-bottom:7px;
+}
+.pm-whats-title-row>b{
+  display:inline-flex;
+  align-items:center;
+  flex:0 0 auto;
+  padding:4px 8px;
+  border-radius:999px;
+  background:rgba(212,174,99,.11);
+  color:#d4ae63;
+  font-size:10px;
+  line-height:1;
+  letter-spacing:.04em;
+}
+.pm-whats-title-row>h3{
+  min-width:0;
+  margin:0!important;
+}
+.pm-whats-expand{
+  width:max-content!important;
+  max-width:100%;
+  justify-content:flex-start!important;
+  gap:7px!important;
+  padding-right:0!important;
+}
+.pm-whats-expand svg{
+  flex:0 0 18px;
+}

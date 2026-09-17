@@ -264,8 +264,8 @@ function upgradeWhatsNewCard(){
  card.removeAttribute("tabindex");
  card.removeAttribute("aria-label");
  const c=wnCopy(),first=RELEASES[wnLang()][0];
- card.innerHTML=`<div class="pm-whats-history-card-top"><span>${c.kicker}</span><b>V1.9</b></div>
-  <h3>${first[1]}</h3>
+ card.innerHTML=`<div class="pm-whats-history-card-top"><span>${c.kicker}</span></div>
+  <div class="pm-whats-title-row"><b>V1.9</b><h3>${first[1]}</h3></div>
   <p>${first[2][0]}</p>
   <button type="button" class="pm-whats-expand" aria-expanded="false">
    <span>${c.show}</span><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 7.5 5 5 5-5"></path></svg>
