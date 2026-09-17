@@ -1,0 +1,50 @@
+name: Build V1.8 catalog
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "tools/build_catalog.py"
+      - ".github/workflows/build-catalog.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: prompt-manager-catalog
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build catalog
+        run: python3 tools/build_catalog.py
+      - name: Validate catalog
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          p=json.loads(Path("catalog.json").read_text())
+          n=len(p["prompts"])
+          assert n >= 750, n
+          assert len({x["id"] for x in p["prompts"]}) == n
+          assert all(x.get("prompt") and x.get("title") and x.get("category") for x in p["prompts"])
+          imported=[x for x in p["prompts"] if x.get("source_license") in {"MIT","CC0-1.0"}]
+          assert imported, "No permissively licensed imported records"
+          print(f"Validated {n} prompts; {len(imported)} imported with provenance.")
+          PY
+          node --check product-ui.js
+          node --check sw.js
+      - name: Commit generated V1.8 assets
+        run: |
+          if git diff --quiet -- catalog.json product-ui.js sw.js; then
+            echo "No generated changes."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add catalog.json product-ui.js sw.js
+          git commit -m "Build V1.8 catalog"
+          git push
