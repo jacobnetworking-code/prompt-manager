@@ -854,3 +854,23 @@ body:has(#pmLibraryQuickSearchOverlay[data-open="true"]) #libraryView{filter:non
   white-space:nowrap;
 }
 
+/* V1.8.1 — first-paint startup gate
+   The HTML ships with body.pm-auth-pending. Because this stylesheet is
+   render-blocking in <head>, the application shell can never paint before
+   the existing auth/loading bootstrap settles. */
+body.pm-auth-pending{
+  background:#0d0d0d!important;
+  overflow:hidden!important;
+}
+body.pm-auth-pending > .app,
+body.pm-auth-pending > .bottom-nav,
+body.pm-auth-pending > #fab,
+body.pm-auth-pending > #authGate{
+  visibility:hidden!important;
+  pointer-events:none!important;
+}
+body.pm-auth-pending > #pmAuthLoading[hidden]{
+  display:grid!important;
+  visibility:visible!important;
+}
+
