@@ -191,3 +191,111 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
 new MutationObserver(()=>{if(!$("pmLibraryFilterToggle")||!$("pmLibraryQuickSearch"))build()})
 .observe(document.body,{childList:true,subtree:true});
 })();
+
+
+/* ===== V1.9 — What's New History ===== */
+(()=>{
+"use strict";
+
+const RELEASES={
+ en:[
+  ["V1.9","What's New History",["A complete history of Prompt Manager's meaningful product updates.","A cleaner release view focused only on changes you can actually use."]],
+  ["V1.8","Bigger Prompt Catalog",["Explore 750+ curated prompts from multiple sources.","Stronger Platform + Model support across Library and prompt editing.","Model labels now appear directly on prompt cards.","Improved visual and video Featured prompts."]],
+  ["V1.7","Smarter Library",["Bulk import prompts from CSV or JSON, with preview, validation and duplicate detection.","Platform and Model filters, Quick Search, categories and origin filters.","A unified + flow for adding or importing prompts.","Improved startup, loading and Library synchronization."]],
+  ["V1.6","Explore & Featured",["Discover prompts through Explore and curated Featured picks.","Save prompts to Library or share Explore prompts directly.","Faster prompt-detail Save and Share actions.","A redesigned desktop experience with compact sidebar navigation and better offline feedback."]],
+  ["V1.5","Share Prompts",["Share prompts through public links.","Public prompt pages protect the hidden prompt content while still making shared prompts discoverable."]],
+  ["V1.4","Personal Library",["A dedicated Library for saving and organizing prompts.","Categories, search and filters make prompts easier to find.","Personal 1–5 star ratings and faster prompt actions."]],
+  ["V1.3","Cloud Sync",["Personal accounts and cloud-backed Library synchronization.","Access your prompt collection across supported devices."]],
+  ["V1.2","Backup & Restore",["Export a backup of your prompt collection.","Restore your Library from a compatible backup."]],
+  ["V1.1","Prompt Manager Foundations",["Create, save and organize prompts.","Copy prompts quickly for use in your AI tools."]],
+  ["V1.0","Prompt Manager",["The first functional Prompt Manager experience.","A dedicated place to save, organize, find and reuse prompts worth keeping."]]
+ ],
+ es:[
+  ["V1.9","Historial de novedades",["Historial completo de las actualizaciones relevantes de Prompt Manager.","Una vista más limpia centrada únicamente en cambios que realmente puedes utilizar."]],
+  ["V1.8","Un catálogo de prompts mucho mayor",["Explora más de 750 prompts seleccionados de múltiples fuentes.","Mejor soporte de Plataforma + Modelo en Biblioteca y edición de prompts.","Los modelos aparecen directamente en las fichas de prompts.","Mejor experiencia con prompts visuales y vídeo en Featured."]],
+  ["V1.7","Una Biblioteca más inteligente",["Importación masiva desde CSV o JSON con preview, validación y detección de duplicados.","Filtros de Plataforma y Modelo, búsqueda rápida, categorías y filtros por origen.","Flujo + unificado para añadir o importar prompts.","Mejor carga inicial y sincronización de la Biblioteca."]],
+  ["V1.6","Explore y Featured",["Descubre prompts mediante Explore y una selección editorial Featured.","Guarda prompts en Biblioteca o comparte prompts de Explore directamente.","Acciones rápidas Guardar y Compartir en el detalle del prompt.","Experiencia desktop rediseñada con navegación lateral compacta y mejor estado offline."]],
+  ["V1.5","Compartir prompts",["Comparte prompts mediante enlaces públicos.","Las páginas públicas protegen el contenido oculto del prompt mientras permiten descubrirlo."]],
+  ["V1.4","Biblioteca personal",["Una Biblioteca dedicada para guardar y organizar prompts.","Categorías, búsqueda y filtros para encontrarlos más rápido.","Valoración personal de 1–5 estrellas y acciones rápidas."]],
+  ["V1.3","Sincronización en la nube",["Cuentas personales y sincronización de la Biblioteca en la nube.","Acceso a tu colección de prompts desde dispositivos compatibles."]],
+  ["V1.2","Backup y restauración",["Exporta una copia de seguridad de tu colección.","Restaura tu Biblioteca desde un backup compatible."]],
+  ["V1.1","Fundamentos de Prompt Manager",["Crea, guarda y organiza prompts.","Copia prompts rápidamente para utilizarlos en tus herramientas de IA."]],
+  ["V1.0","Prompt Manager",["Primera experiencia funcional de Prompt Manager.","Un lugar dedicado para guardar, organizar, encontrar y reutilizar prompts que merece la pena conservar."]]
+ ],
+ sr:[
+  ["V1.9","Istorija novosti",["Kompletna istorija važnih ažuriranja Prompt Manager-a.","Čistiji pregled izdanja fokusiran samo na promene koje zaista možeš da koristiš."]],
+  ["V1.8","Mnogo veći katalog promptova",["Istraži više od 750 odabranih promptova iz više izvora.","Bolja podrška za Platformu + Model u Biblioteci i uređivanju promptova.","Oznake modela se prikazuju direktno na karticama promptova.","Poboljšani vizuelni i video Featured promptovi."]],
+  ["V1.7","Pametnija Biblioteka",["Masovni uvoz iz CSV ili JSON fajlova sa pregledom, proverom i detekcijom duplikata.","Filteri Platforme i Modela, brza pretraga, kategorije i filteri porekla.","Jedinstveni + tok za dodavanje ili uvoz promptova.","Bolje početno učitavanje i sinhronizacija Biblioteke."]],
+  ["V1.6","Explore i Featured",["Otkrivaj promptove kroz Explore i odabrane Featured predloge.","Sačuvaj promptove u Biblioteku ili ih direktno podeli iz Explore-a.","Brže Save i Share akcije u detaljima prompta.","Redizajnirano desktop iskustvo sa kompaktnom bočnom navigacijom i boljim offline statusom."]],
+  ["V1.5","Deljenje promptova",["Deli promptove putem javnih linkova.","Javne stranice štite skriveni sadržaj prompta dok ga čine dostupnim za otkrivanje."]],
+  ["V1.4","Lična Biblioteka",["Posebna Biblioteka za čuvanje i organizovanje promptova.","Kategorije, pretraga i filteri za brže pronalaženje.","Lična ocena od 1–5 zvezdica i brže akcije."]],
+  ["V1.3","Cloud sinhronizacija",["Lični nalozi i cloud sinhronizacija Biblioteke.","Pristup kolekciji promptova sa podržanih uređaja."]],
+  ["V1.2","Backup i vraćanje",["Izvezi rezervnu kopiju svoje kolekcije.","Vrati Biblioteku iz kompatibilnog backup-a."]],
+  ["V1.1","Osnove Prompt Manager-a",["Kreiraj, sačuvaj i organizuj promptove.","Brzo kopiraj promptove za korišćenje u AI alatima."]],
+  ["V1.0","Prompt Manager",["Prva funkcionalna verzija Prompt Manager-a.","Posebno mesto za čuvanje, organizovanje, pronalaženje i ponovno korišćenje vrednih promptova."]]
+ ]
+};
+
+function wnLang(){
+ const raw=(localStorage.getItem("pm-language")||document.documentElement.lang||"en").toLowerCase();
+ return raw.startsWith("es")?"es":raw.startsWith("sr")?"sr":"en";
+}
+function wnCopy(){
+ return {
+  en:{kicker:"WHAT'S NEW",title:"What's new",intro:"The meaningful changes that shaped Prompt Manager.",open:"Open update history",close:"Close"},
+  es:{kicker:"NOVEDADES",title:"Novedades",intro:"Los cambios relevantes que han dado forma a Prompt Manager.",open:"Abrir historial de novedades",close:"Cerrar"},
+  sr:{kicker:"NOVO",title:"Novosti",intro:"Važne promene koje su oblikovale Prompt Manager.",open:"Otvori istoriju novosti",close:"Zatvori"}
+ }[wnLang()];
+}
+function ensureHistoryDialog(){
+ let d=document.getElementById("pmWhatsNewHistory");
+ if(d)return d;
+ d=document.createElement("dialog");
+ d.id="pmWhatsNewHistory";
+ d.className="pm-whats-history-dialog";
+ document.body.appendChild(d);
+ d.addEventListener("click",e=>{
+   if(e.target===d||e.target.closest("[data-pm-whats-close]"))d.close();
+ });
+ d.addEventListener("cancel",()=>{});
+ return d;
+}
+function renderHistory(){
+ const d=ensureHistoryDialog(),c=wnCopy(),items=RELEASES[wnLang()];
+ d.innerHTML=`<section class="pm-whats-history-sheet">
+  <header class="pm-whats-history-head">
+   <div><small>${c.kicker}</small><h2>${c.title}</h2><p>${c.intro}</p></div>
+   <button type="button" data-pm-whats-close aria-label="${c.close}" title="${c.close}">×</button>
+  </header>
+  <div class="pm-whats-history-list">${items.map(([version,title,points],i)=>`
+   <article class="pm-whats-release${i===0?" is-current":""}">
+    <div class="pm-whats-release-version">${version}${i===0?`<span>${wnLang()==="es"?"ACTUAL":wnLang()==="sr"?"TRENUTNO":"CURRENT"}</span>`:""}</div>
+    <div class="pm-whats-release-body"><h3>${title}</h3><ul>${points.map(p=>`<li>${p}</li>`).join("")}</ul></div>
+   </article>`).join("")}</div>
+ </section>`;
+}
+function upgradeWhatsNewCard(){
+ const card=document.querySelector(".pm-whats-new,.pm-whats-history-card");
+ if(!card)return;
+ card.classList.remove("pm-whats-new");
+ card.classList.add("pm-whats-history-card");
+ card.setAttribute("role","button");
+ card.setAttribute("tabindex","0");
+ const c=wnCopy();
+ card.setAttribute("aria-label",c.open);
+ card.innerHTML=`<div class="pm-whats-history-card-top"><span>${c.kicker}</span><b>V1.9</b></div>
+  <h3>${RELEASES[wnLang()][0][1]}</h3>
+  <p>${RELEASES[wnLang()][0][2][0]}</p>
+  <div class="pm-whats-history-card-cta">${c.open}<span aria-hidden="true">→</span></div>`;
+ if(card.dataset.pmWhatsHistoryBound!=="1"){
+  card.dataset.pmWhatsHistoryBound="1";
+  card.addEventListener("click",()=>{renderHistory();ensureHistoryDialog().showModal()});
+  card.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();card.click()}});
+ }
+}
+function syncWhatsHistory(){upgradeWhatsNewCard();if(document.getElementById("pmWhatsNewHistory")?.open)renderHistory()}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",syncWhatsHistory,{once:true});else syncWhatsHistory();
+document.addEventListener("change",e=>{if(e.target?.id==="pmLanguageSelect")setTimeout(syncWhatsHistory,0)},true);
+window.addEventListener("storage",syncWhatsHistory);
+})();
+
