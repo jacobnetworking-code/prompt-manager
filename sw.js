@@ -1,10 +1,16 @@
-const CACHE="pm-runtime-v18";
+const CACHE="pm-runtime-v181-range";
 const CORE=["./","./index.html","./styles.css","./ui-refine.css","./desktop-v1.css","./desktop-v1.js","./app.js","./model-registry.js","./model-support.js","./sync-stabilizer.js","./ui-refine.js","./product-ui.css","./product-ui.js","./library-controls.js","./manifest.webmanifest","./apple-touch-icon.png","./icon-192.png","./icon-512.png","./catalog.json","./prompt/","./prompt/share.css","./prompt/share-m1.6.6.18.css","./prompt/share.js"];
 
 self.addEventListener("install",event=>{event.waitUntil(caches.open(CACHE).then(cache=>Promise.allSettled(CORE.map(url=>cache.add(url)))).then(()=>self.skipWaiting()));});
 self.addEventListener("activate",event=>{event.waitUntil((async()=>{const keys=await caches.keys();await Promise.all(keys.filter(key=>key!==CACHE).map(key=>caches.delete(key)));await self.clients.claim();})());});
 
-async function remember(request,response){if(response&&response.ok){const cache=await caches.open(CACHE);await cache.put(request,response.clone());}return response;}
+async function remember(request,response){
+  if(response&&response.ok&&response.status!==206){
+    const cache=await caches.open(CACHE);
+    await cache.put(request,response.clone());
+  }
+  return response;
+}
 async function networkFirst(request){try{return await remember(request,await fetch(request,{cache:"no-store"}));}catch(error){const cached=await caches.match(request);if(cached)return cached;throw error;}}
 async function navigationNetworkFirst(request){try{return await remember(request,await fetch(request,{cache:"no-store"}));}catch(error){return (await caches.match(request))||(await caches.match("./index.html"))||(await caches.match("./"))||new Response("Prompt Manager is unavailable offline.",{status:503,headers:{"Content-Type":"text/plain; charset=utf-8"}});}}
 async function cacheFirst(request){const cached=await caches.match(request);if(cached)return cached;try{return await remember(request,await fetch(request));}catch(error){return new Response("",{status:503,statusText:"Offline"});}}
@@ -13,6 +19,12 @@ self.addEventListener("fetch",event=>{
   if(event.request.method!=="GET")return;
   const url=new URL(event.request.url);
   if(url.origin!==self.location.origin)return;
+
+  // Safari/iOS media playback uses HTTP byte-range requests. A 206 Partial
+  // Content response must never be written to Cache Storage. Pass range
+  // requests straight through so the browser receives the server's 206.
+  if(event.request.headers.has("range"))return;
+
   if(event.request.mode==="navigate"){event.respondWith(navigationNetworkFirst(event.request));return;}
   const mutable=/\.(?:html|js|css|json|webmanifest)$/i.test(url.pathname);
   if(mutable){event.respondWith(networkFirst(event.request));return;}

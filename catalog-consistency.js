@@ -10,6 +10,20 @@ window.PM_CATALOG_I18N_STATUS=Object.freeze({
 });
 
 const SELECTOR=".pm-featured-video";
+
+function compactFeaturedActions(root=document){
+  root.querySelectorAll?.("#exploreList [data-explore-open]").forEach(b=>{
+    if(b.textContent.trim()==="View prompt")b.textContent="View";
+    else if(b.textContent.trim()==="Ver prompt")b.textContent="Ver";
+    else if(b.textContent.trim()==="Otvori prompt")b.textContent="Otvori";
+  });
+  root.querySelectorAll?.("#exploreList [data-explore-save]").forEach(b=>{
+    if(b.textContent.trim()==="Save to Library")b.textContent="Save";
+    else if(b.textContent.trim()==="Guardar en Biblioteca")b.textContent="Guardar";
+    else if(b.textContent.trim()==="Sačuvaj u Biblioteku")b.textContent="Sačuvaj";
+  });
+}
+
 const visible=new Set();
 let observer=null;
 
@@ -84,11 +98,12 @@ function start(){
 
   const list=document.getElementById("exploreList");
   scan(list||document);
+  compactFeaturedActions(document);
 
   if(list){
     new MutationObserver(records=>{
       for(const record of records)record.addedNodes.forEach(node=>{
-        if(node.nodeType===1)scan(node);
+        if(node.nodeType===1){scan(node);compactFeaturedActions(node);}
       });
     }).observe(list,{childList:true,subtree:true});
   }
