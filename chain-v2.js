@@ -131,6 +131,18 @@ async function deleteChain(id){if(!confirm(tx().confirmDelete))return;try{const 
 function clickHandler(e){const exp=e.target.closest("[data-chain-expand]");if(exp){const id=exp.dataset.chainExpand,rest=document.querySelector(`[data-chain-rest="${CSS.escape(id)}"]`),open=exp.getAttribute("aria-expanded")!=="true";exp.setAttribute("aria-expanded",String(open));exp.querySelector("span").textContent=open?tx().hide:tx().see;if(rest)rest.hidden=!open;return}const cp=e.target.closest("[data-chain-copy]");if(cp){const [id,idx]=cp.dataset.chainCopy.split(":");const c=chains.find(x=>String(x.id)===id),s=c?.steps?.[Number(idx)];if(s?.content)navigator.clipboard.writeText(s.content).then(()=>toastMsg(tx().copied));return}const menu=e.target.closest("[data-chain-menu]");if(menu){e.stopPropagation();const m=$("chain-menu-"+menu.dataset.chainMenu);if(m)m.hidden=!m.hidden;return}const del=e.target.closest("[data-chain-delete]");if(del){deleteChain(del.dataset.chainDelete);return}}
 function observeAddMenu(){addChainChoice();new MutationObserver(addChainChoice).observe(document.body,{childList:true,subtree:true})}
 function saveDraftOnLifecycle(){if($("pmChainDialog")?.open)draftWrite()}
-function init(){window.addEventListener("pagehide",saveDraftOnLifecycle);document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")saveDraftOnLifecycle()});window.pmOpenChainEditor=openEditor;window.addEventListener("pm:create-chain",openEditor);installRenderHook();observeAddMenu();$("list")?.addEventListener("click",clickHandler);$("search")?.addEventListener("input",()=>setTimeout(renderChains,0));$("categoryFilters")?.addEventListener("click",()=>setTimeout(renderChains,0));$("platformOptions")?.addEventListener("click",()=>setTimeout(renderChains,0));$("libraryOriginFilters")?.addEventListener("click",()=>setTimeout(renderChains,0));document.addEventListener("change",e=>{if(e.target?.id==="pmLanguageSelect")setTimeout(()=>{renderChains();addChainChoice()},0)},true);loadChains()}
+function init(){window.addEventListener("pagehide",saveDraftOnLifecycle);document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")saveDraftOnLifecycle()});window.pmOpenChainEditor=openEditor;window.pmReloadChains=loadChains;window.addEventListener("pm:create-chain",openEditor);installRenderHook();observeAddMenu();$("list")?.addEventListener("click",clickHandler);$("search")?.addEventListener("input",()=>setTimeout(renderChains,0));$("categoryFilters")?.addEventListener("click",()=>setTimeout(renderChains,0));$("platformOptions")?.addEventListener("click",()=>setTimeout(renderChains,0));$("libraryOriginFilters")?.addEventListener("click",()=>setTimeout(renderChains,0));document.addEventListener("change",e=>{if(e.target?.id==="pmLanguageSelect")setTimeout(()=>{renderChains();addChainChoice()},0)},true);
+loadChains();
+/* V2.0.13: chain-v2 can initialize before app.js finishes async auth.
+   Retry only until an authenticated user exists, then reload from Supabase. */
+let authAttempts=0;
+const authTimer=setInterval(()=>{
+  authAttempts++;
+  if(currentUserId()){
+    clearInterval(authTimer);
+    loadChains();
+  }else if(authAttempts>=40)clearInterval(authTimer);
+},250);
+}
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});else init();
 })();
