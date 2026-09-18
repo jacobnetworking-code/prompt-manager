@@ -192,12 +192,13 @@ new MutationObserver(()=>{if(!$("pmLibraryFilterToggle")||!$("pmLibraryQuickSear
 .observe(document.body,{childList:true,subtree:true});
 })();
 
-/* ===== V1.9 — What's New inline timeline ===== */
+/* ===== V2.0 — What's New inline timeline ===== */
 (()=>{
 "use strict";
 
 const RELEASES={
  en:[
+  ["V2.0","Prompt Chains",["Create multi-prompt workflows and keep them together as one Chain in your Library.","Build Chains from new prompts or reuse prompts already saved in your Library.","Expand a Chain inline and copy each prompt individually as you work through it."]],
   ["V1.9","What's New History",["A complete history of Prompt Manager's meaningful product updates.","A cleaner release view focused only on changes you can actually use."]],
   ["V1.8","Bigger Prompt Catalog",["Explore 750+ curated prompts from multiple sources.","Stronger Platform + Model support across Library and prompt editing.","Model labels now appear directly on prompt cards.","Improved visual and video Featured prompts."]],
   ["V1.7","Smarter Library",["Bulk import prompts from CSV or JSON, with preview, validation and duplicate detection.","Platform and Model filters, Quick Search, categories and origin filters.","A unified + flow for adding or importing prompts.","Improved startup, loading and Library synchronization."]],
@@ -210,6 +211,7 @@ const RELEASES={
   ["V1.0","Prompt Manager",["The first functional Prompt Manager experience.","A dedicated place to save, organize, find and reuse prompts worth keeping."]]
  ],
  es:[
+  ["V2.0","Cadenas de prompts",["Crea flujos de varios prompts y guárdalos juntos como una sola Cadena en tu Biblioteca.","Crea Cadenas con prompts nuevos o reutiliza prompts que ya tengas guardados en tu Biblioteca.","Despliega una Cadena dentro de la Biblioteca y copia cada prompt individualmente a medida que avanzas."]],
   ["V1.9","Historial de novedades",["Historial completo de las actualizaciones relevantes de Prompt Manager.","Una vista más limpia centrada únicamente en cambios que realmente puedes utilizar."]],
   ["V1.8","Un catálogo de prompts mucho mayor",["Explora más de 750 prompts seleccionados de múltiples fuentes.","Mejor soporte de Plataforma + Modelo en Biblioteca y edición de prompts.","Los modelos aparecen directamente en las fichas de prompts.","Mejor experiencia con prompts visuales y vídeo en Featured."]],
   ["V1.7","Una Biblioteca más inteligente",["Importación masiva desde CSV o JSON con preview, validación y detección de duplicados.","Filtros de Plataforma y Modelo, búsqueda rápida, categorías y filtros por origen.","Flujo + unificado para añadir o importar prompts.","Mejor carga inicial y sincronización de la Biblioteca."]],
@@ -222,6 +224,7 @@ const RELEASES={
   ["V1.0","Prompt Manager",["Primera experiencia funcional de Prompt Manager.","Un lugar dedicado para guardar, organizar, encontrar y reutilizar prompts que merece la pena conservar."]]
  ],
  sr:[
+  ["V2.0","Lanci promptova",["Kreiraj tokove od više promptova i čuvaj ih zajedno kao jedan Lanac u Biblioteci.","Kreiraj Lance od novih promptova ili ponovo koristi promptove koji su već sačuvani u Biblioteci.","Proširi Lanac direktno u Biblioteci i kopiraj svaki prompt pojedinačno dok prolaziš kroz njega."]],
   ["V1.9","Istorija novosti",["Kompletna istorija važnih ažuriranja Prompt Manager-a.","Čistiji pregled izdanja fokusiran samo na promene koje zaista možeš da koristiš."]],
   ["V1.8","Mnogo veći katalog promptova",["Istraži više od 750 odabranih promptova iz više izvora.","Bolja podrška za Platformu + Model u Biblioteci i uređivanju promptova.","Oznake modela se prikazuju direktno na karticama promptova.","Poboljšani vizuelni i video Featured promptovi."]],
   ["V1.7","Pametnija Biblioteka",["Masovni uvoz iz CSV ili JSON fajlova sa pregledom, proverom i detekcijom duplikata.","Filteri Platforme i Modela, brza pretraga, kategorije i filteri porekla.","Jedinstveni + tok za dodavanje ili uvoz promptova.","Bolje početno učitavanje i sinhronizacija Biblioteke."]],
@@ -265,7 +268,7 @@ function upgradeWhatsNewCard(){
  card.removeAttribute("aria-label");
  const c=wnCopy(),first=RELEASES[wnLang()][0];
  card.innerHTML=`<div class="pm-whats-history-card-top"><span>${c.kicker}</span></div>
-  <div class="pm-whats-title-row"><b>V1.9</b><h3>${first[1]}</h3></div>
+  <div class="pm-whats-title-row"><b>${first[0]}</b><h3>${first[1]}</h3></div>
   <p>${first[2][0]}</p>
   <button type="button" class="pm-whats-expand" aria-expanded="false">
    <span>${c.show}</span><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 7.5 5 5 5-5"></path></svg>
@@ -285,4 +288,3 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
 document.addEventListener("change",e=>{if(e.target?.id==="pmLanguageSelect")setTimeout(syncWhatsHistory,0)},true);
 window.addEventListener("storage",syncWhatsHistory);
 })();
-
