@@ -276,7 +276,10 @@ function upgradeWhatsNewCard(){
   <div class="pm-whats-inline-history" hidden>${timelineMarkup()}</div>`;
  const toggle=card.querySelector(".pm-whats-expand");
  const history=card.querySelector(".pm-whats-inline-history");
- card.querySelector(".pm-whats-try")?.addEventListener("click",()=>window.dispatchEvent(new CustomEvent("pm:create-chain")));
+ card.querySelector(".pm-whats-try")?.addEventListener("click",()=>{
+  if(typeof window.pmOpenChainEditor==="function")window.pmOpenChainEditor();
+  else window.dispatchEvent(new CustomEvent("pm:create-chain"));
+});
  toggle.addEventListener("click",()=>{
   const open=toggle.getAttribute("aria-expanded")!=="true";
   toggle.setAttribute("aria-expanded",String(open));
