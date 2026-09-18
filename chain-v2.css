@@ -9,71 +9,59 @@
 @media(max-width:700px){.pm-chain-card{padding-left:44px!important}.pm-chain-rail{left:10px}.pm-chain-first-step{grid-template-columns:1fr}.pm-chain-first-step button{width:max-content}.pm-chain-step-body{grid-template-columns:minmax(0,1fr) auto}.pm-chain-step-body button span{display:none}.pm-chain-fields,.pm-chain-editor-add{grid-template-columns:1fr}.pm-chain-rest{margin-left:-30px;padding-left:30px}.pm-chain-step>.pm-chain-node{left:-31px}.pm-chain-step:before{left:-16px;width:16px}}
 @media(min-width:1024px){#list>.pm-chain-card{grid-column:span 2!important}.pm-chain-card{padding:18px 18px 18px 54px!important}}
 
-/* V2.0.2 — chain editor modal geometry + interaction hardening */
+/* V2.0.6 — Chain editor uses the same stable bottom-sheet modal pattern as Add Prompt */
 .pm-chain-dialog{
-  box-sizing:border-box;
-  width:min(680px,calc(100vw - 32px));
-  max-width:min(680px,calc(100vw - 32px));
-  height:min(860px,calc(100dvh - max(32px,env(safe-area-inset-top)) - max(24px,env(safe-area-inset-bottom))));
-  max-height:calc(100dvh - max(32px,env(safe-area-inset-top)) - max(24px,env(safe-area-inset-bottom)));
-  margin:auto;
+  width:100%;
+  max-width:720px;
+  margin:auto auto 0;
   padding:0!important;
-  overflow:hidden!important;
-  border:1px solid var(--border);
-  border-radius:24px!important;
-  background:var(--bg)!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
   color:var(--text);
-  box-shadow:var(--shadow);
-  pointer-events:auto;
+  overflow:visible!important;
+  box-shadow:none!important;
 }
 .pm-chain-dialog::backdrop{
-  background:rgba(0,0,0,.68);
-  backdrop-filter:blur(3px);
-  -webkit-backdrop-filter:blur(3px);
-  pointer-events:auto;
+  background:rgba(0,0,0,.48);
+  backdrop-filter:blur(2px);
+  -webkit-backdrop-filter:blur(2px);
 }
 .pm-chain-dialog>form{
   box-sizing:border-box;
   width:100%;
-  height:100%;
-  max-height:none!important;
+  height:auto;
+  max-height:92vh!important;
   margin:0;
-  padding:20px 20px max(24px,env(safe-area-inset-bottom))!important;
-  overflow-y:auto;
-  overscroll-behavior:contain;
+  padding:23px 18px max(25px,env(safe-area-inset-bottom))!important;
+  overflow:auto;
   -webkit-overflow-scrolling:touch;
-  border-radius:0!important;
+  border-radius:25px 25px 0 0!important;
   background:var(--bg)!important;
 }
 .pm-chain-dialog .sheethead{
-  position:sticky;
-  top:-20px;
-  z-index:4;
-  margin:-20px -20px 12px;
-  padding:20px 20px 14px;
-  background:var(--bg);
-  border-bottom:1px solid var(--border);
+  position:static;
+  margin:0;
+  padding:0;
+  background:transparent;
+  border:0;
 }
 .pm-chain-dialog .sheethead .x{flex:0 0 auto;margin:0}
 .pm-chain-dialog select{width:100%;box-sizing:border-box}
 .pm-chain-dialog button[type="submit"]{margin-bottom:4px}
-.pm-chain-editor-step{scroll-margin-top:96px}
+.pm-chain-editor-step{scroll-margin-top:24px}
 @media(max-width:700px){
   .pm-chain-dialog{
-    width:calc(100vw - 28px)!important;
-    max-width:calc(100vw - 28px)!important;
-    height:calc(100dvh - max(36px,env(safe-area-inset-top)) - max(24px,env(safe-area-inset-bottom)))!important;
-    max-height:calc(100dvh - max(36px,env(safe-area-inset-top)) - max(24px,env(safe-area-inset-bottom)))!important;
+    width:100%!important;
+    max-width:720px!important;
+    margin:auto auto 0!important;
   }
-  .pm-chain-dialog>form{padding:18px 18px max(26px,env(safe-area-inset-bottom))!important}
-  .pm-chain-dialog .sheethead{
-    top:-18px;
-    margin:-18px -18px 12px;
-    padding:18px 18px 14px;
+  .pm-chain-dialog>form{
+    padding:23px 18px max(25px,env(safe-area-inset-bottom))!important;
+    max-height:92vh!important;
   }
 }
 /* V2.0.3 — modal guard, draft/paste affordance */
-.pm-chain-dialog{z-index:9999}
 .pm-chain-prompt-label{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .pm-chain-prompt-label>[data-chain-paste]{border:1px solid var(--border);border-radius:9px;background:var(--surface);color:var(--gold);padding:5px 9px;font-size:10px;font-weight:800}
 .pm-whats-title-row .pm-whats-try{
@@ -93,5 +81,3 @@
   cursor:pointer;
 }
 
-/* V2.0.4 — native modal is the single interaction boundary */
-.pm-chain-dialog::backdrop{pointer-events:auto!important}
