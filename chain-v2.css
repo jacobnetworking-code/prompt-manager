@@ -72,3 +72,11 @@
     padding:18px 18px 14px;
   }
 }
+/* V2.0.3 — modal guard, draft/paste affordance */
+.pm-chain-modal-guard{position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,.58);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);touch-action:none}
+.pm-chain-modal-guard[hidden]{display:none!important}
+.pm-chain-dialog{z-index:9999}
+html.pm-chain-modal-open,body.pm-chain-modal-open{overflow:hidden!important;overscroll-behavior:none!important}
+.pm-chain-prompt-label{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.pm-chain-prompt-label>[data-chain-paste]{border:1px solid var(--border);border-radius:9px;background:var(--surface);color:var(--gold);padding:5px 9px;font-size:10px;font-weight:800}
+.pm-whats-title-row .pm-whats-try{margin-left:auto;flex:0 0 auto;border:1px solid rgba(212,174,99,.55);border-radius:999px;background:rgba(212,174,99,.08);color:#d4ae63;padding:6px 11px;font-size:10px;font-weight:850;line-height:1}

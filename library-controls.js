@@ -244,9 +244,9 @@ function wnLang(){
 }
 function wnCopy(){
  return {
-  en:{kicker:"WHAT'S NEW",show:"View update history",hide:"Hide update history",current:"CURRENT"},
-  es:{kicker:"NOVEDADES",show:"Ver historial de novedades",hide:"Ocultar historial de novedades",current:"ACTUAL"},
-  sr:{kicker:"NOVO",show:"Prikaži istoriju novosti",hide:"Sakrij istoriju novosti",current:"TRENUTNO"}
+  en:{kicker:"WHAT'S NEW",show:"View update history",hide:"Hide update history",current:"CURRENT",try:"Try"},
+  es:{kicker:"NOVEDADES",show:"Ver historial de novedades",hide:"Ocultar historial de novedades",current:"ACTUAL",try:"Probar"},
+  sr:{kicker:"NOVO",show:"Prikaži istoriju novosti",hide:"Sakrij istoriju novosti",current:"TRENUTNO",try:"Probaj"}
  }[wnLang()];
 }
 function timelineMarkup(){
@@ -268,7 +268,7 @@ function upgradeWhatsNewCard(){
  card.removeAttribute("aria-label");
  const c=wnCopy(),first=RELEASES[wnLang()][0];
  card.innerHTML=`<div class="pm-whats-history-card-top"><span>${c.kicker}</span></div>
-  <div class="pm-whats-title-row"><b>${first[0]}</b><h3>${first[1]}</h3></div>
+  <div class="pm-whats-title-row"><b>${first[0]}</b><h3>${first[1]}</h3><button type="button" class="pm-whats-try">${c.try}</button></div>
   <p>${first[2][0]}</p>
   <button type="button" class="pm-whats-expand" aria-expanded="false">
    <span>${c.show}</span><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 7.5 5 5 5-5"></path></svg>
@@ -276,6 +276,7 @@ function upgradeWhatsNewCard(){
   <div class="pm-whats-inline-history" hidden>${timelineMarkup()}</div>`;
  const toggle=card.querySelector(".pm-whats-expand");
  const history=card.querySelector(".pm-whats-inline-history");
+ card.querySelector(".pm-whats-try")?.addEventListener("click",()=>window.dispatchEvent(new CustomEvent("pm:create-chain")));
  toggle.addEventListener("click",()=>{
   const open=toggle.getAttribute("aria-expanded")!=="true";
   toggle.setAttribute("aria-expanded",String(open));
