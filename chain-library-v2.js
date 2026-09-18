@@ -1,0 +1,110 @@
+/* Prompt Manager V2.0.11 — complete Chain Library UX layer */
+(()=>{"use strict";
+const $=id=>document.getElementById(id);
+const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
+const ICON_SHARE=`<svg viewBox="0 0 24 24"><path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M6 12v7h12v-7"/></svg>`;
+let type="all",busy=false;
+const completed=new Map();
+const platformURLs={chatgpt:"https://chatgpt.com/",claude:"https://claude.ai/",gemini:"https://gemini.google.com/",grok:"https://grok.com/",midjourney:"https://www.midjourney.com/"};
+
+function injectCSS(){if(document.querySelector('link[data-chain-library-v2]'))return;const l=document.createElement("link");l.rel="stylesheet";l.href="./chain-library-v2.css";l.dataset.chainLibraryV2="1";document.head.appendChild(l)}
+function toast2(s){try{toast(s)}catch{const e=$("toast");if(e){e.textContent=s;e.classList.add("show");setTimeout(()=>e.classList.remove("show"),1800)}}}
+function ensureType(){
+ const row=$("categoryFilters");if(!row)return;
+ let b=$("pmTypeFilter");if(!b){b=document.createElement("button");b.id="pmTypeFilter";b.type="button";b.className="pm-type-filter";row.prepend(b)}
+ if(row.firstElementChild!==b)row.prepend(b);
+ b.textContent=(type==="chains"?"Chains":type==="prompts"?"Prompts":"Type")+" ▾";b.classList.toggle("selected",type!=="all");
+}
+function typeDialog(){
+ let d=$("pmTypeDialog");if(d)return d;
+ d=document.createElement("dialog");d.id="pmTypeDialog";d.className="sheet pm-type-dialog";
+ d.innerHTML=`<div class="sheethead"><div><small>FILTER</small><h3>Type</h3></div><button class="x" type="button" data-type-close>×</button></div><div class="theme-options"><button data-type="all"><span>All</span><b></b></button><button data-type="prompts"><span>Prompts</span><b></b></button><button data-type="chains"><span>Chains</span><b></b></button></div>`;
+ document.body.appendChild(d);return d;
+}
+function applyType(){
+ ensureType();const list=$("list");if(!list)return;
+ [...list.children].forEach(el=>{if(!el.classList.contains("card"))return;const chain=el.classList.contains("pm-chain-card");el.hidden=(type==="chains"&&!chain)||(type==="prompts"&&chain)});
+ const count=$("count");if(count)count.textContent=String([...list.children].filter(el=>el.classList.contains("card")&&!el.hidden).length);
+ const nr=$("noresults");if(nr&&type==="chains")nr.hidden=[...list.querySelectorAll(".pm-chain-card")].some(x=>!x.hidden);
+ decorateCards();
+}
+function decorateCards(){
+ document.querySelectorAll(".pm-chain-card").forEach(card=>{
+  const id=card.dataset.chainId;if(!id)return;
+  card.classList.add("pm-chain-polished");
+  const top=card.querySelector(".cardtop");if(top&&!top.querySelector("[data-chain-share-top]")){
+   const actions=document.createElement("div");actions.className="pm-chain-top-actions";
+   actions.innerHTML=`<button type="button" data-chain-share-top="${esc(id)}" aria-label="Share">${ICON_SHARE}</button>`;
+   const more=top.querySelector("[data-chain-menu]");if(more){more.classList.add("pm-chain-more");actions.appendChild(more)}
+   top.appendChild(actions);
+  }
+  const menu=card.querySelector(".pm-chain-menu");
+  if(menu&&!menu.dataset.upgraded){menu.dataset.upgraded="1";menu.innerHTML=`<button data-chain-edit="${esc(id)}">Edit chain</button><button data-chain-duplicate="${esc(id)}">Duplicate chain</button><button class="danger" data-chain-delete-v2="${esc(id)}">Delete chain</button>`}
+  card.querySelectorAll("[data-chain-copy]").forEach(b=>b.addEventListener("click",()=>markComplete(id,Number(b.dataset.chainCopy.split(":")[1])),{once:false}));
+ });
+}
+function markComplete(id,index){let s=completed.get(id)||new Set();s.add(index);completed.set(id,s);const card=document.querySelector(`.pm-chain-card[data-chain-id="${CSS.escape(id)}"]`);if(!card)return;card.querySelectorAll(".pm-chain-node").forEach((n,i)=>n.classList.toggle("is-complete",s.has(i)));card.style.setProperty("--pm-chain-progress",`${Math.max(...s)+1}/${card.querySelectorAll(".pm-chain-node").length}`)}
+async function getChain(id){
+ const {data,error}=await supabaseClient.from("prompt_chains").select("*, prompt_chain_steps(*)").eq("id",id).single();if(error)throw error;
+ data.steps=(data.prompt_chain_steps||[]).sort((a,b)=>a.position-b.position);return data;
+}
+function detailDialog(){let d=$("pmChainDetail");if(d)return d;d=document.createElement("dialog");d.id="pmChainDetail";d.className="pm-chain-detail";document.body.appendChild(d);return d}
+function stars(c){let r=Number(c.rating)||0;return [1,2,3,4,5].map(n=>`<button data-chain-rate="${n}" class="${n<=r?"on":""}">★</button>`).join("")}
+async function openDetail(id){
+ const d=detailDialog();d.innerHTML=`<div class="pm-chain-detail-loading">Loading chain…</div>`;d.showModal();
+ try{const c=await getChain(id),steps=c.steps||[];d.dataset.chainId=id;d.innerHTML=`<div class="pm-chain-detail-sheet">
+ <header class="pm-chain-detail-head"><button data-detail-close>←</button><div class="pm-chain-detail-actions"><button data-chain-share-top="${esc(id)}" aria-label="Share">${ICON_SHARE}</button><button data-detail-menu="${esc(id)}">•••</button></div></header>
+ <div class="badges"><span class="pm-chain-badge">CHAIN</span><span class="categorybadge">${esc(typeof catName==="function"?catName(c.category_id):c.category_id)}</span></div>
+ <h2>${esc(c.title)}</h2>${c.description?`<p class="pm-chain-detail-desc">${esc(c.description)}</p>`:""}
+ <div class="pm-chain-detail-meta"><span>${esc(typeof platformName==="function"?platformName(c.platform):c.platform)}</span>${c.model?`<span>${esc(c.model)}</span>`:""}<span>${steps.length} steps</span></div>
+ <div class="pm-chain-detail-steps">${steps.map((s,i)=>`<section class="pm-chain-detail-step" data-detail-step="${i}"><span class="pm-chain-detail-node">${String(i+1).padStart(2,"0")}</span><div><small>PROMPT ${i+1}</small><strong>${esc(s.title||`Prompt ${i+1}`)}</strong><p>${esc(s.content)}</p><button data-detail-copy="${i}">Copy prompt</button></div></section>`).join("")}</div>
+ <button class="full primary pm-chain-use" data-chain-use="${esc(id)}">${c.platform&&c.platform!=="general"&&platformURLs[c.platform]?`Use with ${esc(typeof platformName==="function"?platformName(c.platform):c.platform)} ↗`:"Copy first prompt"}</button>
+ <footer class="pm-chain-detail-footer"><span>Used ${Number(c.use_count)||0} times</span><div class="rating-stars">${stars(c)}</div></footer>
+ <div class="menu pm-chain-detail-menu" hidden><button data-chain-edit="${esc(id)}">Edit chain</button><button data-chain-duplicate="${esc(id)}">Duplicate chain</button><button class="danger" data-chain-delete-v2="${esc(id)}">Delete chain</button></div>
+ </div>`}catch(e){d.innerHTML=`<div class="pm-chain-detail-loading">Could not load chain.<br>${esc(e.message||e)}</div>`}
+}
+async function shareChain(id){try{const c=await getChain(id),text=[c.title,c.description,...c.steps.map((s,i)=>`${i+1}. ${s.title?`${s.title}\n`:""}${s.content}`)].filter(Boolean).join("\n\n");if(navigator.share)await navigator.share({title:c.title,text});else{await navigator.clipboard.writeText(text);toast2("Chain copied for sharing")}}catch(e){if(e?.name!=="AbortError")toast2("Share unavailable")}}
+function editorDialog(){let d=$("pmChainEditV2");if(d)return d;d=document.createElement("dialog");d.id="pmChainEditV2";d.className="pm-chain-edit-v2";document.body.appendChild(d);return d}
+async function editChain(id){
+ const c=await getChain(id),d=editorDialog();d.dataset.chainId=id;d.innerHTML=`<form><div class="sheethead"><div><small>CHAIN</small><h3>Edit chain</h3></div><button type="button" class="round" data-edit-close>×</button></div>
+ <label>Title<input data-edit-title maxlength="100" value="${esc(c.title)}"></label><label>Description<textarea data-edit-description maxlength="300">${esc(c.description||"")}</textarea></label>
+ <div class="pm-chain-edit-steps">${c.steps.map((s,i)=>editStep(s,i)).join("")}</div>
+ <button type="button" data-edit-add>＋ Add prompt</button><button type="submit" class="full primary">Save changes</button></form>`;d.showModal()
+}
+function editStep(s={},i=0){return `<section class="pm-chain-edit-step"><div><b>${String(i+1).padStart(2,"0")}</b><button type="button" data-edit-remove>×</button></div><label>Prompt title<input data-edit-step-title value="${esc(s.title||"")}"></label><label>Prompt<textarea data-edit-step-content required>${esc(s.content||"")}</textarea></label></section>`}
+async function saveEdit(d){if(busy)return;const sections=[...d.querySelectorAll(".pm-chain-edit-step")],id=d.dataset.chainId;if(sections.length<2){toast2("A chain needs at least 2 prompts");return}busy=true;try{
+ const c=await getChain(id),payload={title:d.querySelector("[data-edit-title]").value.trim(),description:d.querySelector("[data-edit-description]").value.trim(),updated_at:new Date().toISOString()};
+ let r=await supabaseClient.from("prompt_chains").update(payload).eq("id",id);if(r.error)throw r.error;
+ r=await supabaseClient.from("prompt_chain_steps").delete().eq("chain_id",id);if(r.error)throw r.error;
+ const rows=sections.map((s,i)=>({chain_id:id,user_id:c.user_id,position:i+1,title:s.querySelector("[data-edit-step-title]").value.trim(),content:s.querySelector("[data-edit-step-content]").value.trim()}));
+ r=await supabaseClient.from("prompt_chain_steps").insert(rows);if(r.error)throw r.error;d.close();$("pmChainDetail")?.close();toast2("Chain updated");location.reload()
+ }catch(e){toast2(`Update failed: ${e.message||e}`)}finally{busy=false}}
+async function duplicateChain(id){try{const c=await getChain(id),{data,error}=await supabaseClient.from("prompt_chains").insert({user_id:c.user_id,title:`${c.title} — Copy`,description:c.description,category_id:c.category_id,platform:c.platform,model:c.model,rating:null,use_count:0}).select().single();if(error)throw error;const rows=c.steps.map((s,i)=>({chain_id:data.id,user_id:c.user_id,position:i+1,title:s.title,content:s.content,prompt_id:s.prompt_id||null}));const x=await supabaseClient.from("prompt_chain_steps").insert(rows);if(x.error){await supabaseClient.from("prompt_chains").delete().eq("id",data.id);throw x.error}toast2("Chain duplicated");location.reload()}catch(e){toast2(`Duplicate failed: ${e.message||e}`)}}
+async function deleteV2(id){if(!confirm("Delete this chain?"))return;const {error}=await supabaseClient.from("prompt_chains").delete().eq("id",id);if(error){toast2(error.message);return}$("pmChainDetail")?.close();toast2("Chain deleted");location.reload()}
+async function rate(id,n){const c=await getChain(id),value=Number(c.rating)===n?null:n,{error}=await supabaseClient.from("prompt_chains").update({rating:value,updated_at:new Date().toISOString()}).eq("id",id);if(error)return toast2(error.message);await openDetailRefresh(id)}
+async function openDetailRefresh(id){const d=$("pmChainDetail");if(d?.open)d.close();await openDetail(id)}
+async function useChain(id){const c=await getChain(id),first=c.steps[0];if(!first)return;await navigator.clipboard.writeText(first.content);await supabaseClient.from("prompt_chains").update({use_count:(Number(c.use_count)||0)+1,updated_at:new Date().toISOString()}).eq("id",id);toast2("First prompt copied");if(platformURLs[c.platform])setTimeout(()=>location.href=platformURLs[c.platform],120);else openDetailRefresh(id)}
+function events(){
+ document.addEventListener("click",async e=>{
+  const tb=e.target.closest("#pmTypeFilter");if(tb){e.preventDefault();e.stopPropagation();const d=typeDialog();d.querySelectorAll("[data-type]").forEach(x=>x.querySelector("b").textContent=x.dataset.type===type?"✓":"");d.showModal();return}
+  if(e.target.closest("[data-type-close]"))return $("pmTypeDialog")?.close();
+  const to=e.target.closest("[data-type]");if(to){type=to.dataset.type;$("pmTypeDialog")?.close();applyType();return}
+  const sh=e.target.closest("[data-chain-share-top]");if(sh){e.stopPropagation();return shareChain(sh.dataset.chainShareTop)}
+  const edit=e.target.closest("[data-chain-edit]");if(edit){e.stopPropagation();return editChain(edit.dataset.chainEdit)}
+  const dup=e.target.closest("[data-chain-duplicate]");if(dup){e.stopPropagation();return duplicateChain(dup.dataset.chainDuplicate)}
+  const del=e.target.closest("[data-chain-delete-v2]");if(del){e.stopPropagation();return deleteV2(del.dataset.chainDeleteV2)}
+  if(e.target.closest("[data-detail-close]"))return $("pmChainDetail")?.close();
+  const dm=e.target.closest("[data-detail-menu]");if(dm){const m=$("pmChainDetail")?.querySelector(".pm-chain-detail-menu");if(m)m.hidden=!m.hidden;return}
+  const dc=e.target.closest("[data-detail-copy]");if(dc){const id=$("pmChainDetail")?.dataset.chainId,c=await getChain(id),i=Number(dc.dataset.detailCopy);await navigator.clipboard.writeText(c.steps[i].content);markComplete(id,i);dc.closest(".pm-chain-detail-step")?.classList.add("is-complete");toast2("Prompt copied");return}
+  const rt=e.target.closest("[data-chain-rate]");if(rt)return rate($("pmChainDetail").dataset.chainId,Number(rt.dataset.chainRate));
+  const use=e.target.closest("[data-chain-use]");if(use)return useChain(use.dataset.chainUse);
+  if(e.target.closest("[data-edit-close]"))return $("pmChainEditV2")?.close();
+  if(e.target.closest("[data-edit-add]")){const wrap=$("pmChainEditV2").querySelector(".pm-chain-edit-steps"),i=wrap.children.length;wrap.insertAdjacentHTML("beforeend",editStep({},i));return}
+  if(e.target.closest("[data-edit-remove]")){const s=e.target.closest(".pm-chain-edit-step"),wrap=s.parentElement;if(wrap.children.length<=2)return toast2("A chain needs at least 2 prompts");s.remove();return}
+  const card=e.target.closest(".pm-chain-card");if(card&&!e.target.closest("button,.menu"))openDetail(card.dataset.chainId);
+ },true);
+ document.addEventListener("submit",e=>{if(e.target.closest("#pmChainEditV2")){e.preventDefault();saveEdit($("pmChainEditV2"))}},true);
+}
+function start(){injectCSS();ensureType();events();const list=$("list");if(list)new MutationObserver(()=>requestAnimationFrame(applyType)).observe(list,{childList:true,subtree:true});new MutationObserver(()=>ensureType()).observe($("categoryFilters")||document.body,{childList:true});setTimeout(applyType,250)}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",start,{once:true});else start();
+})();

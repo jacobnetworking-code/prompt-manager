@@ -20,5 +20,5 @@ function render({preserve=true}={}){const select=ensureSelect(),platform=q("plat
 function init(){const platform=q("platform"),dialog=q("dialog"),select=ensureSelect();if(!platform||!dialog||!select)return;render({preserve:false});platform.addEventListener("change",()=>render({preserve:false}));select.addEventListener("change",()=>{const owner=platformForModel(select.value);if(platform.value==="general"&&owner){platform.value=owner;render({preserve:true})}});new MutationObserver(()=>{if(dialog.open)queueMicrotask(()=>render({preserve:true}))}).observe(dialog,{attributes:true,attributeFilter:["open"]})}
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});else init();
 })();
-/* V1.8.1 loader: classic script preserves access to the existing global app state. */
-(()=>{const s=document.createElement("script");s.src="./catalog-consistency.js";s.async=false;document.head.appendChild(s)})();
+/* Runtime compatibility modules. Classic scripts preserve access to the app's global lexical state. */
+(()=>{for(const src of ["./catalog-consistency.js","./chain-library-v2.js"]){const s=document.createElement("script");s.src=src;s.async=false;document.head.appendChild(s)}})();

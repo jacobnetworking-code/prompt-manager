@@ -1,0 +1,24 @@
+/* Prompt Manager V2.0.11 — Chain Library completion */
+.pm-type-filter{flex:0 0 auto!important;border-color:rgba(212,174,99,.45)!important;color:var(--text)!important}
+.pm-type-filter.selected{background:var(--surface2)!important;color:var(--gold)!important;border-color:rgba(212,174,99,.62)!important}
+.pm-type-dialog{width:min(520px,calc(100vw - 28px))}
+.pm-chain-polished .cardtop{align-items:flex-start}.pm-chain-polished .cardtop>div:first-child{min-width:0}
+.pm-chain-top-actions,.pm-chain-detail-actions{display:flex;gap:7px;align-items:center;margin-left:auto}
+.pm-chain-top-actions>button,.pm-chain-detail-actions>button,.pm-chain-detail-head>button{width:36px;height:36px;display:grid;place-items:center;border:1px solid var(--border);border-radius:11px;background:var(--surface2);color:var(--text);font-size:16px;font-weight:800}
+.pm-chain-top-actions svg,.pm-chain-detail-actions svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.pm-chain-polished .pm-chain-more{font-size:17px;letter-spacing:1px}.pm-chain-polished>.pm-chain-rail{bottom:auto;height:calc(100% - 36px)}
+.pm-chain-polished .pm-chain-rest:before{display:none}.pm-chain-polished .pm-chain-line{bottom:0}
+.pm-chain-node.is-complete,.pm-chain-detail-step.is-complete .pm-chain-detail-node{background:var(--gold)!important;border-color:var(--gold)!important;color:#111!important}
+.pm-chain-menu{min-width:170px}.pm-chain-menu button{width:100%;text-align:left}
+.pm-chain-detail,.pm-chain-edit-v2{width:100%;max-width:720px;margin:auto auto 0;padding:0;border:0;background:transparent;color:var(--text)}
+.pm-chain-detail::backdrop,.pm-chain-edit-v2::backdrop{background:rgba(0,0,0,.52);backdrop-filter:blur(2px)}
+.pm-chain-detail-sheet,.pm-chain-edit-v2>form{box-sizing:border-box;width:100%;max-height:94dvh;overflow:auto;padding:20px 18px max(26px,env(safe-area-inset-bottom));border-radius:25px 25px 0 0;background:var(--bg)}
+.pm-chain-detail-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}.pm-chain-detail h2{margin:10px 0 5px;font-size:28px;line-height:1.08}.pm-chain-detail-desc{margin:0 0 12px;color:var(--muted);line-height:1.5}
+.pm-chain-detail-meta{display:flex;gap:7px;flex-wrap:wrap;margin:12px 0 20px;color:var(--muted);font-size:11px}.pm-chain-detail-meta span:not(:last-child):after{content:" ·";margin-left:7px}
+.pm-chain-detail-steps{position:relative;display:grid;gap:12px;margin:0 0 20px;padding-left:42px}.pm-chain-detail-steps:before{content:"";position:absolute;left:14px;top:15px;bottom:15px;width:1px;background:var(--border)}
+.pm-chain-detail-step{position:relative;padding:14px;border:1px solid var(--border);border-radius:15px;background:var(--surface2)}.pm-chain-detail-node{position:absolute;left:-43px;top:18px;width:30px;height:30px;display:grid;place-items:center;border:1px solid var(--border);border-radius:50%;background:var(--surface2);font-size:10px;font-weight:850;color:var(--muted)}
+.pm-chain-detail-step small{color:var(--muted);font-size:9px;font-weight:800;letter-spacing:.08em}.pm-chain-detail-step strong{display:block;margin:4px 0 6px}.pm-chain-detail-step p{white-space:pre-wrap;color:var(--muted);font-size:12px;line-height:1.5}.pm-chain-detail-step button{border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);padding:8px 10px;font-weight:700}
+.pm-chain-detail-footer{display:flex;align-items:center;justify-content:space-between;margin-top:16px;color:var(--muted);font-size:11px}.pm-chain-detail-footer .rating-stars{display:flex;gap:2px}.pm-chain-detail-footer .rating-stars button{border:0;background:transparent;color:var(--border);font-size:18px;padding:2px}.pm-chain-detail-footer .rating-stars button.on{color:var(--gold)}
+.pm-chain-detail-menu{right:18px;top:60px;z-index:4}.pm-chain-detail-loading{margin:auto auto 0;padding:30px 20px;background:var(--bg);border-radius:24px 24px 0 0}
+.pm-chain-edit-v2>form{padding-top:23px}.pm-chain-edit-v2 textarea{min-height:84px}.pm-chain-edit-steps{display:grid;gap:10px;margin:16px 0}.pm-chain-edit-step{padding:13px;border:1px solid var(--border);border-radius:15px;background:var(--surface2)}.pm-chain-edit-step>div:first-child{display:flex;justify-content:space-between;align-items:center}.pm-chain-edit-step>div:first-child b{color:var(--gold)}.pm-chain-edit-step [data-edit-remove]{border:0;background:transparent;color:var(--muted);font-size:20px}.pm-chain-edit-v2 [data-edit-add]{width:100%;min-height:42px;margin-bottom:12px;border:1px solid var(--border);border-radius:12px;background:var(--surface2);color:var(--text);font-weight:750}
+@media(max-width:700px){.pm-chain-detail h2{font-size:24px}.pm-chain-top-actions>button{width:34px;height:34px}.pm-chain-detail-steps{padding-left:38px}.pm-chain-detail-node{left:-39px}}
