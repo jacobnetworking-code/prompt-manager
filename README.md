@@ -1,69 +1,30 @@
 # Prompt Manager
 
-Prompt Manager is a personal workspace for discovering, collecting, organizing, filtering, personalizing, and using high-quality AI prompts.
+Prompt Manager is a personal workspace for discovering, collecting, organizing, personalizing, and using high-quality AI prompts.
 
-**Current Alpha:** M1.8
+**Current Alpha:** V2.0
 
 ## Product direction
 
-Prompt Manager is being built around a simple long-term pipeline:
-
 **Discover → Extract → Understand → Structure → Rank → Personalize → Save → Improve → Use**
 
-The product is not intended to be just another prompt database. The goal is to become a personalized system for finding the right AI prompt and making it immediately useful.
+The goal is not to become another static prompt database. Prompt Manager is being built as a personalized system for finding the right prompt and making it immediately useful.
 
-## Current Alpha
+## Current product
 
-The current PWA includes:
+The PWA currently includes:
 
-- Home, Explore, and Library.
+- Home, Explore, Featured, and Library.
 - Personal prompt Library backed by Supabase with local IndexedDB caching.
-- Add and edit prompts.
-- Categories.
-- Platform and model metadata.
-- Platform/model filtering.
-- Origin filters for Added, Saved, and Imported prompts.
-- Bulk CSV/JSON prompt import.
-- Duplicate detection during import.
-- Prompt ratings.
-- Public prompt sharing.
-- Featured/Explore prompt catalog.
-- Multi-source curated catalog expansion with quality filtering and deduplication.
-- Library cards show model labels whenever model metadata is available.
-- What's New is release-versioned and only surfaces relevant user-facing changes.
+- Add, save, search, filter, rate, share, import, and use prompts.
+- Categories plus canonical platform/model metadata.
+- Prompt Chains: first-class Library objects containing ordered prompts.
+- Chains can mix prompts written directly in the Chain with snapshots of prompts already saved in the Library.
 - English, Spanish, and Serbian interface support.
 - Google OAuth and email magic-link authentication.
 - Offline-aware PWA behavior.
-- MCP integration for external AI clients.
+- MCP integration for compatible external AI clients.
 - Responsive mobile and desktop experiences.
-
-### Catalog expansion
-
-M1.8 introduces a reproducible multi-source catalog builder instead of padding Explore with generated prompts.
-
-The builder:
-
-- acquires candidates from multiple permissively licensed upstream prompt sources;
-- keeps source and license provenance per imported prompt;
-- rejects obvious jailbreak, unsafe/high-risk, novelty, malformed, and low-quality candidates;
-- normalizes prompts into Prompt Manager's existing categories;
-- deduplicates against the existing catalog and near-duplicates within the candidate set;
-- balances useful categories rather than allowing one source or topic to dominate;
-- targets 850 catalog prompts and fails rather than padding the catalog if fewer than 750 pass the quality gate.
-
-The catalog remains a local Prompt Manager asset. External prompt services are acquisition sources, not runtime dependencies.
-
-Featured remains editorially curated and is not populated automatically by this pipeline.
-
-### Library controls
-
-Library currently provides:
-
-- Persistent **Filters expanded/collapsed** UI state.
-- Filter controls for origin, category, platform, and model.
-- A dedicated **Quick Search** control.
-- Quick Search is transient: it opens an independent Library search field, invokes the keyboard immediately on iOS, filters Library prompts live while typing, and clears when dismissed or when leaving the Library/app session.
-- Search text and selected filter values are not persisted between app sessions.
 
 ## Architecture
 
@@ -77,37 +38,23 @@ IndexedDB local cache
 Supabase source of truth
 ```
 
-The application currently uses a lightweight web stack rather than a framework migration. Stable runtime filenames are used; release history belongs in Git rather than versioned asset filenames.
+Prompt Manager deliberately remains on a lightweight web stack for the Alpha. Stable runtime filenames are used; Git history is the release history.
 
-### Backend
+### Data model
 
-Supabase provides authentication, database storage, Row Level Security, Edge Functions, and the MCP endpoint.
+A standalone prompt remains an atomic Library object.
 
-User data must remain owner-isolated. Secrets and privileged credentials must never be exposed client-side.
+A Prompt Chain is a separate first-class object stored in `prompt_chains`. Its ordered prompts are stored in `prompt_chain_steps`. A step may reference an existing Library prompt while retaining snapshot content, so deleting the standalone prompt does not destroy the Chain.
+
+Supabase Row Level Security must keep all user-owned data isolated. Secrets and privileged credentials must never be exposed client-side.
 
 ### Search
 
-The current Alpha uses deterministic Library filtering/search. The longer-term search architecture is expected to combine PostgreSQL full-text search, metadata/filters, semantic search with pgvector, quality signals, and personalization.
-
-## Prompt model
-
-A prompt is the atomic unit.
-
-Prompt chains should be represented as independent prompts linked by a chain identifier and order rather than as one monolithic prompt.
-
-Model metadata supports:
-
-- unspecified model
-- explicit `multimodel`
-- one or more specific models
-
-Platform and model are separate metadata dimensions.
+The current Alpha uses deterministic Library search, metadata, and filters. The longer-term direction can combine PostgreSQL full-text search, metadata, semantic search, quality signals, and personalization once the core behavior is validated.
 
 ## Ingestion
 
-Prompt Manager should not depend on unrestricted X scraping.
-
-The intended architecture is:
+Prompt Manager must not depend on unrestricted X scraping. X is an acquisition source, not the architecture.
 
 ```text
 Source
@@ -120,37 +67,28 @@ Extraction / Classification
   ↓
 Normalization + Deduplication
   ↓
-Prompt Graph / Catalog
+Prompt Catalog
 ```
 
-X is one possible acquisition adapter, not the architecture itself.
-
-User imports remain private by default. Importing a prompt does not publish it.
+User imports remain private by default.
 
 ## MCP
 
-Prompt Manager exposes an OAuth-protected MCP integration intended to let compatible AI clients work with a user's prompt library.
-
-Current tool surface includes prompt listing, search, retrieval, creation, update, deletion, and rating.
+Prompt Manager exposes an OAuth-protected MCP integration so compatible AI clients can work with a user's prompt library.
 
 ## MVP principles
 
 - Fast, intelligent, personalized, simple.
 - Prompt quality matters more than popularity.
-- AI should be used where it materially improves extraction, classification, metadata, ranking, personalization, or prompt improvement.
-- Deterministic code is preferred when it is cheaper and more reliable.
-- Avoid building a full social network, marketplace, payments, or heavy community functionality before validating the core product.
-- External content is untrusted and must be treated as a potential prompt-injection/security boundary.
-- Avoid platform dependencies that create unacceptable cost, policy, or reliability risk.
+- Prefer deterministic code when it is cheaper and more reliable than AI.
+- Treat external content as untrusted.
+- Avoid unnecessary platform dependencies and premature social/community complexity.
+- Protect user data and account isolation before adding growth features.
 
 ## Current validation goal
 
-The Alpha should validate whether users repeatedly discover/save prompts they actually use.
-
-A key behavioral signal is **prompts actually used per week**, rather than simply the number of prompts stored.
+Validate whether users repeatedly discover, save, and actually use prompts. A key behavioral signal is **prompts used per week**, not simply prompts stored.
 
 ## Repository documentation
 
-`README.md` is the canonical living project README.
-
-Release history is maintained through Git commits. Do not add version-specific `README-M*.md` files for future releases.
+`README.md` is the canonical living project README. Do not create version-specific README files. Release history belongs in Git.

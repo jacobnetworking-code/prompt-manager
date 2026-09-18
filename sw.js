@@ -1,4 +1,4 @@
-const CACHE="pm-runtime-v204-chains";
+const CACHE="pm-runtime-v210-stability";
 const CORE=["./","./index.html","./styles.css","./ui-refine.css","./desktop-v1.css","./desktop-v1.js","./app.js","./model-registry.js","./model-support.js","./sync-stabilizer.js","./ui-refine.js","./product-ui.css","./product-ui.js","./library-controls.js","./chain-v2.css","./chain-v2.js","./manifest.webmanifest","./apple-touch-icon.png","./icon-192.png","./icon-512.png","./catalog.json","./prompt/","./prompt/share.css","./prompt/share-m1.6.6.18.css","./prompt/share.js"];
 
 self.addEventListener("install",event=>{event.waitUntil(caches.open(CACHE).then(cache=>Promise.allSettled(CORE.map(url=>cache.add(url)))).then(()=>self.skipWaiting()));});
