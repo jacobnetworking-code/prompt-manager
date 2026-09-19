@@ -184,5 +184,10 @@ async function syncNow(reason="online"){
 window.addEventListener("online",()=>setTimeout(()=>syncNow("reconnected"),700));
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&navigator.onLine)setTimeout(()=>syncNow("resume"),250)});
 document.addEventListener("pm:auth-verified",()=>setTimeout(()=>syncNow("auth"),100));
+function loadDiagnosticsAssets(){
+ if(!document.querySelector('link[data-pm-sync-diag]')){const l=document.createElement("link");l.rel="stylesheet";l.href="./sync-diagnostics.css";l.dataset.pmSyncDiag="1";document.head.appendChild(l)}
+ if(!document.querySelector('script[data-pm-sync-diag]')){const s=document.createElement("script");s.src="./sync-diagnostics.js";s.defer=true;s.dataset.pmSyncDiag="1";document.head.appendChild(s)}
+}
+loadDiagnosticsAssets();
 window.pmDataIntegrity={pendingCount,syncNow,owner};
 })();

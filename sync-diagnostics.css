@@ -1,0 +1,8 @@
+/* Prompt Manager V2.0.30 — temporary sync trace + connectivity placement */
+.pm-sync-diag{margin:14px 0;padding:12px;border:1px solid var(--border);border-radius:14px;background:var(--surface2)}
+.pm-sync-diag>strong{display:block;margin-bottom:8px;font-size:12px}
+.pm-sync-diag pre{max-height:260px;overflow:auto;white-space:pre-wrap;word-break:break-word;font-size:10px;line-height:1.45;color:var(--muted);margin:0 0 10px}
+.pm-sync-diag>div{display:flex;gap:6px;flex-wrap:wrap}.pm-sync-diag button{min-height:34px;border:1px solid var(--border);border-radius:9px;background:var(--surface);color:var(--text);padding:0 9px;font-size:10px}
+@media(max-width:700px){
+ html[data-pm-offline="true"] #pmConnectivity{top:calc(env(safe-area-inset-top) + 74px)!important}
+}
