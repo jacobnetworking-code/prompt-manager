@@ -1,4 +1,4 @@
-/* Prompt Manager V2.0.30 — temporary offline sync diagnostics */
+/* Prompt Manager V2.0.33 — separated storage + offline sync diagnostics */
 (()=>{"use strict";
 function add(){
  const body=document.getElementById("diagnosticsBody");
@@ -15,7 +15,10 @@ function add(){
  }
  const box=document.createElement("section");box.id="pmSyncDiag";box.className="pm-diagnostics-card pm-sync-diag";
  box.innerHTML='<strong>Offline Sync Trace</strong><pre id="pmSyncDiagText">No trace yet.</pre><div><button type="button" id="pmSyncDiagRefresh">Refresh trace</button><button type="button" id="pmSyncDiagCopy">Copy trace</button><button type="button" id="pmSyncDiagClear">Clear trace</button></div>';
- body.insertAdjacentElement("afterend",box);
+ const storage=document.getElementById("pmStorageDiagCard");
+ if(storage?.parentNode)storage.insertAdjacentElement("afterend",box);
+ else if(dialog)dialog.appendChild(box);
+ else body.insertAdjacentElement("afterend",box);
  const render=async()=>{const api=window.pmDataIntegrity,events=api?.diagnostics?.()||[],pending=await api?.pendingCount?.();document.getElementById("pmSyncDiagText").textContent=JSON.stringify({online:navigator.onLine,pending,events},null,2)};
  document.getElementById("pmSyncDiagRefresh").onclick=render;
  document.getElementById("pmSyncDiagCopy").onclick=async()=>{
