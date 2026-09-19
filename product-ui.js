@@ -358,174 +358,24 @@ document.addEventListener("change",e=>{
 
 /* ===== M1.6.6.24 ===== */
 (()=>{"use strict";
-/* Prompt Manager M1.6.6.24
-   Offline UX + reconnect session revalidation.
-   Offline access is never granted by this file: app.js remains authoritative.
-   A user can reach the local app offline only when Supabase restores a persisted session. */
-
-const COPY={
-  en:{
-    offline:"Offline · Local library",
-    back:"Back online · Syncing…",
-    online:"Back online",
-    share:"Share requires internet",
-    signin:"Sign in requires internet",
-    expired:"Session expired · Sign in again"
-  },
-  es:{
-    offline:"Sin internet · Biblioteca local",
-    back:"Conexión recuperada · Sincronizando…",
-    online:"Conexión recuperada",
-    share:"Compartir requiere internet",
-    signin:"Iniciar sesión requiere internet",
-    expired:"Sesión caducada · Inicia sesión de nuevo"
-  },
-  sr:{
-    offline:"Bez interneta · Lokalna biblioteka",
-    back:"Internet je ponovo dostupan · Sinhronizacija…",
-    online:"Internet je ponovo dostupan",
-    share:"Deljenje zahteva internet",
-    signin:"Prijava zahteva internet",
-    expired:"Sesija je istekla · Prijavi se ponovo"
-  }
-};
-
-function language(){
-  const raw=(localStorage.getItem("pm-language")||document.documentElement.lang||"en").toLowerCase();
-  if(raw.startsWith("es"))return "es";
-  if(raw.startsWith("sr"))return "sr";
-  return "en";
-}
-const text=key=>COPY[language()][key]||COPY.en[key];
-
-let hideTimer=0;
-function indicator(){
-  let el=document.getElementById("pmConnectivity");
-  if(el)return el;
-  el=document.createElement("div");
-  el.id="pmConnectivity";
-  el.setAttribute("role","status");
-  el.setAttribute("aria-live","polite");
-  document.body.appendChild(el);
-  return el;
-}
-function showState(state,message,{persist=false,timeout=2600}={}){
-  const el=indicator();
-  clearTimeout(hideTimer);
-  el.dataset.state=state;
-  el.textContent=message;
-  el.dataset.visible="true";
-  if(!persist){
-    hideTimer=setTimeout(()=>{el.dataset.visible="false"},timeout);
-  }
-}
-function setOfflineUI(){
-  document.documentElement.dataset.pmOffline="true";
-  showState("offline",text("offline"),{persist:true});
-}
-function setOnlineUI(){
-  delete document.documentElement.dataset.pmOffline;
-  showState("online",text("back"),{persist:false,timeout:3000});
-}
-
-/* Existing app toast, when available. */
-function notify(message){
-  try{
-    if(typeof toast==="function"){toast(message);return}
-  }catch{}
-  showState(navigator.onLine?"online":"offline",message,{persist:false,timeout:2600});
-}
-
-/* Network-only actions fail clearly instead of throwing or appearing broken. */
-window.addEventListener("click",event=>{
-  if(navigator.onLine)return;
-  const share=event.target?.closest?.("[data-pm-explore-share],[data-pm-share],#pmUseShare");
-  if(share){
-    event.preventDefault();
-    event.stopImmediatePropagation();
-    notify(text("share"));
-    return;
-  }
-  const signIn=event.target?.closest?.("#googleSignIn,#emailSignIn");
-  if(signIn){
-    event.preventDefault();
-    event.stopImmediatePropagation();
-    notify(text("signin"));
-  }
-},true);
-
-async function invalidateLocalSession(){
-  try{
-    if(typeof supabaseClient!=="undefined" && supabaseClient?.auth){
-      await supabaseClient.auth.signOut({scope:"local"});
-    }
-  }catch(err){
-    console.warn("Local sign-out cleanup failed",err);
-  }
-  try{
-    if(typeof applyAuthSession==="function")applyAuthSession(null);
-  }catch{}
-}
-
-/* Revalidate the persisted offline session against Supabase before cloud sync. */
-async function revalidateAndSync(){
-  setOnlineUI();
-  try{
-    if(typeof supabaseClient==="undefined" || !supabaseClient?.auth)return;
-
-    const {data,error}=await supabaseClient.auth.getUser();
-    if(error || !data?.user){
-      await invalidateLocalSession();
-      notify(text("expired"));
-      return;
-    }
-
-    /* Refresh the app's authoritative auth state with the verified user/session. */
-    const {data:sessionData}=await supabaseClient.auth.getSession();
-    const session=sessionData?.session||null;
-    if(!session){
-      await invalidateLocalSession();
-      notify(text("expired"));
-      return;
-    }
-
-    if(typeof applyAuthSession==="function")applyAuthSession(session);
-    if(typeof authUser!=="undefined")authUser=session.user;
-
-    if(typeof syncCloudLibrary==="function"){
-      await syncCloudLibrary({silent:true});
-    }
-
-    showState("online",text("online"),{persist:false,timeout:1800});
-  }catch(err){
-    /* Connection may be nominally online while the network is still unreachable.
-       Do not destroy a locally persisted session on a transport failure. */
-    console.warn("Reconnect validation/sync deferred",err);
-    showState("offline",text("offline"),{persist:true});
-    document.documentElement.dataset.pmOffline="true";
-  }
-}
-
+/* Canonical connectivity presentation. Sync execution is owned by data-integrity.js. */
+const COPY={en:{offline:"Offline · Local library",back:"Back online · Syncing…",share:"Share requires internet",signin:"Sign in requires internet"},es:{offline:"Sin internet · Biblioteca local",back:"Conexión recuperada · Sincronizando…",share:"Compartir requiere internet",signin:"Iniciar sesión requiere internet"},sr:{offline:"Bez interneta · Lokalna biblioteka",back:"Internet je ponovo dostupan · Sinhronizacija…",share:"Deljenje zahteva internet",signin:"Prijava zahteva internet"}};
+function language(){const raw=(localStorage.getItem("pm-language")||document.documentElement.lang||"en").toLowerCase();return raw.startsWith("es")?"es":raw.startsWith("sr")?"sr":"en"}
+const text=key=>COPY[language()][key]||COPY.en[key];let hideTimer=0;
+function indicator(){let el=document.getElementById("pmConnectivity");if(el)return el;el=document.createElement("div");el.id="pmConnectivity";el.setAttribute("role","status");el.setAttribute("aria-live","polite");document.body.appendChild(el);return el}
+function showState(state,message,{persist=false,timeout=1800}={}){const el=indicator();clearTimeout(hideTimer);el.dataset.state=state;el.textContent=message;el.dataset.visible="true";if(!persist)hideTimer=setTimeout(()=>{el.dataset.visible="false"},timeout)}
+function setOfflineUI(){document.documentElement.dataset.pmOffline="true";showState("offline",text("offline"),{persist:true})}
+function setSyncingUI(){delete document.documentElement.dataset.pmOffline;showState("online",text("back"),{persist:true})}
+function hideConnectivity(){const el=document.getElementById("pmConnectivity");if(el)el.dataset.visible="false"}
+function notify(message){try{if(typeof toast==="function"){toast(message);return}}catch{}showState(navigator.onLine?"online":"offline",message,{persist:false})}
+window.addEventListener("click",event=>{if(navigator.onLine)return;const share=event.target?.closest?.("[data-pm-explore-share],[data-pm-share],#pmUseShare");if(share){event.preventDefault();event.stopImmediatePropagation();notify(text("share"));return}const signIn=event.target?.closest?.("#googleSignIn,#emailSignIn");if(signIn){event.preventDefault();event.stopImmediatePropagation();notify(text("signin"))}},true);
 window.addEventListener("offline",setOfflineUI);
-window.addEventListener("online",()=>{void revalidateAndSync()});
-
-if(navigator.onLine){
-  delete document.documentElement.dataset.pmOffline;
-}else{
-  setOfflineUI();
-}
-
-/* Keep the persistent offline label localized if the user changes language. */
-window.addEventListener("storage",()=>{
-  if(!navigator.onLine)setOfflineUI();
-});
-document.addEventListener("change",event=>{
-  if(event.target?.id==="pmLanguageSelect" && !navigator.onLine){
-    setTimeout(setOfflineUI,0);
-  }
-},true);
+window.addEventListener("online",setSyncingUI);
+document.addEventListener("pm:sync-status",event=>{if(!navigator.onLine)return setOfflineUI();const d=event.detail||{};if(d.ok&&Number(d.pending||0)===0)hideConnectivity();else setSyncingUI()});
+if(!navigator.onLine)setOfflineUI();
+window.addEventListener("storage",()=>{if(!navigator.onLine)setOfflineUI()});
+document.addEventListener("change",event=>{if(event.target?.id==="pmLanguageSelect"&&!navigator.onLine)setTimeout(setOfflineUI,0)},true);
 })();
-
 
 /* ===== M1.6.6.25 ===== */
 (()=>{"use strict";
@@ -1506,38 +1356,4 @@ setTimeout(()=>{syncOriginSelection();decorateFeaturedProvenance()},0);
 window.addEventListener("storage",()=>setTimeout(()=>{syncOriginSelection();decorateFeaturedProvenance()},0));
 })();
 
-/* ===== M1.7.10 — Auth loading experience ===== */
-(()=>{"use strict";
-const root=document.body,loader=document.getElementById("pmAuthLoading"),textEl=document.getElementById("pmAuthLoadingText"),retry=document.getElementById("pmAuthLoadingRetry"),gate=document.getElementById("authGate");
-if(!root||!loader||!gate)return;
-const GOOGLE_KEY="pm-google-oauth-pending";
-let revealTimer=null,timeoutTimer=null,settled=false,googleReturn=sessionStorage.getItem(GOOGLE_KEY)==="1";
-function language(){const x=(localStorage.getItem("pm-language")||document.documentElement.lang||"en").toLowerCase();return x.startsWith("es")?"es":x.startsWith("sr")?"sr":"en"}
-function copy(key){const t={en:{loading:"Loading your library",google:"Signing in with Google",slow:"Taking longer than expected",retry:"Retry"},es:{loading:"Cargando tu biblioteca",google:"Iniciando sesión con Google",slow:"Está tardando más de lo esperado",retry:"Reintentar"},sr:{loading:"Učitavanje biblioteke",google:"Prijavljivanje putem Google-a",slow:"Traje duže nego očekivano",retry:"Pokušaj ponovo"}};return t[language()][key]}
-function setMessage(key){if(textEl)textEl.textContent=copy(key);if(retry)retry.textContent=copy("retry")}
-function show(){if(settled)return;setMessage(googleReturn?"google":"loading");loader.hidden=false}
-function finish({showLogin=false}={}){settled=true;clearTimeout(revealTimer);clearTimeout(timeoutTimer);loader.hidden=true;root.classList.remove("pm-auth-pending");if(showLogin)gate.hidden=false;if(googleReturn)sessionStorage.removeItem(GOOGLE_KEY)}
-function armTimeout(){clearTimeout(timeoutTimer);timeoutTimer=setTimeout(()=>{if(settled)return;loader.hidden=false;setMessage("slow");retry.hidden=false},12000)}
-document.addEventListener("click",e=>{if(e.target.closest("#googleSignIn"))sessionStorage.setItem(GOOGLE_KEY,"1")},true);
-retry?.addEventListener("click",()=>location.reload());
-async function bootstrap(){
-  revealTimer=setTimeout(show,300);armTimeout();
-  if(typeof supabaseClient==="undefined"||!supabaseClient?.auth){finish({showLogin:true});return}
-  try{
-    const result=await Promise.race([supabaseClient.auth.getSession(),new Promise((_,reject)=>setTimeout(()=>reject(new Error("auth-bootstrap-timeout")),10000))]);
-    const session=result?.data?.session||null;
-    if(!session){finish({showLogin:true});return}
-    show();
-    if(gate.hidden){finish();return}
-    const observer=new MutationObserver(()=>{if(gate.hidden){observer.disconnect();finish()}});
-    observer.observe(gate,{attributes:true,attributeFilter:["hidden"]});
-    clearTimeout(timeoutTimer);
-    timeoutTimer=setTimeout(()=>{if(settled)return;setMessage("slow");retry.hidden=false},12000);
-  }catch(err){
-    console.warn("Auth bootstrap UI timed out",err);
-    loader.hidden=false;setMessage("slow");retry.hidden=false;root.classList.remove("pm-auth-pending");
-  }
-}
-bootstrap();
-document.addEventListener("change",e=>{if(e.target?.id==="pmLanguageSelect"&&!settled)setMessage(googleReturn?"google":"loading")},true);
-})();
+

@@ -6,76 +6,74 @@ const supabaseClient=window.supabase?.createClient(
   SUPABASE_PUBLISHABLE_KEY,
   {auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}}
 );
+const OFFLINE_AUTH_MARKER="pm-offline-auth-v1";
+const STARTUP_MIN_MS=900;
+const startupStartedAt=performance.now();
 let authUser=null;
 
 function authRedirectURL(){return "https://jacobnetworking-code.github.io/prompt-manager/"}
-
-function applyAuthSession(session){
+function offlineAuthMarker(){try{const x=JSON.parse(localStorage.getItem(OFFLINE_AUTH_MARKER)||"null");return x?.userId?x:null}catch{return null}}
+function rememberVerifiedUser(user){if(user?.id)try{localStorage.setItem(OFFLINE_AUTH_MARKER,JSON.stringify({userId:user.id,lastVerifiedAt:Date.now()}))}catch{}}
+function forgetVerifiedUser(){try{localStorage.removeItem(OFFLINE_AUTH_MARKER)}catch{}}
+function startupWait(){return new Promise(resolve=>setTimeout(resolve,Math.max(0,STARTUP_MIN_MS-(performance.now()-startupStartedAt))))}
+function setStartupLoading(show,message="Loading your library"){
+  const loader=document.getElementById("pmAuthLoading"),gate=document.getElementById("authGate"),copy=document.getElementById("pmAuthLoadingText"),retry=document.getElementById("pmAuthLoadingRetry");
+  if(copy)copy.textContent=message;
+  if(retry)retry.hidden=true;
+  if(show){if(gate)gate.hidden=true;if(loader)loader.hidden=false;document.body?.classList.add("pm-auth-pending")}
+  else{if(loader)loader.hidden=true;document.body?.classList.remove("pm-auth-pending")}
+}
+function applyAuthSession(session,{showLogin=false}={}){
   authUser=session?.user||null;
-  const gate=document.getElementById("authGate");
-  const status=document.getElementById("authStatus");
-  if(gate)gate.hidden=!!authUser;
+  const gate=document.getElementById("authGate"),status=document.getElementById("authStatus");
+  if(gate)gate.hidden=!!authUser||!showLogin;
   if(status&&authUser)status.textContent="";
   const profileName=document.getElementById("profileMenuName");
-  if(authUser&&profileName&&!localStorage.getItem("pm-display-name")){
-    profileName.textContent=authUser.user_metadata?.full_name||authUser.email||"User";
-  }
+  if(authUser&&profileName&&!localStorage.getItem("pm-display-name"))profileName.textContent=authUser.user_metadata?.full_name||authUser.email||"User";
 }
-async function activateAuthSession(session){
+async function activateAuthSession(session,{sync=true,verified=false}={}){
   authUser=session?.user||null;
-  if(!authUser){applyAuthSession(null);return}
+  if(!authUser){applyAuthSession(null,{showLogin:true});return}
+  if(verified)rememberVerifiedUser(authUser);
   const status=document.getElementById("authStatus");
-  if(status)status.textContent="Syncing your library…";
-  try{
-    if(navigator.onLine)await syncCloudLibrary();
-  }catch(err){
-    console.error("Cloud sync failed",err);
-    if(status)status.textContent="Signed in, but cloud sync failed. Refresh to retry.";
-    return;
+  if(sync&&navigator.onLine){
+    if(status)status.textContent="Syncing your library…";
+    try{await syncCloudLibrary({silent:true})}catch(err){console.error("Cloud sync failed",err);if(status)status.textContent="Signed in · cloud sync pending"}
   }
   applyAuthSession(session);
+  document.dispatchEvent(new CustomEvent("pm:auth-verified",{detail:{userId:authUser.id,online:navigator.onLine}}));
 }
-
 async function initializeAuth(){
-  const gate=document.getElementById("authGate");
-  const status=document.getElementById("authStatus");
-  if(!supabaseClient){
-    if(gate)gate.hidden=false;
-    if(status)status.textContent="Authentication could not load. Check your connection and refresh.";
-    return;
-  }
-
+  const gate=document.getElementById("authGate"),status=document.getElementById("authStatus"),marker=offlineAuthMarker();
+  setStartupLoading(true);
+  if(!supabaseClient?.auth){await startupWait();setStartupLoading(false);if(gate)gate.hidden=false;if(status)status.textContent="Authentication could not load. Check your connection and refresh.";return}
   supabaseClient.auth.onAuthStateChange((event,newSession)=>{
-    if(event==="SIGNED_OUT"){
-      applyAuthSession(null);
-      return;
-    }
-    if(newSession&&newSession.user?.id!==authUser?.id){
-      void activateAuthSession(newSession);
-    }
+    if(event==="SIGNED_OUT"){forgetVerifiedUser();applyAuthSession(null,{showLogin:true});return}
+    if(newSession?.user){rememberVerifiedUser(newSession.user);if(newSession.user.id!==authUser?.id)void activateAuthSession(newSession,{sync:navigator.onLine,verified:true})}
   });
-
-  const {data:{session},error}=await supabaseClient.auth.getSession();
-  if(error){
-    if(gate)gate.hidden=false;
-    if(status)status.textContent=error.message;
-    return;
-  }
-
-  if(session){
-    if(navigator.onLine){
-      const {data:{user},error:userError}=await supabaseClient.auth.getUser();
-      if(userError||!user){
-        applyAuthSession(null);
-        if(status)status.textContent=userError?.message||"Could not verify your session.";
-        return;
+  try{
+    const {data:{session},error}=await supabaseClient.auth.getSession();
+    if(error)throw error;
+    if(session?.user){
+      if(navigator.onLine){
+        const {data:{user},error:userError}=await supabaseClient.auth.getUser();
+        if(userError||!user)throw userError||new Error("Could not verify your session.");
+        rememberVerifiedUser(user);
       }
+      await activateAuthSession(session,{sync:navigator.onLine,verified:navigator.onLine});
+      await startupWait();setStartupLoading(false);return;
     }
-    await activateAuthSession(session);
-    return;
+    if(!navigator.onLine&&marker?.userId){
+      authUser={id:marker.userId};
+      document.dispatchEvent(new CustomEvent("pm:auth-verified",{detail:{userId:marker.userId,online:false}}));
+      await startupWait();setStartupLoading(false);applyAuthSession({user:authUser});return;
+    }
+    await startupWait();setStartupLoading(false);applyAuthSession(null,{showLogin:true});
+  }catch(err){
+    console.warn("Auth startup",err);
+    if(!navigator.onLine&&marker?.userId){authUser={id:marker.userId};await startupWait();setStartupLoading(false);applyAuthSession({user:authUser});return}
+    await startupWait();setStartupLoading(false);applyAuthSession(null,{showLogin:true});if(status)status.textContent=err?.message||"Could not verify your session.";
   }
-
-  applyAuthSession(null);
 }
 async function signInGoogle(){
   const status=document.getElementById("authStatus");
@@ -100,6 +98,7 @@ async function signInEmail(){
 }
 
 async function signOutPM(){
+  forgetVerifiedUser();
   const {error}=await supabaseClient.auth.signOut();
   if(error){
     const status=document.getElementById("authStatus");
@@ -408,5 +407,4 @@ document.getElementById("googleSignIn")?.addEventListener("click",signInGoogle);
 document.getElementById("emailSignIn")?.addEventListener("click",signInEmail);
 document.getElementById("logoutBtn")?.addEventListener("click",signOutPM);
 await initializeAuth();
-window.addEventListener("online",()=>{if(authUser)syncCloudLibrary({silent:true}).catch(err=>console.warn("Background sync failed",err))});
 if("serviceWorker"in navigator)navigator.serviceWorker.register("./sw.js").catch(console.error);if(navigator.storage?.persist)navigator.storage.persist().catch(()=>{})}init().catch(e=>{console.error(e);alert("Prompt Manager could not start.")});
