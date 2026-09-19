@@ -131,7 +131,7 @@ function applyAuthLanguage(){
  setText("#pmAuthSubtitle",copy.subtitle);setText("#googleSignIn",copy.google);setText("#authGate .auth-divider span",copy.or);
  const emailLabel=byId("authEmail")?.closest("label");if(emailLabel&&emailLabel.firstChild)emailLabel.firstChild.textContent=copy.email+"\n      ";
  setText("#emailSignIn",copy.magic);
- const flag={en:"🇬🇧",es:"🇪🇸",sr:"🇷🇸"}[currentLang]||"🇬🇧";const trigger=byId("pmAuthLanguageButton");if(trigger)trigger.textContent=flag;
+ const flag={en:"🇺🇸",es:"🇪🇸",sr:"🇷🇸"}[currentLang]||"🇺🇸";const trigger=byId("pmAuthLanguageButton");if(trigger)trigger.textContent=flag;
  document.querySelectorAll("[data-auth-lang]").forEach(b=>b.classList.toggle("active",b.dataset.authLang===currentLang));
 }
 function bindAuthLanguageMenu(){

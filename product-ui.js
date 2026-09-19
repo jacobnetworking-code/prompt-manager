@@ -7,7 +7,7 @@
 /* ===== M1.6.6.19 ===== */
 (()=>{"use strict";
 const LANG_KEY="pm-language";
-const LANGS={en:{label:"English",flag:"🇬🇧"},es:{label:"Español",flag:"🇪🇸"},sr:{label:"Srpski",flag:"🇷🇸"}};
+const LANGS={en:{label:"English",flag:"🇺🇸"},es:{label:"Español",flag:"🇪🇸"},sr:{label:"Srpski",flag:"🇷🇸"}};
 
 function upgradeLanguageSettings(){
   const section=document.getElementById("pmLanguageSection");

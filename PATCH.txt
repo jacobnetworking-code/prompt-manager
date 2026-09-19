@@ -1,13 +1,29 @@
-Prompt Manager — incremental patch
-REPLACE:
-- offline-auth.css
+Prompt Manager — incremental mobile/login/flag/share patch
 
-ADD: none
-DELETE: none
+REPLACE:
+- index.html
+- offline-auth.css
+- ui-refine.js
+- product-ui.js
+- prompt/index.html
+- prompt/share.js
+
+ADD:
+- share-preview-200.png
+
+DELETE:
+- none
 
 Changes:
-- Chain card overflow trigger now visually matches the canonical three-circle Library overflow icon.
-- Mobile login prompt cards reduced to 146px and made visually card-like.
-- Mobile prompt-wall motion slowed to 104/116/128 seconds with alternating directions.
-- Existing desktop implementation remains untouched.
-- prefers-reduced-motion remains respected.
+- Chain overflow dots mathematically centered.
+- Login is fixed to 100dvh; body/document scrolling and overscroll are disabled while login is visible.
+- Prompt wall explicitly uses five vertical rows across the whole mobile viewport.
+- Prompt wall overlay/blur reduced so cards remain visible.
+- Prompt cards reduced to 140px.
+- Motion slowed to 208s / 232s / 256s (half the previous movement speed).
+- English flag changed from UK to US in login, Settings and Shared Prompt source.
+- Shared Prompt Open Graph preview now uses a compact 200x200 app-icon asset instead of the 512x512 hero image.
+- Reduced-motion behavior preserved.
+
+Note:
+WhatsApp chooses the final large-vs-compact link-preview layout client-side. The metadata is now optimized toward a compact square thumbnail, but the site cannot force WhatsApp's renderer.
