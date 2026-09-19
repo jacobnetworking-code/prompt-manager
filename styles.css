@@ -105,3 +105,14 @@ input,textarea,select{font-size:16px}
 
 /* M1.6.1.1 auth hotfix */
 .danger-row{color:#d65c5c}
+
+/* Settings/profile iconography */
+.settings-row-main{display:flex;align-items:center;gap:11px;min-width:0}
+.settings-row-icon{width:22px;height:22px;display:grid;place-items:center;flex:0 0 22px;color:var(--muted)}
+.settings-row-icon svg{width:21px;height:21px;display:block}
+.settings-row:hover .settings-row-icon,.settings-row:focus-visible .settings-row-icon{color:var(--text)}
+.settings-chevron{margin-left:auto;flex:0 0 auto}
+.danger-row .settings-row-icon{color:currentColor}
+.appearance-segment button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:64px}
+.appearance-icon{width:22px;height:22px;display:grid;place-items:center}
+.appearance-icon svg{width:22px;height:22px;display:block}
