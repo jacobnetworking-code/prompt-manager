@@ -1,4 +1,4 @@
-/* Prompt Manager V2.0.17 — Single rail geometry + reliable detail actions */
+/* Prompt Manager V2.0.18 — Progressive gold Chain rail */
 (()=>{"use strict";
 const $=id=>document.getElementById(id);
 const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
@@ -21,33 +21,58 @@ function closeDetail(){const d=$("pmChainDetail");if(d?.open)d.close();unlockBac
 function ensureType(){const row=$("categoryFilters");if(!row)return;let b=$("pmTypeFilter");if(!b){b=document.createElement("button");b.id="pmTypeFilter";b.type="button";b.className="pm-type-filter";row.prepend(b)}if(row.firstElementChild!==b)row.prepend(b);b.textContent=(type==="chains"?"Chains":type==="prompts"?"Prompts":"Type")+" ▾";b.classList.toggle("selected",type!=="all")}
 function typeDialog(){let d=$("pmTypeDialog");if(d)return d;d=document.createElement("dialog");d.id="pmTypeDialog";d.className="sheet pm-type-dialog";d.innerHTML=`<div class="sheethead"><div><small>FILTER</small><h3>Type</h3></div><button class="x" type="button" data-type-close>×</button></div><div class="theme-options"><button data-type="all"><span>All</span><b></b></button><button data-type="prompts"><span>Prompts</span><b></b></button><button data-type="chains"><span>Chains</span><b></b></button></div>`;document.body.appendChild(d);return d}
 function applyType(){ensureType();const list=$("list");if(!list)return;[...list.children].forEach(el=>{if(!el.classList.contains("card"))return;const chain=el.classList.contains("pm-chain-card");el.hidden=(type==="chains"&&!chain)||(type==="prompts"&&chain)});const visible=[...list.children].filter(el=>el.classList.contains("card")&&!el.hidden);const count=$("count");if(count)count.textContent=String(visible.length);const nr=$("noresults");if(nr)nr.hidden=visible.length>0;decorateCards()}
-function decorateCards(){document.querySelectorAll(".pm-chain-card").forEach(card=>{const id=card.dataset.chainId;if(!id)return;card.classList.add("pm-chain-polished");card.querySelectorAll(".pm-chain-node").forEach((n,i)=>n.textContent=String(i+1));const top=card.querySelector(".cardtop");if(top&&!top.querySelector("[data-chain-share-top]")){const actions=document.createElement("div");actions.className="pm-chain-top-actions";actions.innerHTML=`<button type="button" data-chain-share-top="${esc(id)}" aria-label="Share">${ICON_SHARE}</button>`;const more=top.querySelector("[data-chain-menu]");if(more){more.classList.add("pm-chain-more");actions.appendChild(more)}top.appendChild(actions)}const menu=card.querySelector(".pm-chain-menu");if(menu&&!menu.dataset.upgraded){menu.dataset.upgraded="1";menu.innerHTML=`<button data-chain-edit="${esc(id)}">Edit chain</button><button data-chain-duplicate="${esc(id)}">Duplicate chain</button><button class="danger" data-chain-delete-v2="${esc(id)}">Delete chain</button>`}card.querySelectorAll("[data-chain-copy]").forEach(b=>{if(b.dataset.progressBound)return;b.dataset.progressBound="1";b.addEventListener("click",()=>markComplete(id,Number(b.dataset.chainCopy.split(":")[1])))})});syncRailGeometry(document)}
+function decorateCards(){document.querySelectorAll(".pm-chain-card").forEach(card=>{const id=card.dataset.chainId;if(!id)return;card.classList.add("pm-chain-polished");const saved=completed.get(id)||new Set([0]);if(!completed.has(id))completed.set(id,saved);const progress=Math.max(...saved,0);card.dataset.chainProgress=String(progress);card.querySelectorAll(".pm-chain-node").forEach((n,i)=>{n.textContent=String(i+1);n.classList.toggle("is-complete",i<=progress)});const top=card.querySelector(".cardtop");if(top&&!top.querySelector("[data-chain-share-top]")){const actions=document.createElement("div");actions.className="pm-chain-top-actions";actions.innerHTML=`<button type="button" data-chain-share-top="${esc(id)}" aria-label="Share">${ICON_SHARE}</button>`;const more=top.querySelector("[data-chain-menu]");if(more){more.classList.add("pm-chain-more");actions.appendChild(more)}top.appendChild(actions)}const menu=card.querySelector(".pm-chain-menu");if(menu&&!menu.dataset.upgraded){menu.dataset.upgraded="1";menu.innerHTML=`<button data-chain-edit="${esc(id)}">Edit chain</button><button data-chain-duplicate="${esc(id)}">Duplicate chain</button><button class="danger" data-chain-delete-v2="${esc(id)}">Delete chain</button>`}card.querySelectorAll("[data-chain-copy]").forEach(b=>{if(b.dataset.progressBound)return;b.dataset.progressBound="1";b.addEventListener("click",()=>markComplete(id,Number(b.dataset.chainCopy.split(":")[1])))})});syncRailGeometry(document)}
 function syncRailGeometry(root=document){
  requestAnimationFrame(()=>{
-  root.querySelectorAll?.(".pm-chain-card.pm-chain-polished").forEach(card=>{
+  const cards=root.matches?.(".pm-chain-card")?[root]:[...root.querySelectorAll?.(".pm-chain-card.pm-chain-polished")||[]];
+  cards.forEach(card=>{
    const rail=card.querySelector(".pm-chain-rail"),line=rail?.querySelector(".pm-chain-line");
    const nodes=[...card.querySelectorAll(".pm-chain-node")];
    if(!rail||!line||!nodes.length)return;
-   const first=nodes[0],last=nodes[nodes.length-1],rr=rail.getBoundingClientRect(),fr=first.getBoundingClientRect(),lr=last.getBoundingClientRect();
-   const start=fr.top+fr.height/2-rr.top;
-   const end=lr.top+lr.height/2-rr.top;
-   line.style.top=`${Math.max(0,start)}px`;
+   const rr=rail.getBoundingClientRect(),centers=nodes.map(n=>{const r=n.getBoundingClientRect();return r.top+r.height/2-rr.top});
+   const start=centers[0],end=centers.at(-1),progress=Math.max(0,Number(card.dataset.chainProgress??0));
+   const activeIndex=Math.min(progress,nodes.length-1);
+   const activeCenter=centers[activeIndex]??start;
+   const nextCenter=centers[Math.min(activeIndex+1,nodes.length-1)]??activeCenter;
+   const fadeEnd=activeIndex<nodes.length-1?activeCenter+(nextCenter-activeCenter)*.5:activeCenter;
+   line.style.top=`${start}px`;
    line.style.height=`${Math.max(0,end-start)}px`;
+   line.style.setProperty("--pm-rail-gold-end",`${Math.max(0,fadeEnd-start)}px`);
+   line.style.setProperty("--pm-rail-fade",`${Math.max(10,Math.min(34,(nextCenter-activeCenter)*.18||14))}px`);
   });
   const d=root.matches?.("#pmChainDetail")?root:root.querySelector?.("#pmChainDetail");
   if(d?.open){
    const steps=d.querySelector(".pm-chain-detail-steps"),items=[...d.querySelectorAll(".pm-chain-detail-step")];
    if(steps&&items.length){
-    const sr=steps.getBoundingClientRect(),first=items[0].querySelector(".pm-chain-detail-node")?.getBoundingClientRect(),last=items.at(-1).querySelector(".pm-chain-detail-node")?.getBoundingClientRect();
-    if(first&&last){
-     steps.style.setProperty("--pm-detail-rail-top",`${first.top+first.height/2-sr.top}px`);
-     steps.style.setProperty("--pm-detail-rail-height",`${Math.max(0,last.top+last.height/2-(first.top+first.height/2))}px`);
-    }
+    const sr=steps.getBoundingClientRect(),centers=items.map(x=>{const r=x.querySelector(".pm-chain-detail-node").getBoundingClientRect();return r.top+r.height/2-sr.top});
+    const start=centers[0],end=centers.at(-1),progress=Math.max(0,Number(d.dataset.chainProgress??0));
+    const activeIndex=Math.min(progress,items.length-1),activeCenter=centers[activeIndex],nextCenter=centers[Math.min(activeIndex+1,items.length-1)];
+    const fadeEnd=activeIndex<items.length-1?activeCenter+(nextCenter-activeCenter)*.5:activeCenter;
+    steps.style.setProperty("--pm-detail-rail-top",`${start}px`);
+    steps.style.setProperty("--pm-detail-rail-height",`${Math.max(0,end-start)}px`);
+    steps.style.setProperty("--pm-detail-gold-end",`${Math.max(0,fadeEnd-start)}px`);
+    steps.style.setProperty("--pm-detail-fade",`${Math.max(10,Math.min(34,(nextCenter-activeCenter)*.18||14))}px`);
    }
   }
  });
 }
-function markComplete(id,index){let s=completed.get(id)||new Set();s.add(index);completed.set(id,s);document.querySelectorAll(`.pm-chain-card[data-chain-id="${CSS.escape(id)}"] .pm-chain-node`).forEach((n,i)=>n.classList.toggle("is-complete",s.has(i)));document.querySelectorAll(`#pmChainDetail[data-chain-id="${CSS.escape(id)}"] .pm-chain-detail-step`).forEach((x,i)=>x.classList.toggle("is-complete",s.has(i)))}
+function markComplete(id,index){
+ let s=completed.get(id)||new Set();
+ // Chain progress is sequential: copying prompt N means 1..N are completed.
+ for(let i=0;i<=index;i++)s.add(i);
+ completed.set(id,s);
+ const progress=Math.max(...s,-1);
+ document.querySelectorAll(`.pm-chain-card[data-chain-id="${CSS.escape(id)}"]`).forEach(card=>{
+  card.dataset.chainProgress=String(progress);
+  card.querySelectorAll(".pm-chain-node").forEach((n,i)=>n.classList.toggle("is-complete",i<=progress));
+  syncRailGeometry(card);
+ });
+ document.querySelectorAll(`#pmChainDetail[data-chain-id="${CSS.escape(id)}"]`).forEach(d=>{
+  d.dataset.chainProgress=String(progress);
+  d.querySelectorAll(".pm-chain-detail-step").forEach((x,i)=>x.classList.toggle("is-complete",i<=progress));
+  syncRailGeometry(d);
+ });
+}
 async function getChain(id){const {data,error}=await supabaseClient.from("prompt_chains").select("*, prompt_chain_steps(*)").eq("id",id).single();if(error)throw error;data.steps=(data.prompt_chain_steps||[]).sort((a,b)=>a.position-b.position);return data}
 function detailDialog(){let d=$("pmChainDetail");if(d)return d;d=document.createElement("dialog");d.id="pmChainDetail";d.className="pm-chain-detail";d.addEventListener("cancel",e=>{e.preventDefault();closeDetail()});d.addEventListener("close",unlockBackground);document.body.appendChild(d);return d}
 function stars(c){const r=Number(c.rating)||0;return [1,2,3,4,5].map(n=>`<button data-chain-rate="${n}" class="${n<=r?"on":""}" aria-label="${n} stars">★</button>`).join("")}
@@ -61,7 +86,7 @@ async function openDetail(id){const d=detailDialog();d.dataset.chainId=id;d.inne
  <button class="full primary pm-chain-use" data-chain-use="${esc(id)}">${c.platform&&c.platform!=="general"&&platformURLs[c.platform]?`Use with ${esc(typeof platformName==="function"?platformName(c.platform):c.platform)} ↗`:"Copy first prompt"}</button>
  <footer class="pm-chain-detail-footer">${ratingSummary(c)}<div class="pm-chain-uses">Used ${Number(c.use_count)||0} times</div></footer>
  <div class="menu pm-chain-detail-menu" hidden><button data-chain-edit="${esc(id)}">Edit chain</button><button data-chain-duplicate="${esc(id)}">Duplicate chain</button><button class="danger" data-chain-delete-v2="${esc(id)}">Delete chain</button></div>
- </div>`;d._pmChainData=c;const done=completed.get(id)||new Set();d.querySelectorAll(".pm-chain-detail-step").forEach((x,i)=>x.classList.toggle("is-complete",done.has(i)));
+ </div>`;d._pmChainData=c;const done=completed.get(id)||new Set([0]);if(!completed.has(id))completed.set(id,done);const progress=Math.max(...done,0);d.dataset.chainProgress=String(progress);d.querySelectorAll(".pm-chain-detail-step").forEach((x,i)=>x.classList.toggle("is-complete",i<=progress));
  d.querySelectorAll("[data-chain-rate]").forEach(b=>b.onclick=e=>{e.preventDefault();e.stopPropagation();void rate(id,Number(b.dataset.chainRate))});
  const useButton=d.querySelector("[data-chain-use]");if(useButton)useButton.onclick=e=>{e.preventDefault();e.stopPropagation();void useChain(id)};
  syncRailGeometry(d)}catch(e){d.innerHTML=`<div class="pm-chain-detail-loading">Could not load chain.<br>${esc(e.message||e)}</div>`}}
