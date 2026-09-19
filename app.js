@@ -415,9 +415,9 @@ document.getElementById("googleSignIn")?.addEventListener("click",signInGoogle);
 document.getElementById("emailSignIn")?.addEventListener("click",signInEmail);
 document.getElementById("settingsLogoutBtn")?.addEventListener("click",signOutPM);
 
-function pmTechnicalSupportContext(){
-  return {
-    app_version:"2.0.39",
+async function pmTechnicalSupportContext(category){
+  const base={
+    app_version:"2.0.40",
     language:localStorage.getItem("pm-language")||document.documentElement.lang||"en",
     online:navigator.onLine,
     display_mode:window.matchMedia?.("(display-mode: standalone)")?.matches?"standalone":"browser",
@@ -426,6 +426,51 @@ function pmTechnicalSupportContext(){
     origin:location.origin,
     timestamp:new Date().toISOString()
   };
+  const diagnostic={};
+  try{
+    const localPrompts=await localAll("prompts");
+    const localCategories=await localAll("categories");
+    const pending=window.pmDataIntegrity?.pendingCount?await window.pmDataIntegrity.pendingCount():(await localAll("syncQueue")).length;
+    if(["sync","missing_data","prompt_edit","backup"].includes(category)){
+      diagnostic.local_prompt_count=localPrompts.length;
+      diagnostic.local_category_count=localCategories.length;
+      diagnostic.pending_sync_operations=pending;
+      diagnostic.cloud_linked_local_prompts=localPrompts.filter(p=>!!p.cloudId).length;
+    }
+    if(["sync","missing_data"].includes(category)){
+      const events=window.pmDataIntegrity?.diagnostics?.()||[];
+      diagnostic.recent_sync_events=events.slice(-8).map(e=>({at:e.at||e.timestamp||null,event:e.event||e.type||null,reason:e.reason||null,pending:e.pending??null,error:e.error||e.message||null}));
+      if(supabaseClient&&authUser&&navigator.onLine){
+        const {count,error}=await supabaseClient.from("prompts").select("id",{count:"exact",head:true});
+        diagnostic.cloud_prompt_count=error?null:count;
+        if(error)diagnostic.cloud_count_error=error.message||"Cloud count unavailable";
+      }
+    }
+    if(category==="chains"){
+      diagnostic.local_prompt_count=localPrompts.length;
+      if(supabaseClient&&authUser&&navigator.onLine){
+        const [{count:chains,error:chainError},{count:steps,error:stepError}]=await Promise.all([
+          supabaseClient.from("prompt_chains").select("id",{count:"exact",head:true}),
+          supabaseClient.from("prompt_chain_steps").select("id",{count:"exact",head:true})
+        ]);
+        diagnostic.cloud_chain_count=chainError?null:chains;
+        diagnostic.cloud_chain_step_count=stepError?null:steps;
+      }
+    }
+    if(["startup","account"].includes(category)){
+      diagnostic.authenticated=!!authUser;
+      diagnostic.auth_provider=authUser?.app_metadata?.provider||null;
+      diagnostic.service_worker_controlled=!!navigator.serviceWorker?.controller;
+      diagnostic.indexeddb_open=!!db;
+    }
+    if(category==="backup"){
+      diagnostic.storage_persisted=navigator.storage?.persisted?await navigator.storage.persisted():null;
+      const estimate=navigator.storage?.estimate?await navigator.storage.estimate():{};
+      diagnostic.storage_usage_bytes=estimate.usage??null;
+      diagnostic.storage_quota_bytes=estimate.quota??null;
+    }
+  }catch(error){diagnostic.diagnostic_collection_error=error?.message||String(error)}
+  return {...base,diagnostic};
 }
 async function submitSupportMessage(event){
   event.preventDefault();
@@ -436,7 +481,7 @@ async function submitSupportMessage(event){
   if(!supabaseClient||!authUser){if(status)status.textContent="Please sign in to send a message.";return}
   button.disabled=true;if(status)status.textContent="Sending…";
   try{
-    const {data,error}=await supabaseClient.functions.invoke("support-message",{body:{category,message,technical:pmTechnicalSupportContext()}});
+    const {data,error}=await supabaseClient.functions.invoke("support-message",{body:{category,message,technical:await pmTechnicalSupportContext(category)}});
     if(error)throw error;
     if(data?.error)throw new Error(data.error);
     form.reset();if(status)status.textContent="Message sent. Thank you.";
