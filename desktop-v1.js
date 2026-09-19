@@ -178,7 +178,7 @@ function enhanceSettings(){
 
   const appearance=document.createElement("div");
   appearance.className="settings-section pm-settings-group";
-  appearance.innerHTML=`<span class="settings-label">Appearance</span><div class="appearance-segment pm-settings-segment" role="group" aria-label="Appearance"><button type="button" data-quick-theme="system">System</button><button type="button" data-quick-theme="light">Light</button><button type="button" data-quick-theme="dark">Dark</button></div>`;
+  appearance.innerHTML=`<span class="settings-label">Appearance</span><div class="appearance-segment pm-settings-segment" role="group" aria-label="Appearance"><button type="button" data-quick-theme="system"><span class="appearance-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="2.5" width="10" height="19" rx="2.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M10.5 5h3M11 18.5h2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span><span>System</span></button><button type="button" data-quick-theme="light"><span class="appearance-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.66 6.34l1.41-1.41" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span><span>Light</span></button><button type="button" data-quick-theme="dark"><span class="appearance-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 15.2A8.4 8.4 0 0 1 8.8 4a8.5 8.5 0 1 0 11.2 11.2Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></span><span>Dark</span></button></div>`;
 
   const interfaceSection=document.createElement("div");
   interfaceSection.className="settings-section pm-settings-group";
@@ -219,7 +219,8 @@ function promptCard(prompt){
   return `<article class="pm-auth-prompt-card"><small>${category}</small><strong>${title}</strong><p>${text}</p></article>`;
 }
 async function initAuthBackdrop(){
-  if(!desktop()||interfaceMode()==="mobile")return;
+  // The moving prompt wall is part of the sign-in identity on every viewport.
+  // Keep the mobile treatment lighter in CSS rather than maintaining a second implementation.
   const gate=document.getElementById("authGate");
   if(!gate||gate.querySelector(".pm-auth-backdrop"))return;
   try{
@@ -319,7 +320,7 @@ mq.addEventListener?.("change",()=>{
   syncCompactDesktopRail();
   applySidebarPreference();
   syncSidebarA11y();
-  if(desktop())void initAuthBackdrop();
+  void initAuthBackdrop();
 });
 new MutationObserver(()=>syncCompactDesktopRail()).observe(document.documentElement,{attributes:true,attributeFilter:["lang"]});
 // desktop-v1.js is loaded with defer, so the DOM is already parsed. Apply the

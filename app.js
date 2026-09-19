@@ -98,14 +98,22 @@ async function signInEmail(){
 }
 
 async function signOutPM(){
+  const status=document.getElementById("authStatus");
+  const settings=document.getElementById("settingsDialog");
+  const profile=document.getElementById("profileMenu");
+  if(settings?.open)settings.close();
+  if(profile?.open)profile.close();
   forgetVerifiedUser();
-  const {error}=await supabaseClient.auth.signOut();
-  if(error){
-    const status=document.getElementById("authStatus");
-    if(status)status.textContent=error.message;
-    return;
+  applyAuthSession(null,{showLogin:true});
+  document.body?.classList.remove("pm-auth-pending");
+  window.scrollTo({top:0,left:0,behavior:"auto"});
+  try{
+    const {error}=await supabaseClient.auth.signOut({scope:"local"});
+    if(error)throw error;
+  }catch(error){
+    console.error("Sign out failed",error);
+    if(status)status.textContent="Could not complete sign out. Please try again.";
   }
-  applyAuthSession(null);
 }
 
 const $=id=>document.getElementById(id);let db,prompts=[],categories=[],activeCategory="all",activePlatform="any",activeOrigin="all",currentPrompt=null,explorePrompts=[];const DB_VERSION=3,BACKUP_VERSION=4,PLATFORMS={general:"Multiplatform",chatgpt:"ChatGPT",claude:"Claude",gemini:"Gemini",grok:"Grok",midjourney:"Midjourney",other:"Other"},PLATFORM_URLS={chatgpt:"chatgpt://",claude:"https://claude.ai/new",gemini:"https://gemini.google.com/app",grok:"https://grok.com/"},DEFAULT_CATEGORIES=["General","Coding","Marketing","Writing","Image","Video","Research","Productivity"];

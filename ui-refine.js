@@ -121,7 +121,27 @@ function ensureFeaturedEntry(){const search=document.querySelector(".explore-sea
 function ensureLibraryHeaderTools(){let actions=document.querySelector(".pm-library-head-actions");if(actions)return actions;const grid=document.querySelector(".library-title-grid");const add=byId("libraryAdd");if(!grid||!add)return null;actions=document.createElement("div");actions.className="pm-library-head-actions";const select=document.createElement("button");select.type="button";select.id="pmSelectToggle";select.className="pm-select-toggle";actions.append(select);actions.append(add);grid.append(actions);select.onclick=()=>{selectMode=!selectMode;selectedIds.clear();render();updateSelectionUI()};const bar=document.createElement("div");bar.id="pmSelectionBar";bar.className="pm-selection-bar";bar.hidden=true;bar.innerHTML=`<span id="pmSelectionSummary"></span><button type="button" id="pmDeleteSelected"></button>`;document.body.appendChild(bar);byId("pmDeleteSelected").onclick=deleteSelected;return actions}
 function updateSelectionUI(){ensureLibraryHeaderTools();const count=selectedIds.size;const sel=byId("pmSelectToggle");if(sel)sel.textContent=selectMode?t("cancel"):t("select");const bar=byId("pmSelectionBar");if(bar){bar.hidden=!selectMode||!count;if(byId("pmSelectionSummary"))byId("pmSelectionSummary").textContent=`${count} ${t("selected")}`;if(byId("pmDeleteSelected"))byId("pmDeleteSelected").textContent=t("delete")}}
 
-function applyStaticLanguage(){document.documentElement.lang=currentLang;ensureLanguageSettings();ensureWhatsNew();ensureFeaturedEntry();ensureLibraryHeaderTools();
+
+function applyAuthLanguage(){
+ const copy={
+  en:{subtitle:"Sign in to continue",google:"Continue with Google",or:"or",email:"Email",magic:"Send magic link"},
+  es:{subtitle:"Inicia sesión para continuar",google:"Continuar con Google",or:"o",email:"Email",magic:"Enviar enlace de acceso"},
+  sr:{subtitle:"Prijavi se da nastaviš",google:"Nastavi sa Google-om",or:"ili",email:"Email",magic:"Pošalji link za prijavu"}
+ }[currentLang]||{};
+ setText("#pmAuthSubtitle",copy.subtitle);setText("#googleSignIn",copy.google);setText("#authGate .auth-divider span",copy.or);
+ const emailLabel=byId("authEmail")?.closest("label");if(emailLabel&&emailLabel.firstChild)emailLabel.firstChild.textContent=copy.email+"\n      ";
+ setText("#emailSignIn",copy.magic);
+ const flag={en:"🇬🇧",es:"🇪🇸",sr:"🇷🇸"}[currentLang]||"🇬🇧";const trigger=byId("pmAuthLanguageButton");if(trigger)trigger.textContent=flag;
+ document.querySelectorAll("[data-auth-lang]").forEach(b=>b.classList.toggle("active",b.dataset.authLang===currentLang));
+}
+function bindAuthLanguageMenu(){
+ const trigger=byId("pmAuthLanguageButton"),menu=byId("pmAuthLanguageMenu");if(!trigger||!menu||trigger.dataset.pmBound)return;trigger.dataset.pmBound="1";
+ trigger.addEventListener("click",e=>{e.preventDefault();e.stopPropagation();const open=menu.hidden;menu.hidden=!open;trigger.setAttribute("aria-expanded",String(open))});
+ menu.addEventListener("click",e=>{const b=e.target.closest("[data-auth-lang]");if(!b)return;e.preventDefault();currentLang=b.dataset.authLang;localStorage.setItem(LANG_KEY,currentLang);menu.hidden=true;trigger.setAttribute("aria-expanded","false");applyLanguage()});
+ document.addEventListener("click",e=>{if(menu.hidden||e.target.closest("#pmAuthLanguages"))return;menu.hidden=true;trigger.setAttribute("aria-expanded","false")});
+}
+
+function applyStaticLanguage(){document.documentElement.lang=currentLang;bindAuthLanguageMenu();applyAuthLanguage();ensureLanguageSettings();ensureWhatsNew();ensureFeaturedEntry();ensureLibraryHeaderTools();
  setText("#homeView .hero h2",t("useBetter"));setText("#homeView .hero p",t("homeDesc"));setText("#homeAdd",`＋ ${t("addPrompt")}`);setText('#homeView [data-go="library"] small',t("yourLibrary"));setText('#homeView [data-go="library"] strong',t("openSaved"));setText('#homeView [data-go="explore"] small',t("discover"));setText('#homeView [data-go="explore"] strong',t("explorePrompts"));
  setText("[data-pm-whats-kicker]",t("whatsNew"));setText("[data-pm-whats-title]",t("faster"));setText("[data-pm-whats-copy]",t("updateText"));
  setText("#exploreView .eyebrow",t("explore"));setText("#exploreView .pagehead h2",t("discoverPrompts"));setText("#exploreView .pagehead p",t("exploreDesc"));setPlaceholder("#exploreSearch",t("searchPrompts"));setText("[data-pm-featured-label]",t("featured"));setText("[data-pm-featured-title]",t("featuredTitle"));setText("[data-pm-featured-copy]",t("featuredText"));
@@ -130,7 +150,7 @@ function applyStaticLanguage(){document.documentElement.lang=currentLang;ensureL
  setText("#noresults strong",t("noPrompts"));setText("#noresults span",t("tryAnother"));
  const nav=[...document.querySelectorAll(".bottom-nav [data-nav] small")];if(nav[0])nav[0].textContent=t("home");if(nav[1])nav[1].textContent=t("explore");if(nav[2])nav[2].textContent=t("library");
  setText("#settingsDialog .sheethead small","SETTINGS");setText("#settingsDialog .sheethead h3",t("settings"));const profileLabel=byId("displayName")?.closest(".settings-section")?.querySelector(".settings-label");if(profileLabel)profileLabel.textContent=t("profile");if(byId("pmLanguageLabel"))byId("pmLanguageLabel").textContent=t("language");const dataLabel=byId("openBulkImport")?.closest(".settings-section")?.querySelector(".settings-label");if(dataLabel)dataLabel.textContent=t("data");if(byId("supportSectionLabel"))byId("supportSectionLabel").textContent=t("support");if(byId("accountSectionLabel"))byId("accountSectionLabel").textContent=t("account");
- const nameLabel=byId("displayName")?.closest("label")?.querySelector(":scope > span");if(nameLabel)nameLabel.textContent=t("name");if(byId("saveDisplayName"))byId("saveDisplayName").textContent=t("save");const supportRow=byId("openSupport")?.querySelector("span:first-child");if(supportRow)supportRow.textContent=t("helpFeedback");const settingsSignout=byId("settingsLogoutBtn")?.querySelector("span:first-child");if(settingsSignout)settingsSignout.textContent=t("signout");const deleteAccount=byId("openDeleteAccount")?.querySelector("span:first-child");if(deleteAccount)deleteAccount.textContent=t("deleteAccount");
+ const nameLabel=byId("displayName")?.closest("label")?.querySelector(":scope > span");if(nameLabel)nameLabel.textContent=t("name");if(byId("saveDisplayName"))byId("saveDisplayName").textContent=t("save");const supportRow=byId("openSupport")?.querySelector(".settings-row-main > span:last-child");if(supportRow)supportRow.textContent=t("helpFeedback");const settingsSignout=byId("settingsLogoutBtn")?.querySelector(".settings-row-main > span:last-child");if(settingsSignout)settingsSignout.textContent=t("signout");const deleteAccount=byId("openDeleteAccount")?.querySelector(".settings-row-main > span:last-child");if(deleteAccount)deleteAccount.textContent=t("deleteAccount");
  const appearanceLabel=document.querySelector("#profileMenu .settings-label");if(appearanceLabel)appearanceLabel.textContent=t("appearance");const profileSmall=document.querySelector("#profileMenu .sheethead small");if(profileSmall)profileSmall.textContent=t("profile");
  document.querySelectorAll("[data-pm-language]").forEach(b=>{b.classList.toggle("active",b.dataset.pmLanguage===currentLang);const check=b.querySelector("b");if(check)check.textContent=b.dataset.pmLanguage===currentLang?"✓":""});
  updateSelectionUI();translateDefaultCategoryUI();renderPlatformButton();

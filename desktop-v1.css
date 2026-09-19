@@ -2534,3 +2534,15 @@ html body #exploreView #exploreCategories[hidden]{
   border-top:0!important;
   padding-top:0!important;
 }
+
+
+/* Login prompt wall — mobile refinement */
+@media (max-width:760px){
+  #authGate.auth-gate{position:fixed;inset:0;overflow:hidden;isolation:isolate;background:#080808!important}
+  #authGate.auth-gate::after{content:"";position:absolute;inset:0;z-index:1;background:rgba(6,6,6,.62);pointer-events:none}
+  #authGate .pm-auth-backdrop{display:flex;position:absolute;inset:-5vh -34vw;z-index:0;gap:12px;transform:rotate(-3deg) scale(.92);opacity:.34}
+  #authGate .pm-auth-prompt-card{width:220px;min-height:122px;flex-basis:220px;padding:14px;border-radius:17px}
+  #authGate .pm-auth-track{animation-duration:105s}
+  #authGate .pm-auth-row:nth-child(even) .pm-auth-track{animation-duration:116s}
+  #authGate .auth-card{position:relative;z-index:2;width:min(100%,420px);background:color-mix(in srgb,var(--bg) 88%,transparent)!important;-webkit-backdrop-filter:blur(24px) saturate(110%);backdrop-filter:blur(24px) saturate(110%)}
+}
