@@ -1,0 +1,13 @@
+Prompt Manager — incremental patch
+REPLACE:
+- offline-auth.css
+
+ADD: none
+DELETE: none
+
+Changes:
+- Chain card overflow trigger now visually matches the canonical three-circle Library overflow icon.
+- Mobile login prompt cards reduced to 146px and made visually card-like.
+- Mobile prompt-wall motion slowed to 104/116/128 seconds with alternating directions.
+- Existing desktop implementation remains untouched.
+- prefers-reduced-motion remains respected.
