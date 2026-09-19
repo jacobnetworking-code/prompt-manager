@@ -53,7 +53,14 @@ function captureAuthenticatedUser(){
 }
 function install(){
  applyCopy();
- if(!navigator.onLine)setTimeout(()=>canUseOffline()?revealApp():revealLogin(),2000);
+ if(!navigator.onLine){
+   document.body.classList.add("pm-offline-loader-hold");
+   const loader=$("pmAuthLoading");if(loader)loader.hidden=false;
+   setTimeout(()=>{
+     document.body.classList.remove("pm-offline-loader-hold");
+     canUseOffline()?revealApp():revealLogin();
+   },2200);
+ }
 
  const languageButton=$("pmAuthLanguageButton"),languageMenu=$("pmAuthLanguageMenu");
  languageButton?.addEventListener("click",e=>{e.stopPropagation();const opening=languageMenu.hidden;languageMenu.hidden=!opening;languageButton.setAttribute("aria-expanded",String(opening))});

@@ -4,6 +4,18 @@ const MARKER_KEY="pm-offline-auth-v1";
 const OWNER_FIELD="_pmOwnerId";
 const LEGACY_CLAIM_KEY="pm-local-owner-claimed-v1";
 const scopedStores=new Set(["prompts","categories","syncQueue"]);
+const DIAG_KEY="pm-sync-diagnostics-v1";
+function diag(stage,detail={}){
+  try{
+    const entry={at:new Date().toISOString(),stage,online:navigator.onLine,...detail};
+    const log=JSON.parse(localStorage.getItem(DIAG_KEY)||"[]");
+    log.push(entry);
+    localStorage.setItem(DIAG_KEY,JSON.stringify(log.slice(-100)));
+    document.dispatchEvent(new CustomEvent("pm:sync-diagnostic",{detail:entry}));
+  }catch{}
+}
+function errInfo(err){return {name:err?.name||null,message:err?.message||String(err||"Unknown error"),code:err?.code||null,details:err?.details||null,hint:err?.hint||null}}
+
 
 function markerOwner(){
   try{return JSON.parse(localStorage.getItem(MARKER_KEY)||"null")?.userId||null}catch{return null}
@@ -134,19 +146,29 @@ async function pendingCount(){
   }catch{return 0}
 }
 async function directFlushVerifiedQueue(id){
- if(!id||markerOwner()!==id||!navigator.onLine||typeof supabaseClient==="undefined"||!supabaseClient)return 0;
+ diag("flush:start",{owner:!!id,markerMatch:!!id&&markerOwner()===id});
+ if(!id||markerOwner()!==id||!navigator.onLine||typeof supabaseClient==="undefined"||!supabaseClient){
+   diag("flush:blocked",{owner:!!id,markerMatch:!!id&&markerOwner()===id,supabase:typeof supabaseClient!=="undefined"&&!!supabaseClient});
+   return 0;
+ }
  const {data:{session},error:sessionError}=await supabaseClient.auth.getSession();
- if(sessionError||!session?.user||session.user.id!==id)throw sessionError||new Error("Verified session unavailable");
+ if(sessionError||!session?.user||session.user.id!==id){
+   diag("session:invalid",{hasUser:!!session?.user,error:sessionError?errInfo(sessionError):null});
+   throw sessionError||new Error("Verified session unavailable");
+ }
+ diag("session:verified",{userMatch:true});
  await adoptUnownedRowsForVerifiedOwner(id);
  const queue=(await rawAll("syncQueue")).filter(q=>q&&(q[OWNER_FIELD]===id||q[OWNER_FIELD]==null)).sort((a,b)=>(a.qid||0)-(b.qid||0));
+ diag("queue:read",{count:queue.length,ops:queue.map(q=>q.op)});
  for(const q of queue){
+  diag("queue:item",{qid:q.qid,op:q.op,localId:q.localId??null,hasCloudId:!!q.cloudId});
   try{
    if(q.op==="delete"){
     if(q.cloudId){const {error}=await supabaseClient.from("prompts").delete().eq("id",q.cloudId).eq("user_id",id);if(error)throw error}
     await originalLocalDel("syncQueue",q.qid);continue;
    }
    let current=q.localId!=null?await originalLocalGet("prompts",q.localId):null;
-   if(!current){await originalLocalDel("syncQueue",q.qid);continue}
+   if(!current){diag("queue:missing-local",{qid:q.qid,localId:q.localId??null});await originalLocalDel("syncQueue",q.qid);continue}
    if(current[OWNER_FIELD]&&current[OWNER_FIELD]!==id)continue;
    const payload=typeof window.toCloudPrompt==="function"?window.toCloudPrompt(current):{
     user_id:id,title:(current.title||"Untitled").slice(0,200),content:current.content||"",source:current.source||"",
@@ -159,10 +181,15 @@ async function directFlushVerifiedQueue(id){
    delete payload[OWNER_FIELD];payload.user_id=id;
    let row;
    if(current.cloudId){const {data,error}=await supabaseClient.from("prompts").update(payload).eq("id",current.cloudId).eq("user_id",id).select().single();if(error)throw error;row=data}
-   else{const {data,error}=await supabaseClient.from("prompts").insert(payload).select().single();if(error)throw error;row=data}
+   else{
+    diag("supabase:insert-attempt",{qid:q.qid,title:current.title||"Untitled"});
+    const {data,error}=await supabaseClient.from("prompts").insert(payload).select().single();
+    if(error){diag("supabase:insert-error",{qid:q.qid,...errInfo(error)});throw error}
+    row=data;diag("supabase:insert-ok",{qid:q.qid,cloudId:row?.id||null});
+   }
    current={...current,cloudId:row.id,updatedAt:Date.parse(row.updated_at)||Date.now(),[OWNER_FIELD]:id};
-   await originalLocalPut("prompts",current);await originalLocalDel("syncQueue",q.qid);
-  }catch(err){console.warn("Verified queue flush paused",q?.qid,err);throw err}
+   await originalLocalPut("prompts",current);await originalLocalDel("syncQueue",q.qid);diag("queue:removed",{qid:q.qid});
+  }catch(err){diag("flush:item-error",{qid:q?.qid??null,...errInfo(err)});console.warn("Verified queue flush paused",q?.qid,err);throw err}
  }
  return (await rawAll("syncQueue")).filter(q=>q?.[OWNER_FIELD]===id).length;
 }
@@ -181,7 +208,7 @@ async function syncNow(reason="online"){
  }finally{syncing=false}
 }
 
-window.addEventListener("online",()=>setTimeout(()=>syncNow("reconnected"),700));
+window.addEventListener("online",()=>{diag("event:online");setTimeout(()=>syncNow("reconnected"),700)});
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&navigator.onLine)setTimeout(()=>syncNow("resume"),250)});
 document.addEventListener("pm:auth-verified",()=>setTimeout(()=>syncNow("auth"),100));
 function loadDiagnosticsAssets(){
@@ -189,5 +216,12 @@ function loadDiagnosticsAssets(){
  if(!document.querySelector('script[data-pm-sync-diag]')){const s=document.createElement("script");s.src="./sync-diagnostics.js";s.defer=true;s.dataset.pmSyncDiag="1";document.head.appendChild(s)}
 }
 loadDiagnosticsAssets();
-window.pmDataIntegrity={pendingCount,syncNow,owner};
+window.pmDataIntegrity={
+ pendingCount,syncNow,owner,
+ diagnostics(){try{return JSON.parse(localStorage.getItem(DIAG_KEY)||"[]")}catch{return[]}},
+ clearDiagnostics(){localStorage.removeItem(DIAG_KEY)},
+ async copyDiagnostics(){
+   return JSON.stringify({capturedAt:new Date().toISOString(),online:navigator.onLine,pending:await pendingCount(),events:this.diagnostics()},null,2);
+ }
+};
 })();

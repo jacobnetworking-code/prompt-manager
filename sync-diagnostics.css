@@ -6,3 +6,12 @@
 @media(max-width:700px){
  html[data-pm-offline="true"] #pmConnectivity{top:calc(env(safe-area-inset-top) + 74px)!important}
 }
+
+/* V2.0.31 — same connectivity position for offline and back-online. */
+@media(max-width:700px){#pmConnectivity{top:calc(env(safe-area-inset-top) + 86px)!important}}
+/* Offline startup: only the branded loader is visible during the deliberate hold. */
+body.pm-offline-loader-hold .app,
+body.pm-offline-loader-hold .bottom-nav,
+body.pm-offline-loader-hold #authGate,
+body.pm-offline-loader-hold #pmConnectivity{visibility:hidden!important}
+body.pm-offline-loader-hold #pmAuthLoading{display:grid!important;visibility:visible!important;opacity:1!important;z-index:20000!important}

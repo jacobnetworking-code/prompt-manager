@@ -8,7 +8,13 @@ function add(){
  body.insertAdjacentElement("afterend",box);
  const render=async()=>{const api=window.pmDataIntegrity,events=api?.diagnostics?.()||[],pending=await api?.pendingCount?.();document.getElementById("pmSyncDiagText").textContent=JSON.stringify({online:navigator.onLine,pending,events},null,2)};
  document.getElementById("pmSyncDiagRefresh").onclick=render;
- document.getElementById("pmSyncDiagCopy").onclick=async()=>{try{await window.pmDataIntegrity?.copyDiagnostics?.();if(typeof toast==="function")toast("Sync trace copied")}catch{if(typeof toast==="function")toast("Copy unavailable")}};
+ document.getElementById("pmSyncDiagCopy").onclick=async()=>{
+ const payload=await window.pmDataIntegrity?.copyDiagnostics?.();if(!payload)return;
+ let copied=false;try{await navigator.clipboard.writeText(payload);copied=true}catch{}
+ if(!copied){const ta=document.createElement("textarea");ta.value=payload;ta.setAttribute("readonly","");ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.focus();ta.select();ta.setSelectionRange(0,ta.value.length);try{copied=document.execCommand("copy")}catch{}ta.remove()}
+ if(!copied){const pre=document.getElementById("pmSyncDiagText");pre.textContent=payload;const range=document.createRange();range.selectNodeContents(pre);const sel=getSelection();sel.removeAllRanges();sel.addRange(range)}
+ if(typeof toast==="function")toast(copied?"Sync trace copied":"Trace selected — Copy");
+};
  document.getElementById("pmSyncDiagClear").onclick=()=>{window.pmDataIntegrity?.clearDiagnostics?.();render()};
  document.addEventListener("pm:sync-diagnostic",render);
  document.getElementById("openDiagnostics")?.addEventListener("click",()=>setTimeout(render,80));
