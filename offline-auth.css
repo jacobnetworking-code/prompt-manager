@@ -1,0 +1,14 @@
+/* Prompt Manager — offline auth + compact language selector */
+.auth-brand{display:grid!important;grid-template-columns:48px minmax(0,1fr) auto!important;align-items:center!important;gap:14px!important}
+.auth-brand-copy{min-width:0}
+.pm-auth-languages{display:flex;align-items:center;gap:4px;justify-self:end}
+.pm-auth-languages button{width:31px;height:31px;padding:0;border:1px solid transparent;border-radius:9px;background:transparent;display:grid;place-items:center;font-size:18px;line-height:1;filter:saturate(.78);opacity:.62}
+.pm-auth-languages button.active{border-color:rgba(200,164,93,.48);background:rgba(200,164,93,.08);filter:none;opacity:1}
+.pm-auth-languages button:active{transform:scale(.94)}
+@media(max-width:390px){
+ .auth-brand{grid-template-columns:44px minmax(0,1fr) auto!important;gap:10px!important}
+ .auth-mark{width:44px!important;height:44px!important}
+ .pm-auth-languages{gap:2px}
+ .pm-auth-languages button{width:27px;height:29px;font-size:16px}
+ .auth-brand strong{font-size:20px!important}
+}
