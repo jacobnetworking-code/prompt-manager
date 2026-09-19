@@ -53,7 +53,7 @@ function captureAuthenticatedUser(){
 }
 function install(){
  applyCopy();
- if(!navigator.onLine)setTimeout(()=>canUseOffline()?revealApp():revealLogin(),80);
+ if(!navigator.onLine)setTimeout(()=>canUseOffline()?revealApp():revealLogin(),2000);
 
  const languageButton=$("pmAuthLanguageButton"),languageMenu=$("pmAuthLanguageMenu");
  languageButton?.addEventListener("click",e=>{e.stopPropagation();const opening=languageMenu.hidden;languageMenu.hidden=!opening;languageButton.setAttribute("aria-expanded",String(opening))});
