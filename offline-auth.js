@@ -34,16 +34,27 @@ function applyCopy(){
  const lb=$("pmAuthLanguageButton");if(lb)lb.textContent={en:"🇬🇧",es:"🇪🇸",sr:"🇷🇸"}[lang()]||"🇬🇧";
  document.querySelectorAll("[data-auth-lang]").forEach(b=>b.classList.toggle("active",b.dataset.authLang===lang()));
 }
+function showOfflineApp(){
+ if(!canUseOffline())return false;
+ const marker=readMarker();
+ try{
+   if(marker?.userId&&typeof authUser!=="undefined"&&!authUser)authUser={id:marker.userId};
+ }catch{}
+ const gate=$("authGate");if(gate)gate.hidden=true;
+ const loader=$("pmAuthLoading");if(loader)loader.hidden=true;
+ document.body.classList.remove("pm-auth-pending","pm-offline-loader-hold");
+ document.body.classList.add("pm-offline-authenticated");
+ try{if(typeof revealApp==="function")revealApp()}catch{}
+ return true;
+}
+function revealOfflineLogin(){
+ const loader=$("pmAuthLoading");if(loader)loader.hidden=true;
+ try{if(typeof revealLogin==="function")revealLogin();else{const gate=$("authGate");if(gate)gate.hidden=false}}catch{const gate=$("authGate");if(gate)gate.hidden=false}
+}
 function enforce(){
- const status=$("authStatus");
- if(canUseOffline()){
-   if(status)status.textContent="";
-   document.body.classList.add("pm-offline-authenticated");
-   revealApp();
- }else{
-   document.body.classList.remove("pm-offline-authenticated");
-   if(!navigator.onLine)revealLogin();
- }
+ if(showOfflineApp())return;
+ document.body.classList.remove("pm-offline-authenticated");
+ if(!navigator.onLine)revealOfflineLogin();
 }
 function captureAuthenticatedUser(){
  try{
@@ -51,15 +62,29 @@ function captureAuthenticatedUser(){
  }catch{}
  return false;
 }
+function installStabilityModule(){
+ if(document.querySelector('script[data-pm-v235]'))return;
+ const s=document.createElement("script");
+ s.src="./v235-stability.js";
+ s.defer=true;
+ s.dataset.pmV235="true";
+ document.head.appendChild(s);
+}
 function install(){
+ installStabilityModule();
  applyCopy();
+
+ // V2.0.35: a previously verified user must never see the login gate on
+ // the first cold start while offline. Resolve local authorization immediately.
  if(!navigator.onLine){
    document.body.classList.add("pm-offline-loader-hold");
    const loader=$("pmAuthLoading");if(loader)loader.hidden=false;
-   setTimeout(()=>{
-     document.body.classList.remove("pm-offline-loader-hold");
-     canUseOffline()?revealApp():revealLogin();
-   },2200);
+   if(!showOfflineApp()){
+     setTimeout(()=>{
+       document.body.classList.remove("pm-offline-loader-hold");
+       showOfflineApp()||revealOfflineLogin();
+     },900);
+   }
  }
 
  const languageButton=$("pmAuthLanguageButton"),languageMenu=$("pmAuthLanguageMenu");
@@ -73,7 +98,20 @@ function install(){
  document.addEventListener("click",e=>{if(!e.target.closest("#pmAuthLanguages")){languageMenu.hidden=true;languageButton?.setAttribute("aria-expanded","false")}});
 
  const gate=$("authGate");
- if(gate)new MutationObserver(()=>{if(canUseOffline()&&!gate.hidden){gate.hidden=true;revealApp();return}const loader=$("pmAuthLoading");if(loader)loader.hidden=true}).observe(gate,{attributes:true,attributeFilter:["hidden"]});
+ if(gate)new MutationObserver(()=>{
+   if(canUseOffline()&&!gate.hidden){showOfflineApp();return}
+   const loader=$("pmAuthLoading");if(loader&&!canUseOffline())loader.hidden=true;
+ }).observe(gate,{attributes:true,attributeFilter:["hidden"]});
+
+ // Guard against late auth bootstrap work re-opening the login gate offline.
+ if(!navigator.onLine&&gate){
+   let guardFrames=0;
+   const guard=setInterval(()=>{
+     guardFrames++;
+     if(canUseOffline())showOfflineApp();
+     if(guardFrames>=30||navigator.onLine)clearInterval(guard);
+   },100);
+ }
 
  let attempts=0;
  const timer=setInterval(()=>{
