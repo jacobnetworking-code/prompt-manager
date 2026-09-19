@@ -1,4 +1,4 @@
-/* Prompt Manager V2.0.16 — Restore compact rail + menu behavior */
+/* Prompt Manager V2.0.17 — Single rail geometry + reliable detail actions */
 (()=>{"use strict";
 const $=id=>document.getElementById(id);
 const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
@@ -21,7 +21,32 @@ function closeDetail(){const d=$("pmChainDetail");if(d?.open)d.close();unlockBac
 function ensureType(){const row=$("categoryFilters");if(!row)return;let b=$("pmTypeFilter");if(!b){b=document.createElement("button");b.id="pmTypeFilter";b.type="button";b.className="pm-type-filter";row.prepend(b)}if(row.firstElementChild!==b)row.prepend(b);b.textContent=(type==="chains"?"Chains":type==="prompts"?"Prompts":"Type")+" ▾";b.classList.toggle("selected",type!=="all")}
 function typeDialog(){let d=$("pmTypeDialog");if(d)return d;d=document.createElement("dialog");d.id="pmTypeDialog";d.className="sheet pm-type-dialog";d.innerHTML=`<div class="sheethead"><div><small>FILTER</small><h3>Type</h3></div><button class="x" type="button" data-type-close>×</button></div><div class="theme-options"><button data-type="all"><span>All</span><b></b></button><button data-type="prompts"><span>Prompts</span><b></b></button><button data-type="chains"><span>Chains</span><b></b></button></div>`;document.body.appendChild(d);return d}
 function applyType(){ensureType();const list=$("list");if(!list)return;[...list.children].forEach(el=>{if(!el.classList.contains("card"))return;const chain=el.classList.contains("pm-chain-card");el.hidden=(type==="chains"&&!chain)||(type==="prompts"&&chain)});const visible=[...list.children].filter(el=>el.classList.contains("card")&&!el.hidden);const count=$("count");if(count)count.textContent=String(visible.length);const nr=$("noresults");if(nr)nr.hidden=visible.length>0;decorateCards()}
-function decorateCards(){document.querySelectorAll(".pm-chain-card").forEach(card=>{const id=card.dataset.chainId;if(!id)return;card.classList.add("pm-chain-polished");card.querySelectorAll(".pm-chain-node").forEach((n,i)=>n.textContent=String(i+1));const top=card.querySelector(".cardtop");if(top&&!top.querySelector("[data-chain-share-top]")){const actions=document.createElement("div");actions.className="pm-chain-top-actions";actions.innerHTML=`<button type="button" data-chain-share-top="${esc(id)}" aria-label="Share">${ICON_SHARE}</button>`;const more=top.querySelector("[data-chain-menu]");if(more){more.classList.add("pm-chain-more");actions.appendChild(more)}top.appendChild(actions)}const menu=card.querySelector(".pm-chain-menu");if(menu&&!menu.dataset.upgraded){menu.dataset.upgraded="1";menu.innerHTML=`<button data-chain-edit="${esc(id)}">Edit chain</button><button data-chain-duplicate="${esc(id)}">Duplicate chain</button><button class="danger" data-chain-delete-v2="${esc(id)}">Delete chain</button>`}card.querySelectorAll("[data-chain-copy]").forEach(b=>{if(b.dataset.progressBound)return;b.dataset.progressBound="1";b.addEventListener("click",()=>markComplete(id,Number(b.dataset.chainCopy.split(":")[1])))})})}
+function decorateCards(){document.querySelectorAll(".pm-chain-card").forEach(card=>{const id=card.dataset.chainId;if(!id)return;card.classList.add("pm-chain-polished");card.querySelectorAll(".pm-chain-node").forEach((n,i)=>n.textContent=String(i+1));const top=card.querySelector(".cardtop");if(top&&!top.querySelector("[data-chain-share-top]")){const actions=document.createElement("div");actions.className="pm-chain-top-actions";actions.innerHTML=`<button type="button" data-chain-share-top="${esc(id)}" aria-label="Share">${ICON_SHARE}</button>`;const more=top.querySelector("[data-chain-menu]");if(more){more.classList.add("pm-chain-more");actions.appendChild(more)}top.appendChild(actions)}const menu=card.querySelector(".pm-chain-menu");if(menu&&!menu.dataset.upgraded){menu.dataset.upgraded="1";menu.innerHTML=`<button data-chain-edit="${esc(id)}">Edit chain</button><button data-chain-duplicate="${esc(id)}">Duplicate chain</button><button class="danger" data-chain-delete-v2="${esc(id)}">Delete chain</button>`}card.querySelectorAll("[data-chain-copy]").forEach(b=>{if(b.dataset.progressBound)return;b.dataset.progressBound="1";b.addEventListener("click",()=>markComplete(id,Number(b.dataset.chainCopy.split(":")[1])))})});syncRailGeometry(document)}
+function syncRailGeometry(root=document){
+ requestAnimationFrame(()=>{
+  root.querySelectorAll?.(".pm-chain-card.pm-chain-polished").forEach(card=>{
+   const rail=card.querySelector(".pm-chain-rail"),line=rail?.querySelector(".pm-chain-line");
+   const nodes=[...card.querySelectorAll(".pm-chain-node")];
+   if(!rail||!line||!nodes.length)return;
+   const first=nodes[0],last=nodes[nodes.length-1],rr=rail.getBoundingClientRect(),fr=first.getBoundingClientRect(),lr=last.getBoundingClientRect();
+   const start=fr.top+fr.height/2-rr.top;
+   const end=lr.top+lr.height/2-rr.top;
+   line.style.top=`${Math.max(0,start)}px`;
+   line.style.height=`${Math.max(0,end-start)}px`;
+  });
+  const d=root.matches?.("#pmChainDetail")?root:root.querySelector?.("#pmChainDetail");
+  if(d?.open){
+   const steps=d.querySelector(".pm-chain-detail-steps"),items=[...d.querySelectorAll(".pm-chain-detail-step")];
+   if(steps&&items.length){
+    const sr=steps.getBoundingClientRect(),first=items[0].querySelector(".pm-chain-detail-node")?.getBoundingClientRect(),last=items.at(-1).querySelector(".pm-chain-detail-node")?.getBoundingClientRect();
+    if(first&&last){
+     steps.style.setProperty("--pm-detail-rail-top",`${first.top+first.height/2-sr.top}px`);
+     steps.style.setProperty("--pm-detail-rail-height",`${Math.max(0,last.top+last.height/2-(first.top+first.height/2))}px`);
+    }
+   }
+  }
+ });
+}
 function markComplete(id,index){let s=completed.get(id)||new Set();s.add(index);completed.set(id,s);document.querySelectorAll(`.pm-chain-card[data-chain-id="${CSS.escape(id)}"] .pm-chain-node`).forEach((n,i)=>n.classList.toggle("is-complete",s.has(i)));document.querySelectorAll(`#pmChainDetail[data-chain-id="${CSS.escape(id)}"] .pm-chain-detail-step`).forEach((x,i)=>x.classList.toggle("is-complete",s.has(i)))}
 async function getChain(id){const {data,error}=await supabaseClient.from("prompt_chains").select("*, prompt_chain_steps(*)").eq("id",id).single();if(error)throw error;data.steps=(data.prompt_chain_steps||[]).sort((a,b)=>a.position-b.position);return data}
 function detailDialog(){let d=$("pmChainDetail");if(d)return d;d=document.createElement("dialog");d.id="pmChainDetail";d.className="pm-chain-detail";d.addEventListener("cancel",e=>{e.preventDefault();closeDetail()});d.addEventListener("close",unlockBackground);document.body.appendChild(d);return d}
@@ -36,7 +61,10 @@ async function openDetail(id){const d=detailDialog();d.dataset.chainId=id;d.inne
  <button class="full primary pm-chain-use" data-chain-use="${esc(id)}">${c.platform&&c.platform!=="general"&&platformURLs[c.platform]?`Use with ${esc(typeof platformName==="function"?platformName(c.platform):c.platform)} ↗`:"Copy first prompt"}</button>
  <footer class="pm-chain-detail-footer">${ratingSummary(c)}<div class="pm-chain-uses">Used ${Number(c.use_count)||0} times</div></footer>
  <div class="menu pm-chain-detail-menu" hidden><button data-chain-edit="${esc(id)}">Edit chain</button><button data-chain-duplicate="${esc(id)}">Duplicate chain</button><button class="danger" data-chain-delete-v2="${esc(id)}">Delete chain</button></div>
- </div>`;const done=completed.get(id)||new Set();d.querySelectorAll(".pm-chain-detail-step").forEach((x,i)=>x.classList.toggle("is-complete",done.has(i)))}catch(e){d.innerHTML=`<div class="pm-chain-detail-loading">Could not load chain.<br>${esc(e.message||e)}</div>`}}
+ </div>`;d._pmChainData=c;const done=completed.get(id)||new Set();d.querySelectorAll(".pm-chain-detail-step").forEach((x,i)=>x.classList.toggle("is-complete",done.has(i)));
+ d.querySelectorAll("[data-chain-rate]").forEach(b=>b.onclick=e=>{e.preventDefault();e.stopPropagation();void rate(id,Number(b.dataset.chainRate))});
+ const useButton=d.querySelector("[data-chain-use]");if(useButton)useButton.onclick=e=>{e.preventDefault();e.stopPropagation();void useChain(id)};
+ syncRailGeometry(d)}catch(e){d.innerHTML=`<div class="pm-chain-detail-loading">Could not load chain.<br>${esc(e.message||e)}</div>`}}
 async function shareChain(id){try{const c=await getChain(id),text=[c.title,c.description,...c.steps.map((s,i)=>`${i+1}. ${s.title?`${s.title}\n`:""}${s.content}`)].filter(Boolean).join("\n\n");if(navigator.share)await navigator.share({title:c.title,text});else{await navigator.clipboard.writeText(text);toast2("Chain copied for sharing")}}catch(e){if(e?.name!=="AbortError")toast2("Share unavailable")}}
 function editorDialog(){let d=$("pmChainEditV2");if(d)return d;d=document.createElement("dialog");d.id="pmChainEditV2";d.className="pm-chain-edit-v2";document.body.appendChild(d);return d}
 async function editChain(id){const c=await getChain(id),d=editorDialog();d.dataset.chainId=id;d.innerHTML=`<form><div class="sheethead"><div><small>CHAIN</small><h3>Edit chain</h3></div><button type="button" class="round" data-edit-close>×</button></div><label>Title<input data-edit-title maxlength="100" value="${esc(c.title)}"></label><label>Description<textarea data-edit-description maxlength="300">${esc(c.description||"")}</textarea></label><div class="pm-chain-edit-steps">${c.steps.map((s,i)=>editStep(s,i)).join("")}</div><button type="button" data-edit-add>＋ Add prompt</button><button type="submit" class="full primary">Save changes</button></form>`;d.showModal()}
@@ -44,10 +72,52 @@ function editStep(s={},i=0){return `<section class="pm-chain-edit-step"><div><b>
 async function saveEdit(d){if(busy)return;const sections=[...d.querySelectorAll(".pm-chain-edit-step")],id=d.dataset.chainId;if(sections.length<2){toast2("A chain needs at least 2 prompts");return}busy=true;try{const c=await getChain(id),payload={title:d.querySelector("[data-edit-title]").value.trim(),description:d.querySelector("[data-edit-description]").value.trim(),updated_at:new Date().toISOString()};let r=await supabaseClient.from("prompt_chains").update(payload).eq("id",id);if(r.error)throw r.error;r=await supabaseClient.from("prompt_chain_steps").delete().eq("chain_id",id);if(r.error)throw r.error;const rows=sections.map((s,i)=>({chain_id:id,user_id:c.user_id,position:i+1,title:s.querySelector("[data-edit-step-title]").value.trim(),content:s.querySelector("[data-edit-step-content]").value.trim()}));r=await supabaseClient.from("prompt_chain_steps").insert(rows);if(r.error)throw r.error;d.close();closeDetail();toast2("Chain updated");location.reload()}catch(e){toast2(`Update failed: ${e.message||e}`)}finally{busy=false}}
 async function duplicateChain(id){try{const c=await getChain(id),{data,error}=await supabaseClient.from("prompt_chains").insert({user_id:c.user_id,title:`${c.title} — Copy`,description:c.description,category_id:c.category_id,platform:c.platform,model:c.model,rating:null,use_count:0}).select().single();if(error)throw error;const rows=c.steps.map((s,i)=>({chain_id:data.id,user_id:c.user_id,position:i+1,title:s.title,content:s.content,prompt_id:s.prompt_id||null}));const x=await supabaseClient.from("prompt_chain_steps").insert(rows);if(x.error){await supabaseClient.from("prompt_chains").delete().eq("id",data.id);throw x.error}toast2("Chain duplicated");location.reload()}catch(e){toast2(`Duplicate failed: ${e.message||e}`)}}
 async function deleteV2(id){if(!confirm("Delete this chain?"))return;const {error}=await supabaseClient.from("prompt_chains").delete().eq("id",id);if(error){toast2(error.message);return}closeDetail();toast2("Chain deleted");location.reload()}
-async function rate(id,n){try{const c=await getChain(id),value=Number(c.rating)===n?null:n,{error}=await supabaseClient.from("prompt_chains").update({rating:value,updated_at:new Date().toISOString()}).eq("id",id);if(error)throw error;const d=$("pmChainDetail");if(d?.open){d.querySelectorAll("[data-chain-rate]").forEach(b=>b.classList.toggle("on",Number(b.dataset.chainRate)<=Number(value||0)));const v=d.querySelector(".pm-chain-rating-value"),count=d.querySelector(".pm-chain-rating-count");if(v)v.textContent=value?Number(value).toFixed(1):"—";if(count){count.textContent=value?"(1)":"";count.hidden=!value}}toast2(value?`Rated ${value} stars`:"Rating cleared")}catch(e){toast2(`Rating failed: ${e.message||e}`)}}
+async function rate(id,n){
+ const d=$("pmChainDetail"),cached=d?._pmChainData;
+ try{
+  const current=cached&&String(cached.id)===String(id)?cached:await getChain(id);
+  const value=Number(current.rating)===n?null:n;
+  // Optimistic UI so the tap always has immediate visible feedback.
+  if(d?.open){
+   d.querySelectorAll("[data-chain-rate]").forEach(b=>b.classList.toggle("on",Number(b.dataset.chainRate)<=Number(value||0)));
+   const v=d.querySelector(".pm-chain-rating-value"),count=d.querySelector(".pm-chain-rating-count");
+   if(v)v.textContent=value?Number(value).toFixed(1):"—";
+   if(count){count.textContent=value?"(1)":"";count.hidden=!value}
+  }
+  current.rating=value;
+  const {error}=await supabaseClient.from("prompt_chains").update({rating:value,updated_at:new Date().toISOString()}).eq("id",id);
+  if(error)throw error;
+  toast2(value?`Rated ${value} stars`:"Rating cleared");
+ }catch(e){
+  toast2(`Rating failed: ${e.message||e}`);
+  try{const fresh=await getChain(id);if(d?.open){d._pmChainData=fresh;d.querySelectorAll("[data-chain-rate]").forEach(b=>b.classList.toggle("on",Number(b.dataset.chainRate)<=Number(fresh.rating||0)))}}catch{}
+ }
+}
 async function openDetailRefresh(id){closeDetail();await openDetail(id)}
-async function useChain(id){try{const c=await getChain(id),first=c.steps[0];if(!first)return toast2("This chain has no prompts");const copied=await copyText(first.content);if(!copied)return toast2("Could not copy the first prompt");const next=(Number(c.use_count)||0)+1;const {error}=await supabaseClient.from("prompt_chains").update({use_count:next,updated_at:new Date().toISOString()}).eq("id",id);if(error)throw error;const uses=$("pmChainDetail")?.querySelector(".pm-chain-uses");if(uses)uses.textContent=`Used ${next} times`;toast2("First prompt copied");const url=platformURLs[c.platform];if(url)setTimeout(()=>openPlatform(url),180)}catch(e){toast2(`Use failed: ${e.message||e}`)}}
+async function useChain(id){
+ const d=$("pmChainDetail"),cached=d?._pmChainData;
+ try{
+  // The chain is already loaded when detail opens. Do clipboard + popup while the
+  // iOS tap still has user activation; do not wait for a network round-trip first.
+  const c=cached&&String(cached.id)===String(id)?cached:null;
+  if(!c)return toast2("Chain is still loading");
+  const first=c.steps?.[0];if(!first)return toast2("This chain has no prompts");
+  const url=platformURLs[c.platform];
+  let opened=null;
+  if(url){try{opened=window.open(url,"_blank")}catch{}}
+  const copied=await copyText(first.content);
+  if(!copied){if(opened)try{opened.close()}catch{};return toast2("Could not copy the first prompt")}
+  const next=(Number(c.use_count)||0)+1;
+  c.use_count=next;
+  const uses=d?.querySelector(".pm-chain-uses");if(uses)uses.textContent=`Used ${next} times`;
+  toast2(url?"First prompt copied · opening ChatGPT":"First prompt copied");
+  const {error}=await supabaseClient.from("prompt_chains").update({use_count:next,updated_at:new Date().toISOString()}).eq("id",id);
+  if(error){c.use_count=Math.max(0,next-1);if(uses)uses.textContent=`Used ${c.use_count} times`;throw error}
+  if(url&&!opened)location.href=url;
+ }catch(e){toast2(`Use failed: ${e.message||e}`)}
+}
 function events(){document.addEventListener("click",async e=>{if(!e.target.closest(".menu")&&!isMoreTrigger(e.target))closeOpenMenus();const tb=e.target.closest("#pmTypeFilter");if(tb){e.preventDefault();e.stopPropagation();const d=typeDialog();d.querySelectorAll("[data-type]").forEach(x=>x.querySelector("b").textContent=x.dataset.type===type?"✓":"");d.showModal();return}if(e.target.closest("[data-type-close]"))return $("pmTypeDialog")?.close();const to=e.target.closest("[data-type]");if(to){type=to.dataset.type;$("pmTypeDialog")?.close();applyType();return}const sh=e.target.closest("[data-chain-share-top]");if(sh){e.stopPropagation();return shareChain(sh.dataset.chainShareTop)}const edit=e.target.closest("[data-chain-edit]");if(edit){e.stopPropagation();return editChain(edit.dataset.chainEdit)}const dup=e.target.closest("[data-chain-duplicate]");if(dup){e.stopPropagation();return duplicateChain(dup.dataset.chainDuplicate)}const del=e.target.closest("[data-chain-delete-v2]");if(del){e.stopPropagation();return deleteV2(del.dataset.chainDeleteV2)}if(e.target.closest("[data-detail-close]"))return closeDetail();const dm=e.target.closest("[data-detail-menu]");if(dm){const m=$("pmChainDetail")?.querySelector(".pm-chain-detail-menu");if(m){const opening=m.hidden;closeOpenMenus(m);if(opening){positionDetailMenu(dm,m);m.hidden=false}else m.hidden=true}return}const dc=e.target.closest("[data-detail-copy]");if(dc){const id=$("pmChainDetail")?.dataset.chainId,c=await getChain(id),i=Number(dc.dataset.detailCopy);if(!await copyText(c.steps[i].content))return toast2("Copy failed");markComplete(id,i);dc.closest(".pm-chain-detail-step")?.classList.add("is-complete");toast2("Prompt copied");return}const rt=e.target.closest("[data-chain-rate]");if(rt)return rate($("pmChainDetail").dataset.chainId,Number(rt.dataset.chainRate));const use=e.target.closest("[data-chain-use]");if(use)return useChain(use.dataset.chainUse);if(e.target.closest("[data-edit-close]"))return $("pmChainEditV2")?.close();if(e.target.closest("[data-edit-add]")){const wrap=$("pmChainEditV2").querySelector(".pm-chain-edit-steps"),i=wrap.children.length;wrap.insertAdjacentHTML("beforeend",editStep({},i));return}if(e.target.closest("[data-edit-remove]")){const s=e.target.closest(".pm-chain-edit-step"),wrap=s.parentElement;if(wrap.children.length<=2)return toast2("A chain needs at least 2 prompts");s.remove();return}const card=e.target.closest(".pm-chain-card");if(card&&!e.target.closest("button,.menu"))openDetail(card.dataset.chainId)},true);document.addEventListener("submit",e=>{if(e.target.closest("#pmChainEditV2")){e.preventDefault();saveEdit($("pmChainEditV2"))}},true)}
+window.addEventListener("resize",()=>syncRailGeometry(document),{passive:true});window.addEventListener("orientationchange",()=>setTimeout(()=>syncRailGeometry(document),120),{passive:true});
 function installGlobalMenuDismiss(){
  document.addEventListener("pointerdown",e=>{
    if(e.target.closest?.(".menu")||isMoreTrigger(e.target))return;
