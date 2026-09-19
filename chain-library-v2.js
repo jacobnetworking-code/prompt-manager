@@ -3,6 +3,7 @@
 const $=id=>document.getElementById(id);
 const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
 const ICON_SHARE=`<svg viewBox="0 0 24 24"><path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M6 12v7h12v-7"/></svg>`;
+const ICON_CHAIN=`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.5 14.5 14.5 9.5"></path><path d="M7.2 16.8 5.8 18.2a3.5 3.5 0 0 1-5-5l3.1-3.1a3.5 3.5 0 0 1 5 0"></path><path d="m16.8 7.2 1.4-1.4a3.5 3.5 0 1 1 5 5l-3.1 3.1a3.5 3.5 0 0 1-5 0"></path></svg>`;
 let type="all",busy=false,lockedY=0;
 const completed=new Map();
 const platformURLs={chatgpt:"chatgpt://",claude:"https://claude.ai/new",gemini:"https://gemini.google.com/app",grok:"https://grok.com/"};
@@ -79,7 +80,7 @@ function detailDialog(){let d=$("pmChainDetail");if(d)return d;d=document.create
 function stars(c){const r=Number(c.rating)||0;return [1,2,3,4,5].map(n=>`<button data-chain-rate="${n}" class="${n<=r?"on":""}" aria-label="${n} stars">★</button>`).join("")}
 function ratingSummary(c){const r=Number(c.rating)||0;return `<div class="pm-chain-rating"><div class="rating-stars">${stars(c)}</div><span class="pm-chain-rating-value">${r?r.toFixed(1):"—"}</span>${r?`<span class="pm-chain-rating-count">(1)</span>`:""}</div>`}
 async function openDetail(id){const d=detailDialog();d.dataset.chainId=id;d.innerHTML=`<div class="pm-chain-detail-loading">Loading chain…</div>`;lockBackground();d.showModal();try{const c=await getChain(id),steps=c.steps||[];d.innerHTML=`<div class="pm-chain-detail-sheet">
- <div class="pm-chain-detail-type"><span class="pm-chain-badge">CHAIN</span><span class="categorybadge">${esc(typeof catName==="function"?catName(c.category_id):c.category_id)}</span></div>
+ <div class="pm-chain-detail-type"><span class="pm-chain-badge">${ICON_CHAIN}CHAIN</span><span class="categorybadge">${esc(typeof catName==="function"?catName(c.category_id):c.category_id)}</span></div>
  <header class="pm-chain-title-row"><h2>${esc(c.title)}</h2><div class="pm-chain-detail-actions"><button data-chain-share-top="${esc(id)}" aria-label="Share">${ICON_SHARE}</button><button data-detail-menu="${esc(id)}" aria-label="More actions">•••</button><button data-detail-close aria-label="Close">×</button></div></header>
  ${c.description?`<p class="pm-chain-detail-desc">${esc(c.description)}</p>`:""}
  <div class="pm-chain-detail-meta"><span>${esc(typeof platformName==="function"?platformName(c.platform):c.platform)}</span>${c.model?`<span>${esc(c.model)}</span>`:""}<span>${steps.length} steps</span></div>
@@ -91,7 +92,66 @@ async function openDetail(id){const d=detailDialog();d.dataset.chainId=id;d.inne
  d.querySelectorAll("[data-chain-rate]").forEach(b=>b.onclick=e=>{e.preventDefault();e.stopPropagation();void rate(id,Number(b.dataset.chainRate))});
  const useButton=d.querySelector("[data-chain-use]");if(useButton)useButton.onclick=e=>{e.preventDefault();e.stopPropagation();void useChain(id)};
  syncRailGeometry(d)}catch(e){d.innerHTML=`<div class="pm-chain-detail-loading">Could not load chain.<br>${esc(e.message||e)}</div>`}}
-async function shareChain(id){try{const c=await getChain(id),text=[c.title,c.description,...c.steps.map((s,i)=>`${i+1}. ${s.title?`${s.title}\n`:""}${s.content}`)].filter(Boolean).join("\n\n");if(navigator.share)await navigator.share({title:c.title,text});else{await navigator.clipboard.writeText(text);toast2("Chain copied for sharing")}}catch(e){if(e?.name!=="AbortError")toast2("Share unavailable")}}
+function chainShareText(c){
+ const steps=c.steps||[];
+ return [
+  c.title,
+  c.description,
+  ...steps.map((s,i)=>`PROMPT ${i+1}${s.title?` · ${s.title}`:""}\n${s.content||""}`)
+ ].filter(Boolean).join("\n\n").trim();
+}
+function chainTeaser(fullText){
+ const target=Math.min(fullText.length,Math.max(120,Math.ceil(fullText.length*.20)));
+ const searchStart=Math.max(0,target-48),windowText=fullText.slice(searchStart,target+1);
+ let end=target,lastSpace=windowText.lastIndexOf(" ");
+ if(lastSpace>0)end=searchStart+lastSpace;
+ while(end>0&&/[.!?;:,\-—]/.test(fullText[end-1]))end--;
+ return fullText.slice(0,end).trimEnd();
+}
+async function ensureChainPublicShare(c){
+ if(typeof supabaseClient==="undefined"||!supabaseClient)throw new Error("Cloud unavailable");
+ const {data:{user},error:userError}=await supabaseClient.auth.getUser();
+ if(userError)throw userError;
+ if(!user)throw new Error("Sign in required");
+ const fullText=chainShareText(c);
+ if(!fullText)throw new Error("Chain unavailable");
+ const marker=`chain:${String(c.id)}`;
+ let slug=null;
+ const {data:existing,error:existingError}=await supabaseClient.from("prompt_shares").select("slug").eq("owner_user_id",user.id).eq("source_name",marker).eq("is_active",true).limit(1);
+ if(existingError)throw existingError;
+ slug=existing?.[0]?.slug||null;
+ const payload={
+  title:c.title||"Prompt Chain",
+  teaser:chainTeaser(fullText),
+  total_length:fullText.length,
+  category_id:c.category_id||"general",
+  platforms:[c.platform||"general"],
+  source_name:marker
+ };
+ if(!slug){
+  const {data:created,error:createError}=await supabaseClient.from("prompt_shares").insert({owner_user_id:user.id,source_prompt_id:null,...payload}).select("slug").single();
+  if(createError)throw createError;
+  slug=created.slug;
+ }else{
+  const {error:updateError}=await supabaseClient.from("prompt_shares").update(payload).eq("slug",slug).eq("owner_user_id",user.id);
+  if(updateError)throw updateError;
+ }
+ const {error:contentError}=await supabaseClient.from("prompt_share_contents").upsert({share_slug:slug,owner_user_id:user.id,content:fullText},{onConflict:"share_slug"});
+ if(contentError)throw contentError;
+ return `${location.origin}${location.pathname.replace(/[^/]*$/,"")}prompt/?s=${encodeURIComponent(slug)}`;
+}
+async function shareChain(id){
+ try{
+  const c=await getChain(id),url=await ensureChainPublicShare(c);
+  const data={title:c.title||"Prompt Chain",text:`${c.title||"Prompt Chain"} — shared via Prompt Manager`,url};
+  if(navigator.share){await navigator.share(data);toast2("Chain shared")}
+  else{await navigator.clipboard.writeText(url);toast2("Share link copied")}
+ }catch(e){
+  if(e?.name==="AbortError")return;
+  console.error("Chain share failed",e);
+  toast2(e?.message==="Sign in required"?"Sign in to share this chain":`Share unavailable: ${e.message||e}`);
+ }
+}
 function editorDialog(){let d=$("pmChainEditV2");if(d)return d;d=document.createElement("dialog");d.id="pmChainEditV2";d.className="pm-chain-edit-v2";document.body.appendChild(d);return d}
 async function editChain(id){const c=await getChain(id),d=editorDialog();d.dataset.chainId=id;d.innerHTML=`<form><div class="sheethead"><div><small>CHAIN</small><h3>Edit chain</h3></div><button type="button" class="round" data-edit-close>×</button></div><label>Title<input data-edit-title maxlength="100" value="${esc(c.title)}"></label><label>Description<textarea data-edit-description maxlength="300">${esc(c.description||"")}</textarea></label><div class="pm-chain-edit-steps">${c.steps.map((s,i)=>editStep(s,i)).join("")}</div><button type="button" data-edit-add>＋ Add prompt</button><button type="submit" class="full primary">Save changes</button></form>`;d.showModal()}
 function editStep(s={},i=0){return `<section class="pm-chain-edit-step"><div><b>${i+1}</b><button type="button" data-edit-remove>×</button></div><label>Prompt title<input data-edit-step-title value="${esc(s.title||"")}"></label><label>Prompt<textarea data-edit-step-content required>${esc(s.content||"")}</textarea></label></section>`}

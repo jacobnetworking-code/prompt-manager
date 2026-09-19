@@ -289,3 +289,32 @@ body.pm-detail-locked{position:fixed!important;left:0;right:0;width:100%;overflo
   display:none!important;
 }
 
+
+
+/* V2.0.25 — final Chain coherence */
+.pm-chain-editor-kicker{display:block!important;margin:0 0 7px!important}
+.pm-chain-editor-kicker .pm-chain-badge{width:max-content!important}
+.pm-chain-dialog .pm-chain-badge svg,
+.pm-chain-detail-type .pm-chain-badge svg{width:12px!important;height:12px!important;fill:none!important;stroke:currentColor!important;stroke-width:1.8!important;stroke-linecap:round!important;stroke-linejoin:round!important}
+
+/* No divider between the Chain description and metadata. */
+.pm-chain-detail-sheet .pm-chain-detail-desc,
+.pm-chain-detail-sheet .pm-chain-detail-meta,
+.pm-chain-detail-sheet .pm-chain-title-row,
+.pm-chain-detail-sheet .pm-chain-detail-type{
+  border:0!important;
+  border-top:0!important;
+  border-right:0!important;
+  border-bottom:0!important;
+  border-left:0!important;
+  box-shadow:none!important;
+  outline:0!important;
+}
+.pm-chain-detail-sheet .pm-chain-detail-desc::before,
+.pm-chain-detail-sheet .pm-chain-detail-desc::after,
+.pm-chain-detail-sheet .pm-chain-detail-meta::before,
+.pm-chain-detail-sheet .pm-chain-detail-meta::after{
+  content:none!important;
+  display:none!important;
+  border:0!important;
+}
