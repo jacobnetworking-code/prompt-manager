@@ -30,3 +30,15 @@ body.pm-offline-loader-hold #pmAuthLoading{display:grid!important;visibility:vis
 #pmStorageDiagCard + #pmSyncDiag{margin-top:0!important}
 #pmSyncDiag{display:block;width:100%;box-sizing:border-box}
 #pmSyncDiag>div{display:flex;gap:8px;flex-wrap:wrap}
+
+/* V2.0.34 — compact, symmetric diagnostics cards + iOS Chain detail focus-ring guard. */
+#diagnosticsDialog .sheet{display:flex!important;flex-direction:column!important;gap:16px!important}
+#diagnosticsDialog .sheet>.sheethead{margin-bottom:2px!important}
+.pm-diagnostics-card{box-sizing:border-box!important;width:100%!important;margin:0!important;padding:15px!important;border:1px solid var(--border)!important;border-radius:18px!important;background:var(--surface2)!important}
+.pm-diagnostics-card>strong{display:block!important;margin:0 0 12px!important;font-size:14px!important;line-height:1.2!important}
+#pmStorageDiagCard .diagnostics,#pmSyncDiag pre{box-sizing:border-box!important;max-height:220px!important;overflow:auto!important;margin:0 0 12px!important;padding:0!important;border:0!important;background:transparent!important;white-space:pre-wrap!important;word-break:break-word!important;font-size:10px!important;line-height:1.45!important;color:var(--muted)!important}
+.pm-diagnostics-actions{display:flex!important;gap:8px!important;flex-wrap:wrap!important}
+.pm-diagnostics-actions button,#pmSyncDiag>div button{box-sizing:border-box!important;width:auto!important;min-width:0!important;min-height:36px!important;margin:0!important;padding:0 12px!important;border:1px solid var(--border)!important;border-radius:10px!important;background:var(--surface)!important;color:var(--text)!important;font-size:10px!important;font-weight:600!important}
+#pmDiagnosticsHint{margin:0 2px!important;color:var(--muted)!important}
+.pm-chain-detail,.pm-chain-detail:focus,.pm-chain-detail:focus-visible,.pm-chain-detail[open]{outline:none!important;-webkit-tap-highlight-color:transparent!important}
+.pm-chain-detail-sheet,.pm-chain-detail-sheet:focus,.pm-chain-detail-sheet:focus-visible{outline:none!important;border-top:0!important}
