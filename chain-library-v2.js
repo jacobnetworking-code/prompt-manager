@@ -1,11 +1,12 @@
-/* Prompt Manager V2.0.18 — Progressive gold Chain rail */
+/* Prompt Manager V2.0.20 — Unified Library behavior */
 (()=>{"use strict";
 const $=id=>document.getElementById(id);
 const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
 const ICON_SHARE=`<svg viewBox="0 0 24 24"><path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M6 12v7h12v-7"/></svg>`;
 let type="all",busy=false,lockedY=0;
 const completed=new Map();
-const platformURLs={chatgpt:"https://chatgpt.com/",claude:"https://claude.ai/",gemini:"https://gemini.google.com/",grok:"https://grok.com/",midjourney:"https://www.midjourney.com/"};
+const platformURLs={chatgpt:"chatgpt://",claude:"https://claude.ai/new",gemini:"https://gemini.google.com/app",grok:"https://grok.com/"};
+const chainSelected=new Set();
 
 function injectCSS(){if(document.querySelector('link[data-chain-library-v2]'))return;const l=document.createElement("link");l.rel="stylesheet";l.href="./chain-library-v2.css";l.dataset.chainLibraryV2="1";document.head.appendChild(l)}
 function toast2(s){try{toast(s)}catch{const e=$("toast");if(e){e.textContent=s;e.classList.add("show");setTimeout(()=>e.classList.remove("show"),1800)}}}
@@ -26,34 +27,32 @@ function syncRailGeometry(root=document){
  requestAnimationFrame(()=>{
   const cards=root.matches?.(".pm-chain-card")?[root]:[...root.querySelectorAll?.(".pm-chain-card.pm-chain-polished")||[]];
   cards.forEach(card=>{
-   const rail=card.querySelector(".pm-chain-rail"),line=rail?.querySelector(".pm-chain-line");
-   const nodes=[...card.querySelectorAll(".pm-chain-node")];
-   if(!rail||!line||!nodes.length)return;
-   const rr=rail.getBoundingClientRect(),centers=nodes.map(n=>{const r=n.getBoundingClientRect();return r.top+r.height/2-rr.top});
-   const start=centers[0],end=centers.at(-1),progress=Math.max(0,Number(card.dataset.chainProgress??0));
-   const activeIndex=Math.min(progress,nodes.length-1);
-   const activeCenter=centers[activeIndex]??start;
-   const nextCenter=centers[Math.min(activeIndex+1,nodes.length-1)]??activeCenter;
-   const fadeEnd=activeIndex<nodes.length-1?activeCenter+(nextCenter-activeCenter)*.5:activeCenter;
-   line.style.top=`${start}px`;
-   line.style.height=`${Math.max(0,end-start)}px`;
-   line.style.setProperty("--pm-rail-gold-end",`${Math.max(0,fadeEnd-start)}px`);
-   line.style.setProperty("--pm-rail-fade",`${Math.max(10,Math.min(34,(nextCenter-activeCenter)*.18||14))}px`);
+   const rail=card.querySelector(".pm-chain-rail"),line=rail?.querySelector(".pm-chain-line"),first=card.querySelector(".pm-chain-node.is-first");
+   if(!rail||!line||!first)return;
+   const rr=rail.getBoundingClientRect(),fr=first.getBoundingClientRect(),start=fr.top+fr.height/2-rr.top;
+   const rest=card.querySelector(".pm-chain-rest"),expanded=!!rest&&!rest.hidden&&getComputedStyle(rest).display!=="none";
+   const nodes=[...card.querySelectorAll(".pm-chain-node")].filter(n=>n.offsetParent!==null);
+   let end,activeCenter=start,nextCenter=null;
+   const progress=Math.max(0,Number(card.dataset.chainProgress??0));
+   if(expanded&&nodes.length>1){
+    const centers=nodes.map(n=>{const r=n.getBoundingClientRect();return r.top+r.height/2-rr.top});
+    end=centers.at(-1);const ai=Math.min(progress,centers.length-1);activeCenter=centers[ai];nextCenter=centers[Math.min(ai+1,centers.length-1)];
+   }else{
+    // Closed card: the teaser rail is static, reaches the card edge, and fades
+    // as if it had travelled ~90% of the way to prompt 2. Never scroll-driven.
+    const cr=card.getBoundingClientRect();end=Math.max(start,cr.bottom-rr.top-1);nextCenter=end;
+   }
+   const goldEnd=nextCenter==null?activeCenter:(activeCenter+(nextCenter-activeCenter)*.90);
+   const span=Math.max(0,end-start),fade=Math.max(12,Math.min(30,span*.10));
+   line.style.top=`${start}px`;line.style.height=`${span}px`;
+   line.style.setProperty("--pm-rail-gold-end",`${Math.max(0,goldEnd-start)}px`);line.style.setProperty("--pm-rail-fade",`${fade}px`);
   });
   const d=root.matches?.("#pmChainDetail")?root:root.querySelector?.("#pmChainDetail");
-  if(d?.open){
-   const steps=d.querySelector(".pm-chain-detail-steps"),items=[...d.querySelectorAll(".pm-chain-detail-step")];
-   if(steps&&items.length){
-    const sr=steps.getBoundingClientRect(),centers=items.map(x=>{const r=x.querySelector(".pm-chain-detail-node").getBoundingClientRect();return r.top+r.height/2-sr.top});
-    const start=centers[0],end=centers.at(-1),progress=Math.max(0,Number(d.dataset.chainProgress??0));
-    const activeIndex=Math.min(progress,items.length-1),activeCenter=centers[activeIndex],nextCenter=centers[Math.min(activeIndex+1,items.length-1)];
-    const fadeEnd=activeIndex<items.length-1?activeCenter+(nextCenter-activeCenter)*.5:activeCenter;
-    steps.style.setProperty("--pm-detail-rail-top",`${start}px`);
-    steps.style.setProperty("--pm-detail-rail-height",`${Math.max(0,end-start)}px`);
-    steps.style.setProperty("--pm-detail-gold-end",`${Math.max(0,fadeEnd-start)}px`);
-    steps.style.setProperty("--pm-detail-fade",`${Math.max(10,Math.min(34,(nextCenter-activeCenter)*.18||14))}px`);
-   }
-  }
+  if(d?.open){const steps=d.querySelector(".pm-chain-detail-steps"),items=[...d.querySelectorAll(".pm-chain-detail-step")];if(steps&&items.length){
+   const sr=steps.getBoundingClientRect(),centers=items.map(x=>{const r=x.querySelector(".pm-chain-detail-node").getBoundingClientRect();return r.top+r.height/2-sr.top});
+   const start=centers[0],end=centers.at(-1),progress=Math.max(0,Number(d.dataset.chainProgress??0)),ai=Math.min(progress,items.length-1),a=centers[ai],n=centers[Math.min(ai+1,items.length-1)],goldEnd=ai<items.length-1?a+(n-a)*.90:a;
+   steps.style.setProperty("--pm-detail-rail-top",`${start}px`);steps.style.setProperty("--pm-detail-rail-height",`${Math.max(0,end-start)}px`);steps.style.setProperty("--pm-detail-gold-end",`${Math.max(0,goldEnd-start)}px`);steps.style.setProperty("--pm-detail-fade",`${Math.max(12,Math.min(30,(n-a)*.10||16))}px`);
+  }}
  });
 }
 function markComplete(id,index){
@@ -120,28 +119,35 @@ async function rate(id,n){
 }
 async function openDetailRefresh(id){closeDetail();await openDetail(id)}
 async function useChain(id){
- const d=$("pmChainDetail"),cached=d?._pmChainData;
+ const d=$("pmChainDetail"),c=d?._pmChainData;if(!d||!c||String(c.id)!==String(id))return;
+ const first=c.steps?.[0];if(!first)return toast2("This chain has no prompts");
+ const url=platformURLs[c.platform];
  try{
-  // The chain is already loaded when detail opens. Do clipboard + popup while the
-  // iOS tap still has user activation; do not wait for a network round-trip first.
-  const c=cached&&String(cached.id)===String(id)?cached:null;
-  if(!c)return toast2("Chain is still loading");
-  const first=c.steps?.[0];if(!first)return toast2("This chain has no prompts");
-  const url=platformURLs[c.platform];
-  let opened=null;
-  if(url){try{opened=window.open(url,"_blank")}catch{}}
-  const copied=await copyText(first.content);
-  if(!copied){if(opened)try{opened.close()}catch{};return toast2("Could not copy the first prompt")}
-  const next=(Number(c.use_count)||0)+1;
-  c.use_count=next;
-  const uses=d?.querySelector(".pm-chain-uses");if(uses)uses.textContent=`Used ${next} times`;
-  toast2(url?"First prompt copied · opening ChatGPT":"First prompt copied");
-  const {error}=await supabaseClient.from("prompt_chains").update({use_count:next,updated_at:new Date().toISOString()}).eq("id",id);
-  if(error){c.use_count=Math.max(0,next-1);if(uses)uses.textContent=`Used ${c.use_count} times`;throw error}
-  if(url&&!opened)location.href=url;
+  // Match the proven normal-prompt flow exactly: copy, persist use, then navigate.
+  if(!await copyText(first.content))throw new Error("Copy unavailable");
+  const next=(Number(c.use_count)||0)+1;c.use_count=next;
+  const uses=d.querySelector(".pm-chain-uses");if(uses)uses.textContent=`Used ${next} times`;
+  const {error}=await supabaseClient.from("prompt_chains").update({use_count:next,updated_at:new Date().toISOString()}).eq("id",id);if(error)throw error;
+  toast2(url?`Copied · opening ${typeof platformName==="function"?platformName(c.platform):c.platform}`:"Copied to clipboard");
+  if(url)setTimeout(()=>{location.href=url},120);
  }catch(e){toast2(`Use failed: ${e.message||e}`)}
 }
-function events(){document.addEventListener("click",async e=>{if(!e.target.closest(".menu")&&!isMoreTrigger(e.target))closeOpenMenus();const tb=e.target.closest("#pmTypeFilter");if(tb){e.preventDefault();e.stopPropagation();const d=typeDialog();d.querySelectorAll("[data-type]").forEach(x=>x.querySelector("b").textContent=x.dataset.type===type?"✓":"");d.showModal();return}if(e.target.closest("[data-type-close]"))return $("pmTypeDialog")?.close();const to=e.target.closest("[data-type]");if(to){type=to.dataset.type;$("pmTypeDialog")?.close();applyType();return}const sh=e.target.closest("[data-chain-share-top]");if(sh){e.stopPropagation();return shareChain(sh.dataset.chainShareTop)}const edit=e.target.closest("[data-chain-edit]");if(edit){e.stopPropagation();return editChain(edit.dataset.chainEdit)}const dup=e.target.closest("[data-chain-duplicate]");if(dup){e.stopPropagation();return duplicateChain(dup.dataset.chainDuplicate)}const del=e.target.closest("[data-chain-delete-v2]");if(del){e.stopPropagation();return deleteV2(del.dataset.chainDeleteV2)}if(e.target.closest("[data-detail-close]"))return closeDetail();const dm=e.target.closest("[data-detail-menu]");if(dm){const m=$("pmChainDetail")?.querySelector(".pm-chain-detail-menu");if(m){const opening=m.hidden;closeOpenMenus(m);if(opening){positionDetailMenu(dm,m);m.hidden=false}else m.hidden=true}return}const dc=e.target.closest("[data-detail-copy]");if(dc){const id=$("pmChainDetail")?.dataset.chainId,c=await getChain(id),i=Number(dc.dataset.detailCopy);if(!await copyText(c.steps[i].content))return toast2("Copy failed");markComplete(id,i);dc.closest(".pm-chain-detail-step")?.classList.add("is-complete");toast2("Prompt copied");return}const rt=e.target.closest("[data-chain-rate]");if(rt)return rate($("pmChainDetail").dataset.chainId,Number(rt.dataset.chainRate));const use=e.target.closest("[data-chain-use]");if(use)return useChain(use.dataset.chainUse);if(e.target.closest("[data-edit-close]"))return $("pmChainEditV2")?.close();if(e.target.closest("[data-edit-add]")){const wrap=$("pmChainEditV2").querySelector(".pm-chain-edit-steps"),i=wrap.children.length;wrap.insertAdjacentHTML("beforeend",editStep({},i));return}if(e.target.closest("[data-edit-remove]")){const s=e.target.closest(".pm-chain-edit-step"),wrap=s.parentElement;if(wrap.children.length<=2)return toast2("A chain needs at least 2 prompts");s.remove();return}const card=e.target.closest(".pm-chain-card");if(card&&!e.target.closest("button,.menu"))openDetail(card.dataset.chainId)},true);document.addEventListener("submit",e=>{if(e.target.closest("#pmChainEditV2")){e.preventDefault();saveEdit($("pmChainEditV2"))}},true)}
+function selectionModeActive(){
+ const normal=document.querySelector("#list .card.pm-select-mode:not(.pm-chain-card)");if(normal)return true;
+ const b=$("pmSelectToggle"),label=(b?.textContent||"").trim().toLowerCase();return ["cancel","cancelar","otkaži"].includes(label);
+}
+function normalSelectedCards(){return [...document.querySelectorAll("#list .card.pm-selected:not(.pm-chain-card)")]}
+function syncChainSelection(){
+ const on=selectionModeActive();document.querySelectorAll("#list .pm-chain-card").forEach(card=>{const id=card.dataset.chainId;card.classList.toggle("pm-select-mode",on);card.classList.toggle("pm-selected",on&&chainSelected.has(id));let dot=card.querySelector(".pm-chain-select-dot");if(on&&!dot){dot=document.createElement("span");dot.className="pm-chain-select-dot";card.appendChild(dot)}if(dot){dot.hidden=!on;dot.textContent=chainSelected.has(id)?"✓":""}});
+ const bar=$("pmSelectionBar");if(!bar)return;let cancel=bar.querySelector(".pm-selection-cancel");if(!cancel){cancel=document.createElement("button");cancel.type="button";cancel.className="pm-selection-cancel";cancel.textContent="Cancel";cancel.onclick=()=>$("pmSelectToggle")?.click();bar.appendChild(cancel)}
+ if(on){bar.hidden=false;const n=chainSelected.size+normalSelectedCards().length,sum=$("pmSelectionSummary"),del=$("pmDeleteSelected");if(sum)sum.textContent=`${n} selected`;if(del)del.disabled=n===0}else{chainSelected.clear();bar.hidden=true}
+}
+async function deleteUnifiedSelection(){
+ const chainIds=[...chainSelected],promptCards=normalSelectedCards(),promptIds=promptCards.map(c=>Number(c.dataset.use)).filter(Number.isFinite),total=chainIds.length+promptIds.length;if(!total)return;
+ if(!confirm(`Delete ${total} selected item${total===1?"":"s"}?`))return;
+ try{for(const id of chainIds){const {error}=await supabaseClient.from("prompt_chains").delete().eq("id",id);if(error)throw error}for(const id of promptIds)await del("prompts",id);chainSelected.clear();await refresh();$("pmSelectToggle")?.click();toast2(`✓ Deleted ${total}`)}catch(e){toast2(`Delete failed: ${e.message||e}`)}
+}
+function events(){document.addEventListener("click",async e=>{if(!e.target.closest(".menu")&&!isMoreTrigger(e.target))closeOpenMenus();const tb=e.target.closest("#pmTypeFilter");if(tb){e.preventDefault();e.stopPropagation();const d=typeDialog();d.querySelectorAll("[data-type]").forEach(x=>x.querySelector("b").textContent=x.dataset.type===type?"✓":"");d.showModal();return}if(e.target.closest("[data-type-close]"))return $("pmTypeDialog")?.close();const to=e.target.closest("[data-type]");if(to){type=to.dataset.type;$("pmTypeDialog")?.close();applyType();return}const sh=e.target.closest("[data-chain-share-top]");if(sh){e.stopPropagation();return shareChain(sh.dataset.chainShareTop)}const edit=e.target.closest("[data-chain-edit]");if(edit){e.stopPropagation();return editChain(edit.dataset.chainEdit)}const dup=e.target.closest("[data-chain-duplicate]");if(dup){e.stopPropagation();return duplicateChain(dup.dataset.chainDuplicate)}const del=e.target.closest("[data-chain-delete-v2]");if(del){e.stopPropagation();return deleteV2(del.dataset.chainDeleteV2)}if(e.target.closest("[data-detail-close]"))return closeDetail();const dm=e.target.closest("[data-detail-menu]");if(dm){const m=$("pmChainDetail")?.querySelector(".pm-chain-detail-menu");if(m){const opening=m.hidden;closeOpenMenus(m);if(opening){positionDetailMenu(dm,m);m.hidden=false}else m.hidden=true}return}const dc=e.target.closest("[data-detail-copy]");if(dc){const id=$("pmChainDetail")?.dataset.chainId,c=await getChain(id),i=Number(dc.dataset.detailCopy);if(!await copyText(c.steps[i].content))return toast2("Copy failed");markComplete(id,i);dc.closest(".pm-chain-detail-step")?.classList.add("is-complete");toast2("Prompt copied");return}if(e.target.closest("[data-edit-close]"))return $("pmChainEditV2")?.close();if(e.target.closest("[data-edit-add]")){const wrap=$("pmChainEditV2").querySelector(".pm-chain-edit-steps"),i=wrap.children.length;wrap.insertAdjacentHTML("beforeend",editStep({},i));return}if(e.target.closest("[data-edit-remove]")){const s=e.target.closest(".pm-chain-edit-step"),wrap=s.parentElement;if(wrap.children.length<=2)return toast2("A chain needs at least 2 prompts");s.remove();return}const card=e.target.closest(".pm-chain-card");if(card&&selectionModeActive()){e.preventDefault();e.stopImmediatePropagation();const id=card.dataset.chainId;chainSelected.has(id)?chainSelected.delete(id):chainSelected.add(id);syncChainSelection();return}if(card&&!e.target.closest("button,.menu"))openDetail(card.dataset.chainId)},true);document.addEventListener("submit",e=>{if(e.target.closest("#pmChainEditV2")){e.preventDefault();saveEdit($("pmChainEditV2"))}},true)}
 window.addEventListener("resize",()=>syncRailGeometry(document),{passive:true});window.addEventListener("orientationchange",()=>setTimeout(()=>syncRailGeometry(document),120),{passive:true});
 function installGlobalMenuDismiss(){
  document.addEventListener("pointerdown",e=>{
@@ -150,6 +156,6 @@ function installGlobalMenuDismiss(){
  },true);
  document.addEventListener("keydown",e=>{if(e.key==="Escape")closeOpenMenus()},true);
 }
-function start(){injectCSS();ensureType();events();installGlobalMenuDismiss();const list=$("list");if(list)new MutationObserver(()=>requestAnimationFrame(applyType)).observe(list,{childList:true,subtree:true});new MutationObserver(()=>ensureType()).observe($("categoryFilters")||document.body,{childList:true});setTimeout(applyType,250)}
+function start(){injectCSS();ensureType();events();installGlobalMenuDismiss();const list=$("list");if(list)new MutationObserver(()=>requestAnimationFrame(()=>{applyType();syncChainSelection();syncRailGeometry(document)})).observe(list,{childList:true,subtree:true});new MutationObserver(()=>ensureType()).observe($("categoryFilters")||document.body,{childList:true});document.addEventListener("click",e=>{if(e.target.closest("#pmSelectToggle"))setTimeout(syncChainSelection,0);if(e.target.closest("#pmDeleteSelected")&&chainSelected.size){e.preventDefault();e.stopImmediatePropagation();void deleteUnifiedSelection()}},false);setTimeout(()=>{applyType();syncChainSelection()},250)}
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",start,{once:true});else start();
 })();
