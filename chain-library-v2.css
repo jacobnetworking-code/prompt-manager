@@ -235,3 +235,57 @@ body.pm-detail-locked{position:fixed!important;left:0;right:0;width:100%;overflo
  .pm-chain-polished .pm-chain-badges-meta .platformbadge,
  .pm-chain-polished .pm-chain-badges-meta .modelbadge{font-size:9px!important;padding-left:7px!important;padding-right:7px!important}
 }
+
+/* V2.0.24 — final preview alignment polish.
+   Keep the approved V2.0.23 layout; only correct node axis, badge clipping,
+   title wrapping, and the detail description separator. */
+.pm-chain-polished .cardtop>div:first-child{
+  padding-right:0!important;
+}
+.pm-chain-polished .pm-chain-badges-meta{
+  width:max-content!important;
+  max-width:none!important;
+  overflow:visible!important;
+}
+.pm-chain-polished .pm-chain-badges-meta .modelbadge{
+  width:auto!important;
+  max-width:none!important;
+  min-width:max-content!important;
+  overflow:visible!important;
+  text-overflow:clip!important;
+  white-space:nowrap!important;
+}
+.pm-chain-polished .cardtop h4{
+  white-space:nowrap!important;
+  width:max-content!important;
+  max-width:calc(100% - 44px)!important;
+}
+
+/* Step 2+ nodes: centre them on the exact same x-axis as node 1 / rail. */
+.pm-chain-polished .pm-chain-step>.pm-chain-node{
+  left:-82px!important;
+}
+.pm-chain-polished .pm-chain-step:before{
+  left:-67px!important;
+  width:67px!important;
+}
+
+/* Detail: there must be no rule/separator under the description. */
+.pm-chain-detail .pm-chain-detail-desc,
+.pm-chain-detail .pm-chain-detail-desc::before,
+.pm-chain-detail .pm-chain-detail-desc::after,
+.pm-chain-detail .pm-chain-detail-desc + .pm-chain-detail-meta{
+  border:0!important;
+  border-top:0!important;
+  border-bottom:0!important;
+  outline:0!important;
+  box-shadow:none!important;
+  background-image:none!important;
+  text-decoration:none!important;
+}
+.pm-chain-detail .pm-chain-detail-desc::before,
+.pm-chain-detail .pm-chain-detail-desc::after{
+  content:none!important;
+  display:none!important;
+}
+

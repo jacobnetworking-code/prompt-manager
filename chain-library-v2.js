@@ -1,4 +1,4 @@
-/* Prompt Manager V2.0.23 — Canonical preview geometry */
+/* Prompt Manager V2.0.24 — Preview alignment polish */
 (()=>{"use strict";
 const $=id=>document.getElementById(id);
 const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
