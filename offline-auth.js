@@ -12,7 +12,10 @@ function lang(){const v=localStorage.getItem(LANG_KEY)||"en";return COPY[v]?v:"e
 function readMarker(){try{const x=JSON.parse(localStorage.getItem(MARKER_KEY)||"null");return x&&x.userId?x:null}catch{return null}}
 function writeMarker(user){
  if(!user?.id)return;
- try{localStorage.setItem(MARKER_KEY,JSON.stringify({userId:user.id,lastVerifiedAt:Date.now()}))}catch{}
+ try{
+   localStorage.setItem(MARKER_KEY,JSON.stringify({userId:user.id,lastVerifiedAt:Date.now()}));
+   document.dispatchEvent(new CustomEvent("pm:auth-verified",{detail:{userId:user.id}}));
+ }catch{}
 }
 function clearMarker(){try{localStorage.removeItem(MARKER_KEY)}catch{}}
 function canUseOffline(){return !navigator.onLine&&!!readMarker()}
@@ -30,12 +33,22 @@ function applyCopy(){
  const send=$("emailSignIn"); if(send)send.textContent=c.send;
  document.querySelectorAll("[data-auth-lang]").forEach(b=>b.classList.toggle("active",b.dataset.authLang===lang()));
 }
+let offlineLoaderTimer=null;
+function showOfflineLoader(){
+ const loader=$("pmAuthLoading"),text=$("pmAuthLoadingText");
+ if(!loader)return;
+ if(text)text.textContent=COPY[lang()].offline;
+ loader.hidden=false;
+ clearTimeout(offlineLoaderTimer);
+ offlineLoaderTimer=setTimeout(()=>{loader.hidden=true},650);
+}
 function enforce(){
  const gate=$("authGate"),status=$("authStatus");
  if(canUseOffline()){
    if(gate)gate.hidden=true;
    if(status)status.textContent="";
    document.body.classList.add("pm-offline-authenticated");
+   showOfflineLoader();
  }else document.body.classList.remove("pm-offline-authenticated");
 }
 function captureAuthenticatedUser(){
