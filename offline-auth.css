@@ -14,3 +14,11 @@
 }
 /* V2.0.27 — offline bootstrap uses the same branded loading treatment. */
 .pm-offline-authenticated .pm-auth-loading{z-index:10020}
+
+/* V2.0.28 — single-button auth language selector */
+.pm-auth-languages{position:relative!important;display:block!important}
+#pmAuthLanguageButton{width:38px!important;height:34px!important;border:1px solid var(--border)!important;border-radius:10px!important;background:var(--surface2)!important;opacity:1!important;filter:none!important;font-size:19px!important}
+.pm-auth-language-menu{position:absolute;z-index:10040;right:0;top:40px;padding:5px;border:1px solid var(--border);border-radius:12px;background:var(--surface);box-shadow:var(--shadow);display:grid;gap:3px}
+.pm-auth-language-menu[hidden]{display:none!important}
+.pm-auth-language-menu button{width:38px!important;height:32px!important;opacity:.7!important}
+.pm-auth-language-menu button.active{opacity:1!important;border-color:rgba(200,164,93,.48)!important;background:rgba(200,164,93,.08)!important}

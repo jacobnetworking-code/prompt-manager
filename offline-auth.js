@@ -31,25 +31,19 @@ function applyCopy(){
    if(input)input.placeholder=c.placeholder;
  }
  const send=$("emailSignIn"); if(send)send.textContent=c.send;
+ const lb=$("pmAuthLanguageButton");if(lb)lb.textContent={en:"🇬🇧",es:"🇪🇸",sr:"🇷🇸"}[lang()]||"🇬🇧";
  document.querySelectorAll("[data-auth-lang]").forEach(b=>b.classList.toggle("active",b.dataset.authLang===lang()));
 }
-let offlineLoaderTimer=null;
-function showOfflineLoader(){
- const loader=$("pmAuthLoading"),text=$("pmAuthLoadingText");
- if(!loader)return;
- if(text)text.textContent=COPY[lang()].offline;
- loader.hidden=false;
- clearTimeout(offlineLoaderTimer);
- offlineLoaderTimer=setTimeout(()=>{loader.hidden=true},650);
-}
 function enforce(){
- const gate=$("authGate"),status=$("authStatus");
+ const status=$("authStatus");
  if(canUseOffline()){
-   if(gate)gate.hidden=true;
    if(status)status.textContent="";
    document.body.classList.add("pm-offline-authenticated");
-   showOfflineLoader();
- }else document.body.classList.remove("pm-offline-authenticated");
+   revealApp();
+ }else{
+   document.body.classList.remove("pm-offline-authenticated");
+   if(!navigator.onLine)revealLogin();
+ }
 }
 function captureAuthenticatedUser(){
  try{
@@ -59,19 +53,20 @@ function captureAuthenticatedUser(){
 }
 function install(){
  applyCopy();
- enforce();
+ if(!navigator.onLine)setTimeout(()=>canUseOffline()?revealApp():revealLogin(),80);
 
+ const languageButton=$("pmAuthLanguageButton"),languageMenu=$("pmAuthLanguageMenu");
+ languageButton?.addEventListener("click",e=>{e.stopPropagation();const opening=languageMenu.hidden;languageMenu.hidden=!opening;languageButton.setAttribute("aria-expanded",String(opening))});
  document.querySelectorAll("[data-auth-lang]").forEach(b=>b.addEventListener("click",()=>{
-   const next=b.dataset.authLang;
-   if(!COPY[next])return;
-   localStorage.setItem(LANG_KEY,next);
-   document.documentElement.lang=next;
-   applyCopy();
-   document.dispatchEvent(new CustomEvent("pm:language-change",{detail:{language:next}}));
+   const next=b.dataset.authLang;if(!COPY[next])return;
+   localStorage.setItem(LANG_KEY,next);document.documentElement.lang=next;
+   languageMenu.hidden=true;languageButton?.setAttribute("aria-expanded","false");
+   applyCopy();document.dispatchEvent(new CustomEvent("pm:language-change",{detail:{language:next}}));
  }));
+ document.addEventListener("click",e=>{if(!e.target.closest("#pmAuthLanguages")){languageMenu.hidden=true;languageButton?.setAttribute("aria-expanded","false")}});
 
  const gate=$("authGate");
- if(gate)new MutationObserver(()=>{if(canUseOffline()&&!gate.hidden)gate.hidden=true}).observe(gate,{attributes:true,attributeFilter:["hidden"]});
+ if(gate)new MutationObserver(()=>{if(canUseOffline()&&!gate.hidden){gate.hidden=true;revealApp();return}const loader=$("pmAuthLoading");if(loader)loader.hidden=true}).observe(gate,{attributes:true,attributeFilter:["hidden"]});
 
  let attempts=0;
  const timer=setInterval(()=>{

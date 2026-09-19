@@ -61,16 +61,16 @@
 
 
 
-<div id="pmAuthLoading" class="pm-auth-loading" hidden aria-live="polite" aria-busy="true">
+<div id="pmAuthLoading" class="pm-auth-loading" aria-live="polite" aria-busy="true">
   <div class="pm-auth-loading-inner">
     <span class="pm-auth-loading-mark" aria-hidden="true"><svg viewBox="0 0 40 40"><text x="20" y="21" text-anchor="middle" dominant-baseline="middle">{ }</text></svg></span>
     <div class="pm-auth-loading-copy"><span id="pmAuthLoadingText">Loading your library</span><span class="pm-auth-loading-dots" aria-hidden="true"><i>.</i><i>.</i><i>.</i></span></div>
     <button id="pmAuthLoadingRetry" type="button" hidden>Retry</button>
   </div>
 </div>
-<div id="authGate" class="auth-gate">
+<div id="authGate" class="auth-gate" hidden>
   <div class="auth-card">
-    <div class="auth-brand"><span class="auth-mark">{ }</span><div class="auth-brand-copy"><strong>Prompt Manager</strong><span id="pmAuthSubtitle">Sign in to continue</span></div><div id="pmAuthLanguages" class="pm-auth-languages" aria-label="Language"><button type="button" data-auth-lang="en" aria-label="English">🇬🇧</button><button type="button" data-auth-lang="es" aria-label="Español">🇪🇸</button><button type="button" data-auth-lang="sr" aria-label="Srpski">🇷🇸</button></div></div>
+    <div class="auth-brand"><span class="auth-mark">{ }</span><div class="auth-brand-copy"><strong>Prompt Manager</strong><span id="pmAuthSubtitle">Sign in to continue</span></div><div id="pmAuthLanguages" class="pm-auth-languages"><button id="pmAuthLanguageButton" type="button" aria-label="Language" aria-haspopup="menu" aria-expanded="false">🇬🇧</button><div id="pmAuthLanguageMenu" class="pm-auth-language-menu" role="menu" hidden><button type="button" data-auth-lang="en" aria-label="English">🇬🇧</button><button type="button" data-auth-lang="es" aria-label="Español">🇪🇸</button><button type="button" data-auth-lang="sr" aria-label="Srpski">🇷🇸</button></div></div></div>
     <button id="googleSignIn" class="full primary auth-google" type="button">Continue with Google</button>
     <div class="auth-divider"><span>or</span></div>
     <label>Email
@@ -90,6 +90,7 @@
 <script src="./ui-refine.js" defer></script>
 <script src="./desktop-v1.js" defer></script><script src="./product-ui.js" defer></script>
 <script src="./library-controls.js" defer></script>
+<script src="./prompt-editor.js" defer></script>
 <script src="./chain-v2.js" defer></script>
 
 </body></html>

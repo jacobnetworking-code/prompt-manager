@@ -16,6 +16,13 @@ function owned(record,id=owner()){
   if(!record||!id)return false;
   return record[OWNER_FIELD]===id;
 }
+async function adoptUnownedRowsForVerifiedOwner(id){
+  if(!id||markerOwner()!==id)return;
+  for(const store of scopedStores){
+    const rows=await rawAll(store);
+    for(const row of rows)if(row&&row[OWNER_FIELD]==null)await rawPut(store,{...row,[OWNER_FIELD]:id});
+  }
+}
 function tag(record,id=owner()){
   if(!record||!id||typeof record!=="object")return record;
   return {...record,[OWNER_FIELD]:id};
@@ -127,9 +134,12 @@ async function pendingCount(){
   }catch{return 0}
 }
 async function syncNow(reason="online"){
-  if(syncing||!navigator.onLine||!owner()||typeof window.syncCloudLibrary!=="function")return false;
+  const id=owner();
+  if(syncing||!navigator.onLine||!id||typeof window.syncCloudLibrary!=="function")return false;
   syncing=true;
   try{
+    await adoptUnownedRowsForVerifiedOwner(id);
+    if(typeof window.flushSyncQueue==="function")await window.flushSyncQueue();
     await window.syncCloudLibrary({silent:true});
     const pending=await pendingCount();
     document.dispatchEvent(new CustomEvent("pm:sync-status",{detail:{reason,pending,ok:pending===0}}));
