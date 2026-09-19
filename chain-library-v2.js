@@ -1,4 +1,4 @@
-/* Prompt Manager V2.0.20 — Unified Library behavior */
+/* Prompt Manager V2.0.21 — Chain Library visual + action parity */
 (()=>{"use strict";
 const $=id=>document.getElementById(id);
 const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
@@ -22,14 +22,14 @@ function closeDetail(){const d=$("pmChainDetail");if(d?.open)d.close();unlockBac
 function ensureType(){const row=$("categoryFilters");if(!row)return;let b=$("pmTypeFilter");if(!b){b=document.createElement("button");b.id="pmTypeFilter";b.type="button";b.className="pm-type-filter";row.prepend(b)}if(row.firstElementChild!==b)row.prepend(b);b.textContent=(type==="chains"?"Chains":type==="prompts"?"Prompts":"Type")+" ▾";b.classList.toggle("selected",type!=="all")}
 function typeDialog(){let d=$("pmTypeDialog");if(d)return d;d=document.createElement("dialog");d.id="pmTypeDialog";d.className="sheet pm-type-dialog";d.innerHTML=`<div class="sheethead"><div><small>FILTER</small><h3>Type</h3></div><button class="x" type="button" data-type-close>×</button></div><div class="theme-options"><button data-type="all"><span>All</span><b></b></button><button data-type="prompts"><span>Prompts</span><b></b></button><button data-type="chains"><span>Chains</span><b></b></button></div>`;document.body.appendChild(d);return d}
 function applyType(){ensureType();const list=$("list");if(!list)return;[...list.children].forEach(el=>{if(!el.classList.contains("card"))return;const chain=el.classList.contains("pm-chain-card");el.hidden=(type==="chains"&&!chain)||(type==="prompts"&&chain)});const visible=[...list.children].filter(el=>el.classList.contains("card")&&!el.hidden);const count=$("count");if(count)count.textContent=String(visible.length);const nr=$("noresults");if(nr)nr.hidden=visible.length>0;decorateCards()}
-function decorateCards(){document.querySelectorAll(".pm-chain-card").forEach(card=>{const id=card.dataset.chainId;if(!id)return;card.classList.add("pm-chain-polished");const saved=completed.get(id)||new Set([0]);if(!completed.has(id))completed.set(id,saved);const progress=Math.max(...saved,0);card.dataset.chainProgress=String(progress);card.querySelectorAll(".pm-chain-node").forEach((n,i)=>{n.textContent=String(i+1);n.classList.toggle("is-complete",i<=progress)});const top=card.querySelector(".cardtop");if(top&&!top.querySelector("[data-chain-share-top]")){const actions=document.createElement("div");actions.className="pm-chain-top-actions";actions.innerHTML=`<button type="button" data-chain-share-top="${esc(id)}" aria-label="Share">${ICON_SHARE}</button>`;const more=top.querySelector("[data-chain-menu]");if(more){more.classList.add("pm-chain-more");actions.appendChild(more)}top.appendChild(actions)}const menu=card.querySelector(".pm-chain-menu");if(menu&&!menu.dataset.upgraded){menu.dataset.upgraded="1";menu.innerHTML=`<button data-chain-edit="${esc(id)}">Edit chain</button><button data-chain-duplicate="${esc(id)}">Duplicate chain</button><button class="danger" data-chain-delete-v2="${esc(id)}">Delete chain</button>`}card.querySelectorAll("[data-chain-copy]").forEach(b=>{if(b.dataset.progressBound)return;b.dataset.progressBound="1";b.addEventListener("click",()=>markComplete(id,Number(b.dataset.chainCopy.split(":")[1])))})});syncRailGeometry(document)}
+function decorateCards(){document.querySelectorAll(".pm-chain-card").forEach(card=>{const id=card.dataset.chainId;if(!id)return;card.classList.add("pm-chain-polished");const badges=card.querySelector(".badges");if(badges&&!badges.dataset.chainGrouped){badges.dataset.chainGrouped="1";const xs=[...badges.children];if(xs.length>=5){const top=document.createElement("span"),meta=document.createElement("span");top.className="pm-chain-badges-top";meta.className="pm-chain-badges-meta";xs.slice(0,2).forEach(x=>top.appendChild(x));xs.slice(2).forEach(x=>meta.appendChild(x));badges.append(top,meta)}}const saved=completed.get(id)||new Set([0]);if(!completed.has(id))completed.set(id,saved);const progress=Math.max(...saved,0);card.dataset.chainProgress=String(progress);card.querySelectorAll(".pm-chain-node").forEach((n,i)=>{n.textContent=String(i+1);n.classList.toggle("is-complete",i<=progress)});const top=card.querySelector(".cardtop");if(top&&!top.querySelector("[data-chain-share-top]")){const actions=document.createElement("div");actions.className="pm-chain-top-actions";actions.innerHTML=`<button type="button" data-chain-share-top="${esc(id)}" aria-label="Share">${ICON_SHARE}</button>`;const more=top.querySelector("[data-chain-menu]");if(more){more.classList.add("pm-chain-more");actions.appendChild(more)}top.appendChild(actions)}const menu=card.querySelector(".pm-chain-menu");if(menu&&!menu.dataset.upgraded){menu.dataset.upgraded="1";menu.classList.add("pm-library-menu","pm-chain-library-menu");menu.innerHTML=`<button data-chain-edit="${esc(id)}">Edit chain</button><button data-chain-duplicate="${esc(id)}">Duplicate chain</button><button class="danger" data-chain-delete-v2="${esc(id)}">Delete chain</button>`}card.querySelectorAll("[data-chain-copy]").forEach(b=>{if(b.dataset.progressBound)return;b.dataset.progressBound="1";b.addEventListener("click",()=>markComplete(id,Number(b.dataset.chainCopy.split(":")[1])))})});syncRailGeometry(document)}
 function syncRailGeometry(root=document){
  requestAnimationFrame(()=>{
   const cards=root.matches?.(".pm-chain-card")?[root]:[...root.querySelectorAll?.(".pm-chain-card.pm-chain-polished")||[]];
   cards.forEach(card=>{
    const rail=card.querySelector(".pm-chain-rail"),line=rail?.querySelector(".pm-chain-line"),first=card.querySelector(".pm-chain-node.is-first");
    if(!rail||!line||!first)return;
-   const rr=rail.getBoundingClientRect(),fr=first.getBoundingClientRect(),start=fr.top+fr.height/2-rr.top;
+   const cr0=card.getBoundingClientRect(),title=card.querySelector(".cardtop h4"),tr=title?.getBoundingClientRect();if(tr){const railTop=Math.max(16,tr.top+tr.height/2-cr0.top-15);card.style.setProperty("--pm-chain-rail-top",`${railTop}px`)}const rr=rail.getBoundingClientRect(),fr=first.getBoundingClientRect(),start=fr.top+fr.height/2-rr.top;
    const rest=card.querySelector(".pm-chain-rest"),expanded=!!rest&&!rest.hidden&&getComputedStyle(rest).display!=="none";
    const nodes=[...card.querySelectorAll(".pm-chain-node")].filter(n=>n.offsetParent!==null);
    let end,activeCenter=start,nextCenter=null;
@@ -84,7 +84,7 @@ async function openDetail(id){const d=detailDialog();d.dataset.chainId=id;d.inne
  <div class="pm-chain-detail-steps">${steps.map((s,i)=>`<section class="pm-chain-detail-step" data-detail-step="${i}"><span class="pm-chain-detail-node">${i+1}</span><div class="pm-chain-detail-step-card"><small>PROMPT ${i+1}</small><strong>${esc(s.title||`Prompt ${i+1}`)}</strong><p>${esc(s.content)}</p><button data-detail-copy="${i}">Copy prompt</button></div></section>`).join("")}</div>
  <button class="full primary pm-chain-use" data-chain-use="${esc(id)}">${c.platform&&c.platform!=="general"&&platformURLs[c.platform]?`Use with ${esc(typeof platformName==="function"?platformName(c.platform):c.platform)} ↗`:"Copy first prompt"}</button>
  <footer class="pm-chain-detail-footer">${ratingSummary(c)}<div class="pm-chain-uses">Used ${Number(c.use_count)||0} times</div></footer>
- <div class="menu pm-chain-detail-menu" hidden><button data-chain-edit="${esc(id)}">Edit chain</button><button data-chain-duplicate="${esc(id)}">Duplicate chain</button><button class="danger" data-chain-delete-v2="${esc(id)}">Delete chain</button></div>
+ <div class="menu pm-chain-detail-menu pm-library-menu" hidden><button data-chain-edit="${esc(id)}">Edit chain</button><button data-chain-duplicate="${esc(id)}">Duplicate chain</button><button class="danger" data-chain-delete-v2="${esc(id)}">Delete chain</button></div>
  </div>`;d._pmChainData=c;const done=completed.get(id)||new Set([0]);if(!completed.has(id))completed.set(id,done);const progress=Math.max(...done,0);d.dataset.chainProgress=String(progress);d.querySelectorAll(".pm-chain-detail-step").forEach((x,i)=>x.classList.toggle("is-complete",i<=progress));
  d.querySelectorAll("[data-chain-rate]").forEach(b=>b.onclick=e=>{e.preventDefault();e.stopPropagation();void rate(id,Number(b.dataset.chainRate))});
  const useButton=d.querySelector("[data-chain-use]");if(useButton)useButton.onclick=e=>{e.preventDefault();e.stopPropagation();void useChain(id)};
@@ -113,8 +113,9 @@ async function rate(id,n){
   if(error)throw error;
   toast2(value?`Rated ${value} stars`:"Rating cleared");
  }catch(e){
-  toast2(`Rating failed: ${e.message||e}`);
-  try{const fresh=await getChain(id);if(d?.open){d._pmChainData=fresh;d.querySelectorAll("[data-chain-rate]").forEach(b=>b.classList.toggle("on",Number(b.dataset.chainRate)<=Number(fresh.rating||0)))}}catch{}
+  // Keep the user’s visible selection instead of flashing it off; surface sync failure separately.
+  console.warn("Chain rating sync failed",e);
+  toast2(`Rating sync failed: ${e.message||e}`);
  }
 }
 async function openDetailRefresh(id){closeDetail();await openDetail(id)}
@@ -123,15 +124,16 @@ async function useChain(id){
  const first=c.steps?.[0];if(!first)return toast2("This chain has no prompts");
  const url=platformURLs[c.platform];
  try{
-  // Match the proven normal-prompt flow exactly: copy, persist use, then navigate.
+  // Mirror the normal prompt CTA: copy first, update the visible usage count, then navigate.
   if(!await copyText(first.content))throw new Error("Copy unavailable");
   const next=(Number(c.use_count)||0)+1;c.use_count=next;
   const uses=d.querySelector(".pm-chain-uses");if(uses)uses.textContent=`Used ${next} times`;
-  const {error}=await supabaseClient.from("prompt_chains").update({use_count:next,updated_at:new Date().toISOString()}).eq("id",id);if(error)throw error;
   toast2(url?`Copied · opening ${typeof platformName==="function"?platformName(c.platform):c.platform}`:"Copied to clipboard");
   if(url)setTimeout(()=>{location.href=url},120);
+  supabaseClient.from("prompt_chains").update({use_count:next,updated_at:new Date().toISOString()}).eq("id",id).then(({error})=>{if(error)console.warn("Chain use sync failed",error)});
  }catch(e){toast2(`Use failed: ${e.message||e}`)}
 }
+
 function selectionModeActive(){
  const normal=document.querySelector("#list .card.pm-select-mode:not(.pm-chain-card)");if(normal)return true;
  const b=$("pmSelectToggle"),label=(b?.textContent||"").trim().toLowerCase();return ["cancel","cancelar","otkaži"].includes(label);
