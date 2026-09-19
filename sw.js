@@ -1,4 +1,4 @@
-const CACHE="pm-runtime-v237-startup-card-menus";
+const CACHE="pm-runtime-v238-startup-hotfix";
 const CORE=["./","./index.html","./styles.css","./ui-refine.css","./offline-auth.css","./desktop-v1.css","./desktop-v1.js","./app.js","./data-integrity.js","./sync-diagnostics.js","./sync-diagnostics.css","./offline-auth.js","./v237-ui.js","./model-registry.js","./model-support.js","./sync-stabilizer.js","./ui-refine.js","./product-ui.css","./product-ui.js","./library-controls.js","./prompt-editor.js","./chain-v2.css","./chain-v2.js","./chain-library-v2.css","./chain-library-v2.js","./chain-library-hotfix-v2.js","./manifest.webmanifest","./apple-touch-icon.png","./icon-192.png","./icon-512.png","./catalog.json","./prompt/","./prompt/share.css","./prompt/share-m1.6.6.18.css","./prompt/share.js"];
 self.addEventListener("install",e=>e.waitUntil(caches.open(CACHE).then(c=>Promise.allSettled(CORE.map(x=>c.add(x)))).then(()=>self.skipWaiting())));
 self.addEventListener("activate",e=>e.waitUntil((async()=>{for(const k of await caches.keys())if(k!==CACHE)await caches.delete(k);await self.clients.claim()})()));
