@@ -191,11 +191,7 @@ function enhanceSettings(){
     windowEl.append(appearance,interfaceSection);
   }
 
-  const signOut=document.createElement("button");
-  signOut.type="button";
-  signOut.className="settings-row danger-row pm-settings-signout";
-  signOut.innerHTML="<span>Sign out</span><span>↗</span>";
-  windowEl.appendChild(signOut);
+
 
   appearance.addEventListener("click",event=>{
     const button=event.target.closest("[data-quick-theme]");
@@ -207,12 +203,6 @@ function enhanceSettings(){
     if(!button)return;
     applyInterfaceMode(button.dataset.interfaceMode,{persist:true});
   });
-  signOut.addEventListener("click",()=>{
-    dialog.close();
-    document.getElementById("profileMenu")?.close?.();
-    document.getElementById("logoutBtn")?.click();
-  });
-
   const theme=localStorage.getItem("pm-theme")||"system";
   document.querySelectorAll("[data-quick-theme]").forEach(button=>{
     button.classList.toggle("active",button.dataset.quickTheme===theme);

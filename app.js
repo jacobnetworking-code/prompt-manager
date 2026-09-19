@@ -405,6 +405,61 @@ $("exploreList").onclick=async e=>{let save=e.target.closest("[data-explore-save
 function showView(v){activeView=v;["home","explore","library"].forEach(x=>{let el=$(x+"View");if(el)el.hidden=x!==v});document.querySelectorAll("[data-nav]").forEach(b=>b.classList.toggle("selected",b.dataset.nav===v));if(v==="library")render();if(v==="explore"&&!catalog.length)loadExplore()}document.querySelector(".bottom-nav").onclick=e=>{let b=e.target.closest("[data-nav]");if(b)showView(b.dataset.nav)};document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>showView(b.dataset.go));$("homeAdd").onclick=()=>{$("dialog").showModal();renderCategorySelect();$("platform").value="general"};$("libraryAdd").onclick=()=>{$("dialog").showModal();renderCategorySelect();$("platform").value="general"};$("search").oninput=render;$("categoryFilters").onclick=e=>{let b=e.target.closest("[data-filter]");if(!b)return;activeCategory=b.dataset.filter;render()};let openImport=()=>{$("dialog").showModal();renderCategorySelect();$("platform").value="general"};$("platformFilterButton").onclick=()=>{$("platformOptions").innerHTML=[["any","Any"],...Object.entries(PLATFORMS)].map(([id,name])=>`<button data-platform-filter="${id}"><span>${esc(name)}</span><b>${activePlatform===id?"✓":""}</b></button>`).join("");$("platformDialog").showModal()};$("platformClose").onclick=()=>$("platformDialog").close();$("platformOptions").onclick=e=>{let b=e.target.closest("[data-platform-filter]");if(!b)return;activePlatform=b.dataset.platformFilter;$("platformDialog").close();render()};$("useClose").onclick=()=>$("useDialog").close();$("useCopy").onclick=copyUse;$("useWith").onclick=useWith;$("ratingStars").onclick=e=>{let b=e.target.closest("[data-rating]");if(b)setRating(b.dataset.rating)};let legacyOpen=$("open");if(legacyOpen)legacyOpen.onclick=openImport;$("fab").onclick=openImport;$("close").onclick=()=>{let f=$("form");f.reset();$("source").value="";$("title").value="";$("prompt").value="";renderCategorySelect();$("platform").value="general";$("dialog").close()};$("paste").onclick=pasteClipboard;$("newCategory").onclick=()=>$("categoryDialog").showModal();$("categoryClose").onclick=()=>$("categoryDialog").close();$("categorySave").onclick=createCategory;$("categoryName").onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();createCategory()}};$("category").onchange=e=>localStorage.setItem("pm-last-category",e.target.value);$("profileBtn").onclick=()=>{renderProfileUI();$("profileMenu").showModal()};$("closeProfile").onclick=()=>$("profileMenu").close();$("openSettingsFromProfile").onclick=()=>{$("profileMenu").close();renderProfileUI();$("settingsDialog").showModal()};$("closeSettings").onclick=()=>$("settingsDialog").close();$("saveDisplayName").onclick=saveDisplayName;$("displayName").onkeydown=e=>{if(e.key==="Enter")saveDisplayName()};document.querySelectorAll("[data-quick-theme]").forEach(b=>b.onclick=()=>{applyTheme(b.dataset.quickTheme);renderProfileUI()});$("openBackup").onclick=()=>{$("settingsDialog").close();$("backupDialog").showModal()};$("openDiagnostics").onclick=()=>{$("settingsDialog").close();showDiagnostics()};$("diagnosticsClose").onclick=()=>$("diagnosticsDialog").close();$("diagnosticsRefresh").onclick=showDiagnostics;$("diagnosticsCopy").onclick=async()=>{let t=$("diagnosticsBody").dataset.raw||$("diagnosticsBody").textContent;try{await navigator.clipboard.writeText(t);toast("Diagnostics copied")}catch{toast("Copy unavailable")}};$("backupClose").onclick=()=>$("backupDialog").close();$("themeClose").onclick=()=>$("themeDialog").close();document.querySelector("#themeDialog .theme-options").onclick=e=>{let b=e.target.closest("[data-theme]");if(!b)return;applyTheme(b.dataset.theme);$("themeDialog").close();toast(`${b.dataset.theme[0].toUpperCase()+b.dataset.theme.slice(1)} appearance`)};$("export").onclick=exportBackup;$("importFile").onchange=async e=>{let f=e.target.files[0];if(!f)return;try{let r=await restore(f);$("backupDialog").close();toast(`${r.added} restored · ${r.skipped} skipped`)}catch(err){alert(err.message)}finally{e.target.value=""}};$("form").onsubmit=async e=>{e.preventDefault();let content=$("prompt").value.trim(),title=$("title").value.trim(),categoryId=$("category").value||"general";if(!content||!title)return;try{let localId=await add("prompts",{title,content,source:$("source").value.trim(),categoryId,platforms:[$("platform").value||"general"],useCount:0,lastUsedAt:null,rating:null,acquisitionType:"manual",createdAt:Date.now()});let saved=await localGet("prompts",localId);if(!saved)throw new Error("Local save verification failed");localStorage.setItem("pm-last-category",categoryId);e.target.reset();$("dialog").close();activeOrigin="all";await refresh();showView("library");toast(saved.cloudId?"Prompt saved · synced":"Prompt saved locally · sync pending")}catch(err){console.error("Prompt save failed",err);toast(`Save failed: ${err?.message||"Unknown error"}`)}};$("list").onclick=async e=>{let m=e.target.closest("[data-menu]");if(m){e.stopPropagation();let el=$(`menu-${m.dataset.menu}`);el.hidden=!el.hidden;return}let a=e.target.closest("[data-copy],[data-source],[data-delete]");if(a){e.stopPropagation();let id=Number(a.dataset.copy||a.dataset.source||a.dataset.delete),p=prompts.find(x=>x.id===id);if(a.dataset.copy){await navigator.clipboard.writeText(p.content);await markUsed(p);toast("Copied to clipboard")}else if(a.dataset.source)window.open(p.source,"_blank","noopener");else if(a.dataset.delete&&confirm("Delete this prompt?")){await del("prompts",id);await refresh();toast("Prompt deleted")}return}let card=e.target.closest("[data-use]");if(card){let p=prompts.find(x=>x.id===Number(card.dataset.use));if(p)openUse(p)}};
 document.getElementById("googleSignIn")?.addEventListener("click",signInGoogle);
 document.getElementById("emailSignIn")?.addEventListener("click",signInEmail);
-document.getElementById("logoutBtn")?.addEventListener("click",signOutPM);
+document.getElementById("settingsLogoutBtn")?.addEventListener("click",signOutPM);
+
+function pmTechnicalSupportContext(){
+  return {
+    app_version:"2.0.39",
+    language:localStorage.getItem("pm-language")||document.documentElement.lang||"en",
+    online:navigator.onLine,
+    display_mode:window.matchMedia?.("(display-mode: standalone)")?.matches?"standalone":"browser",
+    user_agent:navigator.userAgent,
+    viewport:`${window.innerWidth}x${window.innerHeight}`,
+    origin:location.origin,
+    timestamp:new Date().toISOString()
+  };
+}
+async function submitSupportMessage(event){
+  event.preventDefault();
+  const form=document.getElementById("supportForm"),status=document.getElementById("supportStatus"),button=document.getElementById("supportSubmit");
+  const category=document.getElementById("supportCategory")?.value||"other";
+  const message=(document.getElementById("supportMessage")?.value||"").trim();
+  if(!message){if(status)status.textContent="Please enter a message.";return}
+  if(!supabaseClient||!authUser){if(status)status.textContent="Please sign in to send a message.";return}
+  button.disabled=true;if(status)status.textContent="Sending…";
+  try{
+    const {data,error}=await supabaseClient.functions.invoke("support-message",{body:{category,message,technical:pmTechnicalSupportContext()}});
+    if(error)throw error;
+    if(data?.error)throw new Error(data.error);
+    form.reset();if(status)status.textContent="Message sent. Thank you.";
+    setTimeout(()=>{document.getElementById("supportDialog")?.close();if(status)status.textContent=""},900);
+  }catch(err){console.error("Support message failed",err);if(status)status.textContent="Could not send your message. Please try again."}
+  finally{button.disabled=false}
+}
+async function deletePromptManagerAccount(){
+  const input=document.getElementById("deleteAccountConfirm"),status=document.getElementById("deleteAccountStatus"),button=document.getElementById("deleteAccountSubmit");
+  if((input?.value||"").trim()!=="DELETE")return;
+  if(!supabaseClient||!authUser){if(status)status.textContent="Please sign in again before deleting your account.";return}
+  button.disabled=true;if(status)status.textContent="Deleting your account…";
+  try{
+    const {data,error}=await supabaseClient.functions.invoke("delete-account",{body:{confirm:"DELETE"}});
+    if(error)throw error;
+    if(data?.error)throw new Error(data.error);
+    try{db?.close?.()}catch{}
+    try{indexedDB.deleteDatabase("prompt-manager")}catch{}
+    localStorage.removeItem("pm-display-name");
+    await supabaseClient.auth.signOut({scope:"local"}).catch(()=>{});
+    authUser=null;location.reload();
+  }catch(err){console.error("Account deletion failed",err);if(status)status.textContent="Account deletion failed. Nothing else was changed. Please try again.";button.disabled=false}
+}
+
+document.getElementById("openSupport")?.addEventListener("click",()=>{document.getElementById("settingsDialog")?.close();document.getElementById("supportDialog")?.showModal()});
+document.getElementById("supportClose")?.addEventListener("click",()=>document.getElementById("supportDialog")?.close());
+document.getElementById("supportForm")?.addEventListener("submit",submitSupportMessage);
+document.getElementById("openDeleteAccount")?.addEventListener("click",()=>{document.getElementById("settingsDialog")?.close();const i=document.getElementById("deleteAccountConfirm");if(i)i.value="";const b=document.getElementById("deleteAccountSubmit");if(b)b.disabled=true;const st=document.getElementById("deleteAccountStatus");if(st)st.textContent="";document.getElementById("deleteAccountDialog")?.showModal()});
+document.getElementById("deleteAccountClose")?.addEventListener("click",()=>document.getElementById("deleteAccountDialog")?.close());
+document.getElementById("deleteAccountConfirm")?.addEventListener("input",e=>{const b=document.getElementById("deleteAccountSubmit");if(b)b.disabled=e.target.value.trim()!=="DELETE"});
+document.getElementById("deleteAccountSubmit")?.addEventListener("click",deletePromptManagerAccount);
+
 await initializeAuth();
 if("serviceWorker"in navigator)navigator.serviceWorker.register("./sw.js").catch(console.error);if(navigator.storage?.persist)navigator.storage.persist().catch(()=>{})}init().catch(e=>{console.error(e);alert("Prompt Manager could not start.")});

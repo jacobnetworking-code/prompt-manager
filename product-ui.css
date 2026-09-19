@@ -961,3 +961,9 @@ body.pm-auth-pending > #pmAuthLoading[hidden]{
 .pm-card-menu[hidden]{display:none!important}
 .pm-card-menu button{display:flex!important;align-items:center!important;gap:9px!important;white-space:nowrap!important;text-align:left!important;width:100%;min-height:40px;padding:0 10px;border:0;border-radius:9px;background:transparent;color:var(--text);font-weight:680}
 .pm-card-menu .danger{color:#ff746f}
+
+/* Settings — Support + Account */
+.pm-danger-copy{margin:12px 0;color:var(--danger,#d65c5c);font-size:13px}
+.pm-danger-button{margin-top:10px;border:0;background:#b83d3d;color:#fff;font-weight:800}
+.pm-danger-button:disabled{opacity:.45;cursor:not-allowed}
+#supportStatus:not(:empty),#deleteAccountStatus:not(:empty){margin:10px 0}
