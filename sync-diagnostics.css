@@ -1,15 +1,17 @@
-/* Prompt Manager V2.0.30 — temporary sync trace + connectivity placement */
-.pm-sync-diag{margin:14px 0;padding:12px;border:1px solid var(--border);border-radius:14px;background:var(--surface2)}
-.pm-sync-diag>strong{display:block;margin-bottom:8px;font-size:12px}
-.pm-sync-diag pre{max-height:260px;overflow:auto;white-space:pre-wrap;word-break:break-word;font-size:10px;line-height:1.45;color:var(--muted);margin:0 0 10px}
-.pm-sync-diag>div{display:flex;gap:6px;flex-wrap:wrap}.pm-sync-diag button{min-height:34px;border:1px solid var(--border);border-radius:9px;background:var(--surface);color:var(--text);padding:0 9px;font-size:10px}
+/* Prompt Manager V2.0.32 — support diagnostics + connectivity placement */
+.pm-diag-card{margin:14px 0;padding:14px;border:1px solid var(--border);border-radius:16px;background:var(--surface2)}
+.pm-diag-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+.pm-diag-head>div{display:grid;gap:3px}.pm-diag-head small{color:var(--muted);font-size:9px;font-weight:800;letter-spacing:.12em}.pm-diag-head strong{font-size:14px}
+.pm-diag-head>span{padding:5px 8px;border:1px solid var(--border);border-radius:999px;color:var(--muted);font-size:9px;font-weight:750}
+.pm-diag-card .diagnostics{margin:0;max-height:280px;overflow:auto;white-space:pre-wrap;word-break:break-word;font-size:10px;line-height:1.45;color:var(--muted)}
+.pm-sync-diag pre{max-height:280px;overflow:auto;white-space:pre-wrap;word-break:break-word;font-size:10px;line-height:1.45;color:var(--muted);margin:0}
+.pm-diag-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px}
+.pm-sync-diag .pm-diag-actions{grid-template-columns:repeat(3,minmax(0,1fr))}
+.pm-diag-actions button{min-height:40px;margin:0!important;padding:0 8px;border:1px solid var(--border);border-radius:11px;background:var(--surface);color:var(--text);font-size:10px;font-weight:650}
 @media(max-width:700px){
- html[data-pm-offline="true"] #pmConnectivity{top:calc(env(safe-area-inset-top) + 74px)!important}
+ #pmConnectivity{top:calc(env(safe-area-inset-top) + 86px)!important}
+ .pm-sync-diag .pm-diag-actions{grid-template-columns:1fr 1fr}.pm-sync-diag .pm-diag-actions button:last-child{grid-column:1/-1}
 }
-
-/* V2.0.31 — same connectivity position for offline and back-online. */
-@media(max-width:700px){#pmConnectivity{top:calc(env(safe-area-inset-top) + 86px)!important}}
-/* Offline startup: only the branded loader is visible during the deliberate hold. */
 body.pm-offline-loader-hold .app,
 body.pm-offline-loader-hold .bottom-nav,
 body.pm-offline-loader-hold #authGate,

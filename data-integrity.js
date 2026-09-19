@@ -133,7 +133,17 @@ if(typeof window.toCloudPrompt==="function"){
   const originalToCloud=window.toCloudPrompt;
   window.toCloudPrompt=function(record){
     const clean={...record};delete clean[OWNER_FIELD];
-    return originalToCloud(clean);
+    const payload=originalToCloud(clean);
+    payload.models=Array.isArray(clean.models)?clean.models.filter(Boolean):[];
+    return payload;
+  };
+}
+if(typeof window.fromCloudPrompt==="function"){
+  const originalFromCloud=window.fromCloudPrompt;
+  window.fromCloudPrompt=function(row){
+    const record=originalFromCloud(row);
+    record.models=Array.isArray(row?.models)?row.models.filter(Boolean):[];
+    return record;
   };
 }
 
@@ -208,7 +218,11 @@ async function syncNow(reason="online"){
  }finally{syncing=false}
 }
 
-window.addEventListener("online",()=>{diag("event:online");setTimeout(()=>syncNow("reconnected"),700)});
+window.addEventListener("online",()=>{
+ diag("event:online");
+ document.dispatchEvent(new CustomEvent("pm:sync-start",{detail:{reason:"reconnected"}}));
+ setTimeout(()=>syncNow("reconnected"),700);
+});
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&navigator.onLine)setTimeout(()=>syncNow("resume"),250)});
 document.addEventListener("pm:auth-verified",()=>setTimeout(()=>syncNow("auth"),100));
 function loadDiagnosticsAssets(){
