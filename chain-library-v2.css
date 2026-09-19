@@ -16,15 +16,6 @@ body.pm-detail-locked{position:fixed!important;left:0;right:0;width:100%;overflo
 @media(max-width:700px){.pm-chain-detail-sheet{padding-left:18px;padding-right:18px}.pm-chain-title-row h2{font-size:25px}.pm-chain-detail-actions{gap:6px}.pm-chain-detail-actions>button{width:36px;height:36px}.pm-chain-detail-steps{padding-left:50px}.pm-chain-detail-node{left:-48px}.pm-chain-detail-step:before{left:-29px;width:29px}.pm-chain-top-actions>button{width:35px;height:35px}}
 
 
-/* V2.0.16 — compact left rail, matching the preferred pre-V2.0.15 composition */
-
-/* Preview: keep cards wide. Rail stays in the narrow left gutter. */
-.pm-chain-polished .pm-chain-rest:before{display:block!important;left:13px!important;top:-16px!important;bottom:50%!important;width:1px!important;background:var(--border)!important}
-.pm-chain-polished .pm-chain-step>.pm-chain-node{left:-39px!important;top:50%!important;width:30px!important;height:30px!important;transform:translateY(-50%)!important}
-.pm-chain-polished .pm-chain-step:before{left:-24px!important;top:50%!important;width:24px!important;height:1px!important;background:var(--border)!important}
-.pm-chain-polished .pm-chain-step:last-child:after{content:"";position:absolute;left:-27px;top:50%;bottom:-20px;width:7px;background:var(--surface);z-index:1}
-.pm-chain-polished .pm-chain-step:last-child>.pm-chain-node{z-index:3!important}
-
 /* Detail: same left-rail grammar without pushing the prompt cards too far right. */
 .pm-chain-detail-sheet{position:relative}
 .pm-chain-detail-steps{position:relative;display:grid;gap:14px;margin:0 0 22px;padding-left:54px!important}
@@ -64,21 +55,6 @@ body.pm-detail-locked{position:fixed!important;left:0;right:0;width:100%;overflo
 }
 
 
-/* V2.0.17 — authoritative single-rail geometry */
-.pm-chain-polished .pm-chain-rest:before{display:none!important}
-.pm-chain-polished .pm-chain-line{
-  top:28px;
-  bottom:auto!important;
-  height:0;
-  background:var(--border)!important;
-}
-.pm-chain-polished .pm-chain-node.is-first + *{}
-.pm-chain-polished .pm-chain-step:last-child:after{display:none!important}
-
-/* Expanded preview: node center is exactly the vertical/horizontal intersection. */
-.pm-chain-polished .pm-chain-step>.pm-chain-node{top:50%!important;transform:translateY(-50%)!important;z-index:4!important}
-.pm-chain-polished .pm-chain-step:before{top:50%!important;transform:translateY(-.5px)!important;z-index:1}
-
 /* Detail uses one pseudo rail only, dynamically sized by JS to node 1 → final node. */
 .pm-chain-detail-steps:before{
   display:block!important;
@@ -94,51 +70,6 @@ body.pm-detail-locked{position:fixed!important;left:0;right:0;width:100%;overflo
 .pm-chain-use,.pm-chain-rating,.pm-chain-rating button{position:relative;z-index:8;pointer-events:auto!important;touch-action:manipulation}
 .pm-chain-detail-footer .rating-stars button{min-width:34px;min-height:38px}
 
-
-/* V2.0.18 — progressive gold rail. One rail, centered nodes, 50% fade between steps. */
-.pm-chain-polished .pm-chain-rail{
-  left:10px!important;
-  top:18px!important;
-  bottom:18px!important;
-  width:30px!important;
-}
-.pm-chain-polished .pm-chain-line{
-  left:14px!important;
-  width:1.5px!important;
-  bottom:auto!important;
-  background:
-    linear-gradient(to bottom,
-      rgba(212,174,99,1) 0,
-      rgba(212,174,99,1) max(0px, calc(var(--pm-rail-gold-end,0px) - var(--pm-rail-fade,16px))),
-      rgba(212,174,99,.78) var(--pm-rail-gold-end,0px),
-      rgba(212,174,99,0) calc(var(--pm-rail-gold-end,0px) + var(--pm-rail-fade,16px)),
-      var(--border) calc(var(--pm-rail-gold-end,0px) + var(--pm-rail-fade,16px)),
-      var(--border) 100%)!important;
-  box-shadow:none;
-}
-.pm-chain-polished .pm-chain-node.is-first{
-  left:0!important;
-  width:30px!important;height:30px!important;
-}
-.pm-chain-polished .pm-chain-rest{margin-left:-30px!important;padding-left:30px!important}
-.pm-chain-polished .pm-chain-step>.pm-chain-node{
-  left:-30px!important;
-  width:30px!important;height:30px!important;
-  top:50%!important;transform:translateY(-50%)!important;
-}
-.pm-chain-polished .pm-chain-step:before{
-  left:-15px!important;width:15px!important;
-  top:50%!important;
-  background:var(--border)!important;
-}
-.pm-chain-polished .pm-chain-step>.pm-chain-node.is-complete{
-  border-color:rgba(212,174,99,.9)!important;
-  background:var(--gold)!important;color:#111!important;
-  box-shadow:0 0 10px rgba(212,174,99,.24);
-}
-.pm-chain-polished .pm-chain-step:has(>.pm-chain-node.is-complete):before{
-  background:rgba(212,174,99,.72)!important;
-}
 
 /* Detail: exact same visual language. */
 .pm-chain-detail-steps{padding-left:50px!important}
@@ -163,15 +94,6 @@ body.pm-detail-locked{position:fixed!important;left:0;right:0;width:100%;overflo
 .pm-chain-detail-step.is-complete:before{background:rgba(212,174,99,.72)!important}
 
 
-/* V2.0.20 — unified Library geometry; supersedes earlier Chain rail overrides. */
-.pm-chain-polished{--pm-chain-axis:25px!important;position:relative!important;overflow:hidden!important}
-.pm-chain-polished .pm-chain-rail{left:10px!important;width:30px!important;top:18px!important;bottom:0!important}
-.pm-chain-polished .pm-chain-line{left:14.25px!important;width:1.5px!important;bottom:auto!important}
-.pm-chain-polished .pm-chain-node.is-first{left:0!important;width:30px!important;height:30px!important;transform:none!important}
-.pm-chain-polished .pm-chain-rest{margin-left:0!important;padding-left:30px!important}
-.pm-chain-polished .pm-chain-step>.pm-chain-node{left:-20px!important;width:30px!important;height:30px!important;top:50%!important;transform:translate(-50%,-50%)!important;margin:0!important}
-.pm-chain-polished .pm-chain-step:before{left:-20px!important;width:20px!important;top:50%!important;transform:translateY(-.5px)!important}
-.pm-chain-polished .pm-chain-rest:before,.pm-chain-polished .pm-chain-step:last-child:after{display:none!important}
 .pm-chain-detail-desc{border:0!important;text-decoration:none!important;padding-bottom:0!important}
 .pm-chain-detail-meta{border:0!important;padding-bottom:0!important;flex-wrap:nowrap!important;overflow-x:auto!important;scrollbar-width:none!important;margin-top:10px!important}
 .pm-chain-detail-meta::-webkit-scrollbar{display:none}
@@ -181,44 +103,6 @@ body.pm-detail-locked{position:fixed!important;left:0;right:0;width:100%;overflo
 #pmSelectionBar:not([hidden]){display:flex!important;align-items:center!important;gap:10px!important;bottom:calc(var(--navH,76px) + env(safe-area-inset-bottom) + 12px)!important}
 #pmSelectionBar .pm-selection-cancel{border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:12px;padding:10px 14px;font-weight:750}
 
-
-/* V2.0.22 — preview-only geometry correction. Detail UI remains unchanged. */
-.pm-chain-polished{
-  padding-left:18px!important;
-  position:relative!important;
-  overflow:hidden!important;
-}
-/* Header badges use the normal card left edge; only the title/content reserve the rail gutter. */
-.pm-chain-polished .cardtop{margin-left:0!important;align-items:flex-start!important}
-.pm-chain-polished .cardtop>div:first-child{width:100%;min-width:0;padding-right:86px!important}
-.pm-chain-polished .badges{display:grid!important;gap:7px!important;overflow:visible!important;margin-left:0!important}
-.pm-chain-polished .pm-chain-badges-top,
-.pm-chain-polished .pm-chain-badges-meta{display:flex!important;align-items:center!important;gap:7px!important;min-width:0;flex-wrap:nowrap!important}
-.pm-chain-polished .pm-chain-badges-meta>*{white-space:nowrap}
-
-/* Node 1 sits vertically beside the title. JS writes the rail top directly. */
-.pm-chain-polished .pm-chain-rail{left:10px!important;width:30px!important;bottom:0!important}
-.pm-chain-polished .pm-chain-node.is-first{left:0!important;width:30px!important;height:30px!important;transform:none!important}
-.pm-chain-polished .pm-chain-line{left:14.25px!important;width:1.5px!important;bottom:auto!important}
-.pm-chain-polished .cardtop h4{margin-left:44px!important;margin-top:12px!important}
-.pm-chain-polished .pm-chain-description,
-.pm-chain-polished .pm-chain-first-step,
-.pm-chain-polished .pm-chain-expand{margin-left:44px!important}
-
-/* Expanded preview: cards keep their width; nodes are positioned by JS on node 1's axis. */
-.pm-chain-polished .pm-chain-rest{margin-left:44px!important;margin-right:0!important;padding-left:30px!important}
-.pm-chain-polished .pm-chain-step>.pm-chain-node{
-  left:var(--pm-chain-node-left,-74px)!important;
-  width:30px!important;height:30px!important;
-  top:50%!important;transform:translateY(-50%)!important;margin:0!important;z-index:4!important;
-}
-.pm-chain-polished .pm-chain-step:before{
-  left:var(--pm-chain-link-left,-44px)!important;
-  width:var(--pm-chain-link-width,44px)!important;
-  top:50%!important;transform:translateY(-.5px)!important;height:1px!important;background:var(--border)!important;
-}
-.pm-chain-polished .pm-chain-rest:before,
-.pm-chain-polished .pm-chain-step:last-child:after{display:none!important}
 
 /* Keep the already-approved Library-style overflow menus. */
 .pm-chain-card .pm-chain-library-menu,.pm-chain-detail .pm-chain-detail-menu{width:220px!important;min-width:220px!important;padding:7px!important;border-radius:15px!important;border:1px solid var(--border)!important;background:color-mix(in srgb,var(--surface) 92%,transparent)!important;box-shadow:0 16px 44px rgba(0,0,0,.34)!important;-webkit-backdrop-filter:blur(18px)!important;backdrop-filter:blur(18px)!important;gap:0!important}
@@ -231,9 +115,123 @@ body.pm-detail-locked{position:fixed!important;left:0;right:0;width:100%;overflo
 .pm-chain-detail-meta{border-top:0!important;border-bottom:0!important;box-shadow:none!important}
 .pm-chain-detail-footer .rating-stars button.on{color:var(--gold)!important}
 
+/* V2.0.23 — canonical Chain preview geometry.
+   This is the only preview rail/layout definition in this file. */
+.pm-chain-polished{
+  --pm-preview-axis:54px;
+  position:relative!important;
+  overflow:hidden!important;
+  padding-left:18px!important;
+}
+.pm-chain-polished .cardtop{
+  margin-left:0!important;
+  align-items:flex-start!important;
+  padding-right:4px!important;
+}
+.pm-chain-polished .cardtop>div:first-child{
+  width:100%!important;
+  min-width:0!important;
+  padding-right:78px!important;
+}
+/* Metadata uses the normal Library card edge and stays clear of the actions. */
+.pm-chain-polished .badges{
+  display:grid!important;
+  gap:7px!important;
+  margin-left:0!important;
+  overflow:visible!important;
+}
+.pm-chain-polished .pm-chain-badges-top,
+.pm-chain-polished .pm-chain-badges-meta{
+  display:flex!important;
+  align-items:center!important;
+  gap:7px!important;
+  flex-wrap:nowrap!important;
+  min-width:0!important;
+}
+.pm-chain-polished .pm-chain-badges-top>*,
+.pm-chain-polished .pm-chain-badges-meta>*{white-space:nowrap!important}
+
+/* Title/content reserve only the narrow rail gutter. */
+.pm-chain-polished .cardtop h4,
+.pm-chain-polished .pm-chain-description,
+.pm-chain-polished .pm-chain-first-step,
+.pm-chain-polished .pm-chain-expand{
+  margin-left:44px!important;
+}
+.pm-chain-polished .cardtop h4{margin-top:12px!important}
+
+/* Node 1 is vertically positioned by JS from the title centre. */
+.pm-chain-polished .pm-chain-rail{
+  left:10px!important;
+  width:30px!important;
+  bottom:0!important;
+}
+.pm-chain-polished .pm-chain-node.is-first{
+  left:0!important;
+  width:30px!important;
+  height:30px!important;
+  transform:none!important;
+}
+.pm-chain-polished .pm-chain-line{
+  left:14.25px!important;
+  width:1.5px!important;
+  bottom:auto!important;
+  background:linear-gradient(to bottom,
+    rgba(212,174,99,1) 0,
+    rgba(212,174,99,1) max(0px,calc(var(--pm-rail-gold-end,0px) - var(--pm-rail-fade,16px))),
+    rgba(212,174,99,.78) var(--pm-rail-gold-end,0px),
+    rgba(212,174,99,0) calc(var(--pm-rail-gold-end,0px) + var(--pm-rail-fade,16px)),
+    var(--border) calc(var(--pm-rail-gold-end,0px) + var(--pm-rail-fade,16px)),
+    var(--border) 100%)!important;
+}
+
+/* Expanded preview: all numbered nodes share node 1's exact x-axis. */
+.pm-chain-polished .pm-chain-rest{
+  margin-left:44px!important;
+  margin-right:0!important;
+  padding-left:30px!important;
+}
+.pm-chain-polished .pm-chain-step>.pm-chain-node{
+  left:-59px!important;
+  width:30px!important;
+  height:30px!important;
+  top:50%!important;
+  transform:translateY(-50%)!important;
+  margin:0!important;
+  z-index:4!important;
+}
+.pm-chain-polished .pm-chain-step:before{
+  left:-44px!important;
+  width:44px!important;
+  top:50%!important;
+  transform:translateY(-.5px)!important;
+  height:1px!important;
+  background:var(--border)!important;
+}
+.pm-chain-polished .pm-chain-rest:before,
+.pm-chain-polished .pm-chain-step:last-child:after{display:none!important}
+.pm-chain-polished .pm-chain-step>.pm-chain-node.is-complete{
+  border-color:rgba(212,174,99,.9)!important;
+  background:var(--gold)!important;
+  color:#111!important;
+  box-shadow:0 0 10px rgba(212,174,99,.24);
+}
+.pm-chain-polished .pm-chain-step:has(>.pm-chain-node.is-complete):before{background:rgba(212,174,99,.72)!important}
+
+/* Approved Library-style overflow menus. */
+.pm-chain-card .pm-chain-library-menu,.pm-chain-detail .pm-chain-detail-menu{width:220px!important;min-width:220px!important;padding:7px!important;border-radius:15px!important;border:1px solid var(--border)!important;background:color-mix(in srgb,var(--surface) 92%,transparent)!important;box-shadow:0 16px 44px rgba(0,0,0,.34)!important;-webkit-backdrop-filter:blur(18px)!important;backdrop-filter:blur(18px)!important;gap:0!important}
+.pm-chain-card .pm-chain-library-menu button,.pm-chain-detail .pm-chain-detail-menu button{min-height:45px!important;padding:0 12px!important;border:0!important;border-radius:10px!important;background:transparent!important;font-size:13px!important;font-weight:680!important}
+.pm-chain-card .pm-chain-library-menu button+button,.pm-chain-detail .pm-chain-detail-menu button+button{margin-top:0!important}
+.pm-chain-card .pm-chain-library-menu .danger,.pm-chain-detail .pm-chain-detail-menu .danger{color:#ff746f!important}
+
+/* Approved detail cleanup/rating state. */
+.pm-chain-detail-desc,.pm-chain-detail-desc:before,.pm-chain-detail-desc:after{border:0!important;box-shadow:none!important;text-decoration:none!important;background:none!important}
+.pm-chain-detail-meta{border-top:0!important;border-bottom:0!important;box-shadow:none!important}
+.pm-chain-detail-footer .rating-stars button.on{color:var(--gold)!important}
+
 @media(max-width:700px){
- .pm-chain-polished{padding-left:18px!important}
- .pm-chain-polished .cardtop>div:first-child{padding-right:78px!important}
- .pm-chain-polished .pm-chain-badges-top,.pm-chain-polished .pm-chain-badges-meta{gap:6px!important}
- .pm-chain-polished .pm-chain-badges-meta .platformbadge,.pm-chain-polished .pm-chain-badges-meta .modelbadge{font-size:9px!important;padding-left:7px!important;padding-right:7px!important}
+ .pm-chain-polished .pm-chain-badges-top,
+ .pm-chain-polished .pm-chain-badges-meta{gap:6px!important}
+ .pm-chain-polished .pm-chain-badges-meta .platformbadge,
+ .pm-chain-polished .pm-chain-badges-meta .modelbadge{font-size:9px!important;padding-left:7px!important;padding-right:7px!important}
 }

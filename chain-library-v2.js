@@ -1,4 +1,4 @@
-/* Prompt Manager V2.0.22 — Preview geometry correction */
+/* Prompt Manager V2.0.23 — Canonical preview geometry */
 (()=>{"use strict";
 const $=id=>document.getElementById(id);
 const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
@@ -32,10 +32,6 @@ function syncRailGeometry(root=document){
    const cr0=card.getBoundingClientRect(),title=card.querySelector(".cardtop h4"),tr=title?.getBoundingClientRect();
    if(tr){const railTop=Math.max(16,tr.top+tr.height/2-cr0.top-15);rail.style.top=`${railTop}px`}
    const rr=rail.getBoundingClientRect(),fr=first.getBoundingClientRect(),start=fr.top+fr.height/2-rr.top;
-   // Keep every compact node on the exact same x-axis as node 1, regardless of
-   // responsive card margins. The connector then spans from that axis to the card.
-   const axisX=fr.left+fr.width/2;
-   card.querySelectorAll(".pm-chain-step").forEach(step=>{const node=step.querySelector(":scope > .pm-chain-node");if(!node)return;const sr=step.getBoundingClientRect();const left=axisX-sr.left-node.offsetWidth/2;step.style.setProperty("--pm-chain-node-left",`${left}px`);step.style.setProperty("--pm-chain-link-left",`${left+node.offsetWidth}px`);step.style.setProperty("--pm-chain-link-width",`${Math.max(0,-(left+node.offsetWidth))}px`)});
    const rest=card.querySelector(".pm-chain-rest"),expanded=!!rest&&!rest.hidden&&getComputedStyle(rest).display!=="none";
    const nodes=[...card.querySelectorAll(".pm-chain-node")].filter(n=>n.offsetParent!==null);
    let end,activeCenter=start,nextCenter=null;
