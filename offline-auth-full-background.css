@@ -68,7 +68,7 @@
 
 /* Desktop login: same presentation, half the original motion speed. */
 @media(min-width:1024px){
- #authGate .pm-auth-track{animation-duration:172s!important}
- #authGate .pm-auth-row:nth-child(even) .pm-auth-track{animation-duration:192s!important}
- #authGate .pm-auth-row:nth-child(3n) .pm-auth-track{animation-duration:216s!important}
+ #authGate .pm-auth-track{animation-duration:344s!important}
+ #authGate .pm-auth-row:nth-child(even) .pm-auth-track{animation-duration:384s!important}
+ #authGate .pm-auth-row:nth-child(3n) .pm-auth-track{animation-duration:432s!important}
 }
