@@ -48,7 +48,10 @@ async function initializeAuth(){
   const gate=document.getElementById("authGate"),status=document.getElementById("authStatus"),marker=offlineAuthMarker();
   setStartupLoading(true);
   if(!supabaseClient?.auth){
-    if(!navigator.onLine&&marker?.userId){
+    // The browser/PWA can report navigator.onLine=true during a cold offline launch.
+    // A persisted marker exists only for a previously verified local user, so it is
+    // the authoritative fallback when the auth SDK itself is unavailable.
+    if(marker?.userId){
       authUser={id:marker.userId};
       await ensureUserDB(marker.userId);
       document.dispatchEvent(new CustomEvent("pm:auth-verified",{detail:{userId:marker.userId,online:false}}));
@@ -81,7 +84,7 @@ async function initializeAuth(){
     await startupWait();setStartupLoading(false);applyAuthSession(null,{showLogin:true});
   }catch(err){
     console.warn("Auth startup",err);
-    if(!navigator.onLine&&marker?.userId){authUser={id:marker.userId};await ensureUserDB(marker.userId);await startupWait();setStartupLoading(false);applyAuthSession({user:authUser});return}
+    if(marker?.userId){authUser={id:marker.userId};await ensureUserDB(marker.userId);await startupWait();setStartupLoading(false);applyAuthSession({user:authUser});return}
     await startupWait();setStartupLoading(false);applyAuthSession(null,{showLogin:true});if(status)status.textContent=err?.message||"Could not verify your session.";
   }
 }
