@@ -37,7 +37,7 @@ function matchesChain(c){
   if(!q)return true;return [c.title,c.description,c.category_id,c.platform,c.model,...(c.steps||[]).flatMap(s=>[s.title,s.content])].some(v=>String(v||"").toLowerCase().includes(q));
 }
 function chainCard(c){const t=tx(),steps=c.steps||[],first=steps[0]||{},rest=steps.slice(1),count=steps.length;
- return `<article class="card pm-chain-card" data-chain-id="${safe(c.id)}">
+ return `<article class="card pm-chain-card" data-chain-id="${safe(c.id)}" data-created-at="${safe(c.created_at||"")}">
   <div class="pm-chain-rail" aria-hidden="true"><span class="pm-chain-node is-first">01</span><span class="pm-chain-line"></span></div>
   <div class="pm-chain-main">
    <div class="cardtop"><div><div class="badges"><span class="pm-chain-badge">${ICON_CHAIN}${t.chain}</span><span class="categorybadge">${safe(categoryLabel(c.category_id))}</span><span class="platformbadge">${safe(platformLabel(c.platform))}</span>${c.model?`<span class="modelbadge">${safe(c.model)}</span>`:""}<span class="platformbadge">${count} ${t.steps}</span></div><h4>${safe(c.title||"Untitled chain")}</h4></div><button class="more" data-chain-menu="${safe(c.id)}">•••</button></div>
@@ -48,7 +48,15 @@ function chainCard(c){const t=tx(),steps=c.steps||[],first=steps[0]||{},rest=ste
   <div class="pm-chain-rest" data-chain-rest="${safe(c.id)}" hidden>${rest.map((s,i)=>`<section class="pm-chain-step" data-chain-step="${i+2}"><span class="pm-chain-node">${String(i+2).padStart(2,"0")}</span><div class="pm-chain-step-body"><div><small>${t.step} ${i+2}</small><strong>${safe(s.title||`${t.step} ${i+2}`)}</strong><p>${safe(s.content||"")}</p></div><button type="button" data-chain-copy="${safe(c.id)}:${i+1}">${ICON_COPY}<span>${t.copy}</span></button></div></section>`).join("")}</div>
   <div class="menu pm-chain-menu" id="chain-menu-${safe(c.id)}" hidden><button class="danger" data-chain-delete="${safe(c.id)}">${t.delete}</button></div>
  </article>`}
-function renderChains(){const list=$("list");if(!list||!loaded)return;list.querySelectorAll(".pm-chain-card").forEach(x=>x.remove());const visible=chains.filter(matchesChain);if(!visible.length){updateCount();return}list.insertAdjacentHTML("afterbegin",visible.map(chainCard).join(""));updateCount()}
+function cardCreatedAt(el){
+ const chainId=el?.dataset?.chainId;
+ if(chainId){const c=chains.find(x=>String(x.id)===String(chainId));const n=Date.parse(c?.created_at||"");return Number.isFinite(n)?n:0}
+ const localId=Number(el?.dataset?.use);
+ if(Number.isFinite(localId)){try{const p=prompts.find(x=>Number(x.id)===localId);return Number(p?.createdAt)||0}catch{}}
+ return 0
+}
+function sortLibraryByCreatedAt(){const list=$("list");if(!list)return;const cards=[...list.children].filter(el=>el.classList.contains("card"));cards.sort((a,b)=>cardCreatedAt(b)-cardCreatedAt(a));for(const card of cards)list.appendChild(card)}
+function renderChains(){const list=$("list");if(!list||!loaded)return;list.querySelectorAll(".pm-chain-card").forEach(x=>x.remove());const visible=chains.filter(matchesChain);if(visible.length)list.insertAdjacentHTML("beforeend",visible.map(chainCard).join(""));sortLibraryByCreatedAt();updateCount()}
 function updateCount(){const count=$("count");if(!count)return;let base=0;try{base=filtered().length}catch{try{base=prompts.length}catch{}}count.textContent=String(base+chains.filter(matchesChain).length)}
 function installRenderHook(){if(typeof render==="function"&&!render.pmChains){const base=render;const wrap=function(){base.apply(this,arguments);renderChains()};wrap.pmChains=true;render=wrap}}
 function addChainChoice(){const menu=$("pmAddMenuDialog");if(!menu)return;const options=menu.querySelector(".pm-add-menu-options");if(!options||options.querySelector("[data-pm-add-chain]"))return;const b=document.createElement("button");b.type="button";b.dataset.pmAddChain="";b.innerHTML=`${ICON_CHAIN}<span><strong>${tx().addChain}</strong><small>${tx().addChainSub}</small></span><b>›</b>`;const importButton=options.querySelector("[data-pm-add-import]");if(importButton)options.insertBefore(b,importButton);else options.appendChild(b);b.addEventListener("click",()=>{menu.close();openEditor()})}
