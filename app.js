@@ -35,6 +35,7 @@ async function activateAuthSession(session,{sync=true,verified=false}={}){
   authUser=session?.user||null;
   if(!authUser){applyAuthSession(null,{showLogin:true});return}
   if(verified)rememberVerifiedUser(authUser);
+  await ensureUserDB(authUser.id);
   const status=document.getElementById("authStatus");
   if(sync&&navigator.onLine){
     if(status)status.textContent="Syncing your library…";
@@ -48,7 +49,7 @@ async function initializeAuth(){
   setStartupLoading(true);
   if(!supabaseClient?.auth){await startupWait();setStartupLoading(false);if(gate)gate.hidden=false;if(status)status.textContent="Authentication could not load. Check your connection and refresh.";return}
   supabaseClient.auth.onAuthStateChange((event,newSession)=>{
-    if(event==="SIGNED_OUT"){forgetVerifiedUser();applyAuthSession(null,{showLogin:true});return}
+    if(event==="SIGNED_OUT"){forgetVerifiedUser();try{db?.close?.()}catch{}db=null;prompts=[];categories=[];currentPrompt=null;applyAuthSession(null,{showLogin:true});return}
     if(newSession?.user){rememberVerifiedUser(newSession.user);if(newSession.user.id!==authUser?.id)void activateAuthSession(newSession,{sync:navigator.onLine,verified:true})}
   });
   try{
@@ -65,13 +66,14 @@ async function initializeAuth(){
     }
     if(!navigator.onLine&&marker?.userId){
       authUser={id:marker.userId};
+      await ensureUserDB(marker.userId);
       document.dispatchEvent(new CustomEvent("pm:auth-verified",{detail:{userId:marker.userId,online:false}}));
       await startupWait();setStartupLoading(false);applyAuthSession({user:authUser});return;
     }
     await startupWait();setStartupLoading(false);applyAuthSession(null,{showLogin:true});
   }catch(err){
     console.warn("Auth startup",err);
-    if(!navigator.onLine&&marker?.userId){authUser={id:marker.userId};await startupWait();setStartupLoading(false);applyAuthSession({user:authUser});return}
+    if(!navigator.onLine&&marker?.userId){authUser={id:marker.userId};await ensureUserDB(marker.userId);await startupWait();setStartupLoading(false);applyAuthSession({user:authUser});return}
     await startupWait();setStartupLoading(false);applyAuthSession(null,{showLogin:true});if(status)status.textContent=err?.message||"Could not verify your session.";
   }
 }
@@ -104,6 +106,7 @@ async function signOutPM(){
   if(settings?.open)settings.close();
   if(profile?.open)profile.close();
   forgetVerifiedUser();
+  try{db?.close?.()}catch{}db=null;prompts=[];categories=[];currentPrompt=null;
   applyAuthSession(null,{showLogin:true});
   document.body?.classList.remove("pm-auth-pending");
   window.scrollTo({top:0,left:0,behavior:"auto"});
@@ -116,8 +119,28 @@ async function signOutPM(){
   }
 }
 
-const $=id=>document.getElementById(id);let db,prompts=[],categories=[],activeCategory="all",activePlatform="any",activeOrigin="all",currentPrompt=null,explorePrompts=[];const DB_VERSION=3,BACKUP_VERSION=4,PLATFORMS={general:"Multiplatform",chatgpt:"ChatGPT",claude:"Claude",gemini:"Gemini",grok:"Grok",midjourney:"Midjourney",other:"Other"},PLATFORM_URLS={chatgpt:"chatgpt://",claude:"https://claude.ai/new",gemini:"https://gemini.google.com/app",grok:"https://grok.com/"},DEFAULT_CATEGORIES=["General","Coding","Marketing","Writing","Image","Video","Research","Productivity"];
-function req(r){return new Promise((ok,no)=>{r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)})}function openDB(){return new Promise((ok,no)=>{const r=indexedDB.open("prompt-manager",DB_VERSION);r.onupgradeneeded=()=>{const d=r.result;if(!d.objectStoreNames.contains("prompts"))d.createObjectStore("prompts",{keyPath:"id",autoIncrement:true});if(!d.objectStoreNames.contains("categories"))d.createObjectStore("categories",{keyPath:"id"});if(!d.objectStoreNames.contains("syncQueue"))d.createObjectStore("syncQueue",{keyPath:"qid",autoIncrement:true})};r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)})}
+const $=id=>document.getElementById(id);let db,prompts=[],categories=[],activeCategory="all",activePlatform="any",activeOrigin="all",currentPrompt=null,explorePrompts=[];const DB_VERSION=3,LEGACY_DB_NAME="prompt-manager",SCOPED_DB_PREFIX="prompt-manager:",LOCAL_DB_MIGRATION_KEY="pm-physical-db-migrated-v1",OWNER_FIELD="_pmOwnerId",BACKUP_VERSION=4,PLATFORMS={general:"Multiplatform",chatgpt:"ChatGPT",claude:"Claude",gemini:"Gemini",grok:"Grok",midjourney:"Midjourney",other:"Other"},PLATFORM_URLS={chatgpt:"chatgpt://",claude:"https://claude.ai/new",gemini:"https://gemini.google.com/app",grok:"https://grok.com/"},DEFAULT_CATEGORIES=["General","Coding","Marketing","Writing","Image","Video","Research","Productivity"];
+function req(r){return new Promise((ok,no)=>{r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)})}
+function openNamedDB(name){return new Promise((ok,no)=>{const r=indexedDB.open(name,DB_VERSION);r.onupgradeneeded=()=>{const d=r.result;if(!d.objectStoreNames.contains("prompts"))d.createObjectStore("prompts",{keyPath:"id",autoIncrement:true});if(!d.objectStoreNames.contains("categories"))d.createObjectStore("categories",{keyPath:"id"});if(!d.objectStoreNames.contains("syncQueue"))d.createObjectStore("syncQueue",{keyPath:"qid",autoIncrement:true})};r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)})}
+async function startupStorageOwner(){try{const result=await supabaseClient?.auth?.getSession?.();if(result?.data?.session?.user?.id)return result.data.session.user.id}catch{}return offlineAuthMarker()?.userId||null}
+function readStoreRows(source,store){return new Promise((ok,no)=>{if(!source.objectStoreNames.contains(store)){ok([]);return}const r=source.transaction(store,"readonly").objectStore(store).getAll();r.onsuccess=()=>ok(r.result||[]);r.onerror=()=>no(r.error)})}
+function putStoreRows(target,store,rows){return new Promise((ok,no)=>{if(!rows.length||!target.objectStoreNames.contains(store)){ok();return}const tx=target.transaction(store,"readwrite"),os=tx.objectStore(store);for(const row of rows)os.put(row);tx.oncomplete=()=>ok();tx.onerror=()=>no(tx.error);tx.onabort=()=>no(tx.error||new Error("Local migration aborted"))})}
+async function legacyDBExists(){if(indexedDB.databases){try{return (await indexedDB.databases()).some(x=>x.name===LEGACY_DB_NAME)}catch{}}return true}
+async function migrateLegacyDB(target,userId){
+  if(!userId||offlineAuthMarker()?.userId!==userId)return;
+  const key=`${LOCAL_DB_MIGRATION_KEY}:${userId}`;if(localStorage.getItem(key)==="1")return;
+  if(!(await legacyDBExists())){localStorage.setItem(key,"1");return}
+  const legacy=await openNamedDB(LEGACY_DB_NAME);
+  try{
+    const stores=["prompts","categories","syncQueue"],selected={};let ownedCount=0,foreignCount=0,unownedCount=0;
+    for(const store of stores){const rows=await readStoreRows(legacy,store);selected[store]=rows.filter(row=>{const owner=row?.[OWNER_FIELD];if(owner===userId){ownedCount++;return true}if(owner==null){unownedCount++;return false}foreignCount++;return false})}
+    for(const store of stores)await putStoreRows(target,store,selected[store]);
+    localStorage.setItem(key,"1");
+    console.info("Prompt Manager local DB migration complete",{ownedCount,foreignCount,unownedCount});
+  }finally{legacy.close()}
+}
+async function openDB(userId=null){if(!userId)userId=await startupStorageOwner();if(!userId)return openNamedDB(LEGACY_DB_NAME);const target=await openNamedDB(`${SCOPED_DB_PREFIX}${userId}`);await migrateLegacyDB(target,userId);return target}
+async function ensureUserDB(userId){if(!userId)return;if(db?.name===`${SCOPED_DB_PREFIX}${userId}`){await migrateLegacyDB(db,userId);return}try{db?.close?.()}catch{}db=await openDB(userId);prompts=[];categories=[];currentPrompt=null;await seedCategories();await refresh()}
 function os(n,m="readonly"){return db.transaction(n,m).objectStore(n)}
 function localAll(n){return req(os(n).getAll())}
 function localGet(n,id){return req(os(n).get(id))}
@@ -498,8 +521,9 @@ async function deletePromptManagerAccount(){
     const {data,error}=await supabaseClient.functions.invoke("delete-account",{body:{confirm:"DELETE"}});
     if(error)throw error;
     if(data?.error)throw new Error(data.error);
-    try{db?.close?.()}catch{}
-    try{indexedDB.deleteDatabase("prompt-manager")}catch{}
+    const deletedLocalDB=db?.name||`${SCOPED_DB_PREFIX}${authUser.id}`;
+    try{db?.close?.()}catch{}db=null;
+    try{indexedDB.deleteDatabase(deletedLocalDB)}catch{}
     localStorage.removeItem("pm-display-name");
     await supabaseClient.auth.signOut({scope:"local"}).catch(()=>{});
     authUser=null;location.reload();
