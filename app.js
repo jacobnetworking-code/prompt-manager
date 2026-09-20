@@ -47,7 +47,15 @@ async function activateAuthSession(session,{sync=true,verified=false}={}){
 async function initializeAuth(){
   const gate=document.getElementById("authGate"),status=document.getElementById("authStatus"),marker=offlineAuthMarker();
   setStartupLoading(true);
-  if(!supabaseClient?.auth){await startupWait();setStartupLoading(false);if(gate)gate.hidden=false;if(status)status.textContent="Authentication could not load. Check your connection and refresh.";return}
+  if(!supabaseClient?.auth){
+    if(!navigator.onLine&&marker?.userId){
+      authUser={id:marker.userId};
+      await ensureUserDB(marker.userId);
+      document.dispatchEvent(new CustomEvent("pm:auth-verified",{detail:{userId:marker.userId,online:false}}));
+      await startupWait();setStartupLoading(false);applyAuthSession({user:authUser});return;
+    }
+    await startupWait();setStartupLoading(false);if(gate)gate.hidden=false;if(status)status.textContent="Authentication could not load. Check your connection and refresh.";return
+  }
   supabaseClient.auth.onAuthStateChange((event,newSession)=>{
     if(event==="SIGNED_OUT"){forgetVerifiedUser();try{db?.close?.()}catch{}db=null;prompts=[];categories=[];currentPrompt=null;applyAuthSession(null,{showLogin:true});return}
     if(newSession?.user){rememberVerifiedUser(newSession.user);if(newSession.user.id!==authUser?.id)void activateAuthSession(newSession,{sync:navigator.onLine,verified:true})}
